@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherForecastApp"
         tools:targetApi="31">
+        <activity android:name=".ActivityWeather"/>
         <activity
             android:name=".ActivityPreview"
             android:exported="true">
