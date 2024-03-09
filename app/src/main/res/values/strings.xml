@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">WeatherForecastApp</string>
+    <string name="weather">Погода</string>
+    <string name="forecast_for_10_days">Forecast for 10 days</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
