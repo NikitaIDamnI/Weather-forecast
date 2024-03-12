@@ -13,4 +13,16 @@ class RepositoryDataImpl @Inject constructor(
         //apiService.currentWeather(city = location)
         Log.d("Repository_Log","save|$location")
     }
+
+    override suspend fun weatherUpdate(city: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun searchCity(city: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteCity(cityId: Int) {
+        TODO("Not yet implemented")
+    }
 }
