@@ -44,6 +44,7 @@ android {
 
 dependencies {
     implementation (libs.dagger)
+    implementation(libs.play.services.location)
     ksp (libs.dagger.compiler )
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

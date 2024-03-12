@@ -5,8 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
+import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
+import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.pager.PagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
+import javax.inject.Inject
 
 class ActivityWeather : AppCompatActivity() {
 
@@ -14,10 +17,19 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
+    private val component by lazy {
+        (application as WeatherApp).component
+            .activityWeatherInject()
+            .create(this, parseArg())
+    }
+
+    @Inject
+    lateinit var checkLocation: UseCaseCheckLocation
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        component.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
         initial()
     }
 
@@ -29,17 +41,28 @@ class ActivityWeather : AppCompatActivity() {
                     tab.setIcon(R.drawable.ic_nav)
 
                 }
+
                 else -> {
                     tab.setIcon(R.drawable.ic_tochka)
                 }
             }
         }.attach()
 
+        binding.bMenu.setOnClickListener {
+            val intent = ActivityPreview.newInstance(this)
+            startActivity(intent)
+        }
+
     }
 
 
     fun parseArg(): Int {
         return intent.getIntExtra(CITY_ID, 0)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkLocation.invoke()
     }
 
     companion object {
