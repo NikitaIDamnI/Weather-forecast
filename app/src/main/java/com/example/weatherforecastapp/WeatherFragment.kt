@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
-import com.example.weatherforecastapp.presentation.WeatherApp
 
 class WeatherFragment : Fragment() {
 
@@ -15,13 +14,8 @@ class WeatherFragment : Fragment() {
     private val binding: WeatherFragmentBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
-    private val component by lazy {
-        (requireActivity().application as WeatherApp).component
-
-    }
 
     override fun onAttach(context: Context) {
-        component.inject(this)
         super.onAttach(context)
     }
 

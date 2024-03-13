@@ -17,10 +17,9 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 
-class LocationClientImpl @Inject constructor(
+class LocationClientImpl (
     private val appActivity: AppCompatActivity,
     private val saveToDB: UseCaseSaveUserLocation,
     private var fLocationClient: FusedLocationProviderClient,
