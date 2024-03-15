@@ -15,7 +15,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 
-class Mapper  {
+class Mapper {
 
 
     fun mapperCityDtoToCurrentDb(cityDto: CityDto) = CurrentDb(
@@ -50,14 +50,19 @@ class Mapper  {
         condition_code = cityDto.forecast.days[0].day.condition.code,
     )
 
-    fun mapperCityDtoToLocationDb(cityDto: CityDto) = LocationDb(
+    fun mapperCityDtoToLocationDb(
+        id: Int= 1,
+        cityDto: CityDto,
+        position: String? = "",
+        ) = LocationDb(
+        id = id,
         name = cityDto.locationDto.name,
+        last_updated_epoch = cityDto.currentDto.last_updated_epoch,
         temp_c = cityDto.currentDto.temp_c,
         localtime = cityDto.locationDto.localtime,
         region = cityDto.locationDto.region,
         country = cityDto.locationDto.country,
-        lat = cityDto.locationDto.lat,
-        lon = cityDto.locationDto.lon,
+        position = position ?: "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
         tz_id = cityDto.locationDto.tz_id,
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.mintempC,
@@ -89,7 +94,9 @@ class Mapper  {
         day_mintempC = locationDb.day_mintempC,
         condition_text = locationDb.condition_text,
         condition_icon = locationDb.condition_icon,
-        condition_code = locationDb.condition_code
+        condition_code = locationDb.condition_code,
+        position = locationDb.position
+
     )
 
     fun mapperCurrentDbToEntityCurrent(currentDb: CurrentDb) = Current(

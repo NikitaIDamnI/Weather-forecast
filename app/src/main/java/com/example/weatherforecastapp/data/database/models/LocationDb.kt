@@ -5,23 +5,22 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "location")
 data class LocationDb(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = START_ID,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
+    val last_updated_epoch: Long,
     val region: String,
     val country: String,
-    val lat: Double,
-    val lon: Double,
+    val position: String,
     val tz_id: String,
-    val temp_c:Double,
+    val temp_c: Double,
     val localtime: String,
     val day_maxtempC: Double, // Максимальная температура в градусах Цельсия
     val day_mintempC: Double, // Минимальная температура в градусах Цельсия
     val condition_text: String,
     val condition_icon: String,
     val condition_code: Int
-){
-    companion object{
+) {
+    companion object {
         const val START_ID = 0
     }
 }

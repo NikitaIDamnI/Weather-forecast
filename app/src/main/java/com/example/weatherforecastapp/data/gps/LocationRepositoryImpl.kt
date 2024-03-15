@@ -1,30 +1,38 @@
 package com.example.weatherforecastapp.data.gps
 
 import android.Manifest
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationManager
 import android.provider.Settings
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.weatherforecastapp.data.database.models.Position
+import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
 import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
-import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class LocationClientImpl (
+class LocationRepositoryImpl (
     private val appActivity: AppCompatActivity,
-    private val saveToDB: UseCaseSaveUserLocation,
-    private var fLocationClient: FusedLocationProviderClient,
-    private val pPermissionsLauncher: PermissionsLauncher
-) : LocationRepository {
+    context: Application,
+    ) : LocationRepository {
+    private val repositoryImpl = RepositoryDataImpl(context)
+    private val saveToDB = UseCaseSaveUserLocation(repositoryImpl)
+    private val pPermissionsLauncher =  PermissionsLauncher(appActivity)
+    private var fLocationClient = LocationServices.getFusedLocationProviderClient(appActivity)
+
 
 
 
@@ -45,11 +53,9 @@ class LocationClientImpl (
         fLocationClient
             .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, ct.token)
             .addOnCompleteListener {
-                val loc = "${it.result.latitude},${it.result.longitude}"
                 CoroutineScope(Dispatchers.IO).launch {
-                    saveToDB(loc)
+                    saveToDB(dataRounding(it))
                 }
-                Log.d("My_Log", "${it.result.latitude},${it.result.longitude}")
             }
 
     }
@@ -70,6 +76,15 @@ class LocationClientImpl (
         val lm = appActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
+
+   private fun dataRounding(location:Task<Location>): Position{
+       val latitude = "%.2f".format( location.result.latitude).toDouble()
+       val longitude = "%.2f".format(location.result.longitude).toDouble()
+       val time = System.currentTimeMillis() / 1000
+       Log.d("My_Log", "$latitude,$longitude")
+
+       return Position("$latitude,$longitude",time)
+   }
 
 
 }
