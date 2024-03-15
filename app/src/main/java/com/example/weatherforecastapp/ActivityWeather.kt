@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.example.weatherforecastapp.data.gps.LocationRepositoryImpl
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
+import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import com.example.weatherforecastapp.presentation.pager.PagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -14,6 +16,14 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
+
+    private val locationRepository by lazy {
+        LocationRepositoryImpl(this,application)
+    }
+
+    private val gps by lazy {
+        UseCaseCheckLocation(locationRepository)
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +61,7 @@ class ActivityWeather : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        gps.invoke()
     }
 
     companion object {

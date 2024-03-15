@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.weatherforecastapp.data.database.models.CurrentDb
-import com.example.weatherforecastapp.domain.models.City
 
 @Dao
 interface CurrentDao {
@@ -23,7 +22,7 @@ interface CurrentDao {
     fun delete(location: CurrentDb)
 
     @Query("SELECT * FROM current_day WHERE nameCity = :nameCity")
-    fun getCurrentDaoByName(nameCity: City): CurrentDb
+    fun getCurrentDaoByName(nameCity:String): CurrentDb
 
 
 
