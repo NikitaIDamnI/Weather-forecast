@@ -6,7 +6,7 @@ import com.example.weatherforecastapp.WeatherFragment
 
 class PagerAdapter(
     fragmentActivity: FragmentActivity,
-    private val itemCount: Int) : FragmentStateAdapter(fragmentActivity) {
+    private val itemCount: Int) : FragmentStateAdapter(fragmentActivity){
 
     override fun getItemCount(): Int {
         return itemCount
