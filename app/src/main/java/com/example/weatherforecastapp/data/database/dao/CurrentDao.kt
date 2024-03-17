@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.data.database.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -18,11 +17,11 @@ interface CurrentDao {
     @Update
     fun update(location: CurrentDb)
 
-    @Delete
-    fun delete(location: CurrentDb)
+    @Query("DELETE FROM current_day WHERE id =:id")
+    suspend fun deleteCurrent(id: Int)
 
-    @Query("SELECT * FROM current_day WHERE nameCity = :nameCity")
-    fun getCurrentDaoByName(nameCity:String): CurrentDb
+    @Query("SELECT * FROM current_day WHERE id= :id")
+    fun getCurrent(id:Int): CurrentDb
 
 
 

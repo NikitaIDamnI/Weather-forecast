@@ -83,7 +83,7 @@ class LocationRepositoryImpl (
        val time = System.currentTimeMillis() / 1000
        Log.d("My_Log", "$latitude,$longitude")
 
-       return Position("$latitude,$longitude",time)
+       return Position(RepositoryDataImpl.CURRENT_LOCATION_ID,"$latitude,$longitude",time)
    }
 
 

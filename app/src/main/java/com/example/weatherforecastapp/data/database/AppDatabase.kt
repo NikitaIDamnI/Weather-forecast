@@ -16,7 +16,7 @@ import com.example.weatherforecastapp.data.database.models.LocationDb
         LocationDb::class,
         CurrentDb::class,
         ForecastDaysDb::class,
-    ], version = 4, exportSchema = false
+    ], version = 5, exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -42,6 +42,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun locationDao(): LocationDao
     abstract fun forecastDayDao(): ForecastDayDao
     abstract fun currentDao(): CurrentDao
-
 
 }

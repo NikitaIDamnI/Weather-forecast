@@ -1,11 +1,14 @@
 package com.example.weatherforecastapp.data.database.models
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "location")
 data class LocationDb(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "location_id")
+    @PrimaryKey
+    val id: Int ,
     val name: String,
     val last_updated_epoch: Long,
     val region: String,

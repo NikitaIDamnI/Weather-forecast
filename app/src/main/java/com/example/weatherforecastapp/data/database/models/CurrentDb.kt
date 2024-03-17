@@ -1,11 +1,21 @@
 package com.example.weatherforecastapp.data.database.models
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "current_day")
+@Entity(tableName = "current_day",
+    foreignKeys = [
+        ForeignKey(
+            entity = LocationDb::class,
+            parentColumns = ["location_id"],
+            childColumns = ["id"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ])
 data class CurrentDb (
     @PrimaryKey
+    val id: Int,
     val nameCity: String,
     val date: String, // Дата прогноза
     val last_updated_epoch: Long, // Время последнего обновления погоды в формате Unix Epoch
