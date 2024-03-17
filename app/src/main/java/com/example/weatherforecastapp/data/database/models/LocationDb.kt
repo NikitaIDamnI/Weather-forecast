@@ -6,8 +6,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "location")
 data class LocationDb(
-    @ColumnInfo(name = "location_id")
-    @PrimaryKey
+    @ColumnInfo(name = "position_id")
+    @PrimaryKey()
+    val positionId:Int,
     val id: Int ,
     val name: String,
     val last_updated_epoch: Long,

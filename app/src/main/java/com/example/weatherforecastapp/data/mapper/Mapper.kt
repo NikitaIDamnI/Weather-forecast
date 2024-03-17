@@ -22,8 +22,8 @@ import com.google.gson.reflect.TypeToken
 class Mapper {
 
 
-    fun mapperCityDtoToCurrentDb(id: Int, cityDto: CityDto) = CurrentDb(
-        id = id,
+    fun mapperCityDtoToCurrentDb(cityDto: CityDto, positionId: Int) = CurrentDb(
+        id = positionId ,
         nameCity = cityDto.locationDto.name,
         date = cityDto.forecast.days[0].date,
         last_updated_epoch = cityDto.currentDto.last_updated_epoch,
@@ -59,8 +59,10 @@ class Mapper {
         id: Int,
         cityDto: CityDto,
         position: String? = "",
+        positionId: Int
     ) = LocationDb(
         id = id,
+        positionId = positionId,
         name = cityDto.locationDto.name,
         last_updated_epoch = cityDto.currentDto.last_updated_epoch,
         temp_c = cityDto.currentDto.temp_c,
@@ -76,11 +78,11 @@ class Mapper {
         condition_code = cityDto.forecast.days[0].day.condition.code,
     )
 
-    fun mapperCityDtoToForecastDaysDb(id: Int, cityDto: CityDto): ForecastDaysDb {
+    fun mapperCityDtoToForecastDaysDb( cityDto: CityDto, positionId: Int): ForecastDaysDb {
         val forecastDays = cityDto.forecast.days
         val json = Gson().toJson(forecastDays)
         return ForecastDaysDb(
-            id = id,
+            id = positionId,
             nameCity = cityDto.locationDto.name,
             json = json
         )
@@ -154,6 +156,8 @@ class Mapper {
         name = searchCityDto.name,
         region = searchCityDto.region,
         country = searchCityDto.country,
+        lat = searchCityDto.lat,
+        lon =searchCityDto.lon,
     )
 
 
