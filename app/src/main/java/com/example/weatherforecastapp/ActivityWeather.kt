@@ -1,15 +1,14 @@
 package com.example.weatherforecastapp
 
+import PagerAdapter
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.example.weatherforecastapp.data.gps.LocationRepositoryImpl
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
-import com.example.weatherforecastapp.presentation.WeatherApp
-import com.example.weatherforecastapp.presentation.pager.PagerAdapter
 import com.google.android.material.tabs.TabLayoutMediator
-import javax.inject.Inject
 
 class ActivityWeather : AppCompatActivity() {
 
@@ -17,24 +16,24 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
-    private val component by lazy {
-        (application as WeatherApp).component
-            .activityWeatherInject()
-            .create(this, parseArg())
+
+    private val locationRepository by lazy {
+        LocationRepositoryImpl(this,application)
     }
 
-    @Inject
-    lateinit var checkLocation: UseCaseCheckLocation
+    private val gps by lazy {
+        UseCaseCheckLocation(locationRepository)
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         initial()
     }
 
     private fun initial() {
-        binding.viewPager.adapter = PagerAdapter(this)
+        binding.viewPager.adapter = PagerAdapter(this,3)
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             when (position) {
                 0 -> {
@@ -62,7 +61,7 @@ class ActivityWeather : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        checkLocation.invoke()
+        gps.invoke()
     }
 
     companion object {

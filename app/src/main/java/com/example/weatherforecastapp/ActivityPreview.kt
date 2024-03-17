@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.weatherforecastapp.databinding.ActivityPreviewBinding
-import com.example.weatherforecastapp.presentation.WeatherApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,14 +17,10 @@ class ActivityPreview : AppCompatActivity() {
         ActivityPreviewBinding.inflate(layoutInflater)
     }
 
-    private val component by lazy {
-        (application as WeatherApp).component
-    }
 
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 

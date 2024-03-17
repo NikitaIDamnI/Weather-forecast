@@ -5,9 +5,8 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import javax.inject.Inject
 
-class PermissionsLauncher @Inject constructor(
+class PermissionsLauncher (
     private val context: AppCompatActivity
 ) {
     private lateinit var pLauncher: ActivityResultLauncher<String>

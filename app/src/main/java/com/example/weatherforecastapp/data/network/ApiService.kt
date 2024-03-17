@@ -1,8 +1,8 @@
 package com.example.testapi.network
 
 import com.example.testapi.network.model.curentModels.WeatherResponseDto
-import com.example.testapi.network.model.forecastdaysModels.ForecastDto
-import com.example.testapi.network.model.searchCityModels.CityDto
+import com.example.testapi.network.model.searchCityModels.SearchCityDto
+import com.example.weatherforecastapp.data.network.model.CityDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -19,14 +19,14 @@ interface ApiService {
     suspend fun searchCity(
         @Query("key") key: String = API_KEY,
         @Query("q") city: String,
-    ): List<CityDto>
+    ): List<SearchCityDto>
 
     @GET("forecast.json")
     suspend fun forecastDays(
         @Query("key") key: String = API_KEY,
         @Query("days") days : Int = NUMBER_OF_DAYS,
         @Query("q") city: String
-    ): ForecastDto
+    ):CityDto
 
 
     companion object {
