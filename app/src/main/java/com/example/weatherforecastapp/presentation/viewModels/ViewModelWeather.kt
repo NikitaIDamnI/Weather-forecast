@@ -32,8 +32,22 @@ class ViewModelWeather(private val application: Application) : AndroidViewModel(
     }
 
     fun getCity(cityId: Int) {
-        viewModelScope.launch {
-            city.value = useCaseGetCity.invoke(cityId).value
+        val cityFromList = listCity.getOrNull(cityId)
+        if (cityFromList != null) {
+            city.value = cityFromList.value
+        } else {
+            viewModelScope.launch {
+                val oldGetCity = useCaseGetCity.invoke(cityId)
+                city.value = oldGetCity.value
+                listCity.add(city)
+                repository.upDate = {
+                    viewModelScope.launch {
+                        val newGetCity = useCaseGetCity.invoke(cityId)
+                        city.value = newGetCity.value
+                        listCity.add(city)
+                    }
+                }
+            }
         }
     }
 
