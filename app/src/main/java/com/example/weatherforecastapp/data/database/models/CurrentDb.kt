@@ -4,7 +4,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "current_day",
+@Entity(
+    tableName = "current_day",
     foreignKeys = [
         ForeignKey(
             entity = LocationDb::class,
@@ -12,16 +13,27 @@ import androidx.room.PrimaryKey
             childColumns = ["id"],
             onDelete = ForeignKey.CASCADE
         )
-    ])
-data class CurrentDb (
+    ]
+)
+data class CurrentDb(
     @PrimaryKey
-    val id: Int ,
+    val id: Int,
     val nameCity: String,
     val date: String, // Дата прогноза
     val last_updated_epoch: Long, // Время последнего обновления погоды в формате Unix Epoch
     val last_updated: String, // Дата и время последнего обновления погоды
     val temp_c: Double, // Температура в градусах Цельсия
     val is_day: Int, // Показывает, является ли сейчас день (1 - да, 0 - нет)
+    val param_windKph: Double,// Скорость ветра в километрах в час
+    val param_windDegree: Int,// Направление ветра в градусах
+    val param_pressureIn: Double,// Давление в дюймах ртутного столба
+    val param_precipitationMm: Double,// Количество осадков в миллиметрах
+    val param_humidity: Int,// Влажность в процентах
+    val param_cloud: Int,// Облачность в процентах
+    val param_feelsLikeCelsius: Double,// Ощущаемая температура в градусах Цельсия
+    val param_visibilityKm: Double,// Видимость в километрах
+    val param_uvIndex: Double,// Ультрафиолетовый индекс
+    val param_gustKph: Double,// Скорость порывов ветра в километрах в час
     val day_maxtempC: Double, // Максимальная температура в градусах Цельсия
     val day_mintempC: Double, // Минимальная температура в градусах Цельсия
     val day_avgtempC: Double, // Средняя температура в градусах Цельсия

@@ -9,7 +9,6 @@ import android.location.Location
 import android.location.LocationManager
 import android.provider.Settings
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
@@ -25,25 +24,24 @@ import kotlinx.coroutines.launch
 
 
 class LocationRepositoryImpl (
-    private val appActivity: AppCompatActivity,
-    context: Application,
+   private val context: Application,
     ) : LocationRepository {
     private val repositoryImpl = RepositoryDataImpl(context)
     private val saveToDB = UseCaseSaveUserLocation(repositoryImpl)
-    private val pPermissionsLauncher =  PermissionsLauncher(appActivity)
-    private var fLocationClient = LocationServices.getFusedLocationProviderClient(appActivity)
+  // private val pPermissionsLauncher =  PermissionsLauncher(context)
+    private var fLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
 
 
 
     private fun getLocation() {
-        pPermissionsLauncher
+       // pPermissionsLauncher
         val ct = CancellationTokenSource()
         if (ActivityCompat.checkSelfPermission(
-                appActivity,
+                context,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                appActivity,
+                context,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -64,16 +62,16 @@ class LocationRepositoryImpl (
         if (isLocationEnabled()) {
             getLocation()
         } else {
-            DialogManager.locationSettingsDialog(appActivity, object : DialogManager.Listener {
+            DialogManager.locationSettingsDialog(context, object : DialogManager.Listener {
                 override fun onClick() {
-                    appActivity.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                    context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 }
             })
         }
     }
 
     private fun isLocationEnabled(): Boolean {
-        val lm = appActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 

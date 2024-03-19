@@ -13,11 +13,8 @@ interface ForecastDayDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(forecastDaysDb: ForecastDaysDb)
 
-    @Query("DELETE FROM forecast_day WHERE id =:id")
-    suspend fun deleteForecastDay(id: Int)
-
     @Query("SELECT * FROM forecast_day WHERE id = :id")
-    fun getForecastDay(id:Int):  ForecastDaysDb
+   suspend fun getForecastDay(id:Int):  ForecastDaysDb
 
 
 }

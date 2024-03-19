@@ -24,18 +24,18 @@ interface LocationDao {
 
     @Query("SELECT position_id,position,last_updated_epoch FROM location WHERE position_id = :id")
     suspend fun checkPosition(id: Int): Position?
+
     @Query("SELECT position_id,position,last_updated_epoch FROM location WHERE position_id = :id")
-    suspend fun checkCity(id:Int): Position?
+    suspend fun checkCity(id: Int): Position?
+
     @Query("DELETE FROM location WHERE position_id =:id")
     suspend fun deleteLocation(id: Int)
 
     @Query("SELECT COUNT(*) FROM location")
-    fun getSumPosition():Int
+    suspend fun getSumPosition(): Int
 
     @Query("DELETE FROM location")
     fun deleteAll()
-
-
 
 
 }

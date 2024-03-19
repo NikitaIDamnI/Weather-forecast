@@ -59,7 +59,7 @@
         tools:text="TORONTO" />
 
     <TextView
-        android:id="@+id/tv_day"
+        android:id="@+id/tv_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
