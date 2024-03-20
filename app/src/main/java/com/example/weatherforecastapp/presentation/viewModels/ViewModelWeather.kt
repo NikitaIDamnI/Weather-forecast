@@ -1,8 +1,8 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.data.gps.LocationRepositoryImpl
@@ -13,7 +13,7 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCi
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import kotlinx.coroutines.launch
 
-class ViewModelWeather(private val application: Application) : AndroidViewModel(application) {
+class ViewModelWeather( application: Application) : AndroidViewModel(application) {
 
     private val repository = RepositoryDataImpl(application)
     private val repositoryLocal = LocationRepositoryImpl(application)
@@ -22,7 +22,6 @@ class ViewModelWeather(private val application: Application) : AndroidViewModel(
     private val useCasNumberOfCities = UseCasNumberOfCities(repository)
 
 
-    private val listCity = mutableListOf<LiveData<City>>()
     val city = MutableLiveData<City>()
     var sizeCity = MutableLiveData<Int>(MIN_SIZE_CITY)
 
@@ -33,7 +32,13 @@ class ViewModelWeather(private val application: Application) : AndroidViewModel(
 
     fun getCity(cityId: Int) {
         useCaseGetCity.invoke(cityId).observeForever {
-            city.value = it
+            if (it != city.value) {
+                city.value = it
+                Log.d("ViewModelWeather", "useCaseGetCity - ${it.location.name}")
+                if (city.value != null) {
+                    Log.d("ViewModelWeather", "ViewModel - ${city.value?.location?.name}")
+                }
+            }
         }
     }
 

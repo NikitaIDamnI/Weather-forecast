@@ -6,9 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
+import com.squareup.picasso.Picasso
 
 class WeatherFragment : Fragment() {
 
@@ -40,10 +42,19 @@ class WeatherFragment : Fragment() {
     }
 
     private fun initView() = with(binding) {
-        viewModel.city.observe(viewLifecycleOwner) {
+        viewModel.city.observe(viewLifecycleOwner, Observer {
             tvCity.text = it.location.name
-            tvData.text = it.current.last_updated_epoch.toString()
-        }
+            tvData.text = it.current.date
+            tvDegree.text = it.current.temp_c.toInt().toString()
+            tvCondition.text = it.current.condition.text
+            Picasso.get().load("https:"+it.current.condition.icon).into(imWeather)
+            rvCurrentDay
+            rvPrecipitation
+            rvForecastFor10Days
+
+        })
+
+
     }
 
     private fun parseArgument(): Int {

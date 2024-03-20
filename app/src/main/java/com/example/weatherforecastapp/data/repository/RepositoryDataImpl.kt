@@ -3,13 +3,15 @@ package com.example.weatherforecastapp.data.repository
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
+import androidx.lifecycle.MediatorLiveData
 import com.example.testapi.network.ApiFactory
 import com.example.testapi.network.ApiService
 import com.example.weatherforecastapp.data.database.AppDatabase
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
 import com.example.weatherforecastapp.domain.models.City
+import com.example.weatherforecastapp.domain.models.Current
+import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
@@ -31,8 +33,8 @@ class RepositoryDataImpl(
         Log.d("Repository_Log", "saveUserLocation($position) datePosition| $datePosition")
         //if(datePosition.position != position.position) {
         writingAPItoDatabase(datePosition, position, POSITION_ID_START)
-        //addNewCity(searchCity("Костанай")[0])
-        //    addNewCity(searchCity("Курган")[0])
+       // addNewCity(searchCity("Костанай")[0])
+        // addNewCity(searchCity("Курган")[0])
         weatherUpdate()
         // writingAPItoDatabase(datePosition, position, POSITION_ID_START)
         // }
@@ -81,23 +83,35 @@ class RepositoryDataImpl(
         locationDao.deleteLocation(cityId)
     }
 
-    override  fun getCity(cityId: Int): LiveData<City> {
+    override fun getCity(cityId: Int): LiveData<City> {
         val locationLiveDataDb = locationDao.getLocation(cityId)
         val currentLiveDataDb = currentDao.getCurrent(cityId)
         val forecastDayLiveDataDb = forecastDayDao.getForecastDay(cityId)
-      //  if (locationLiveDataDb.value != null && currentLiveDataDb.value != null && forecastDayLiveDataDb.value != null) {
-            val locationLiveData= locationLiveDataDb
-                .map { mapper.mapperLocationDbToEntityLocation(it) }
-           val currentLiveData = currentLiveDataDb
-               .map { mapper.mapperCurrentDbToEntityCurrent(it) }
-           val forecastDayLiveData = forecastDayLiveDataDb
-               .map { mapper.mapperForecastDaysDbToEntityForecastDays(it) }
-            return CityLiveData(cityId, locationLiveData, currentLiveData, forecastDayLiveData)
-     //   }else{
-         //   return MutableLiveData<City>()
-       // }
 
+        val currentLiveData = MediatorLiveData<Current>().apply {
+            addSource(currentLiveDataDb) {
+                if (it != null) {
+                    value = mapper.mapperCurrentDbToEntityCurrent(it)
+                }
+            }
+        }
+        val locationLiveData = MediatorLiveData<Location>().apply {
+            addSource(locationLiveDataDb) {
+                if (it != null) {
+                    value = mapper.mapperLocationDbToEntityLocation(it)
+                }
+            }
+        }
+        val forecastDayLiveData = MediatorLiveData<List<ForecastDay>>().apply {
+            addSource(forecastDayLiveDataDb) {
+                if (it != null) {
+                    value = mapper.mapperForecastDaysDbToEntityForecastDays(it)
+                }
+            }
+        }
+        Log.d("Repository_Log", "getCity ")
 
+        return CityLiveData(cityId,locationLiveData,currentLiveData,forecastDayLiveData)
     }
 
     override suspend fun getLocations(): List<Location> {
@@ -151,7 +165,7 @@ class RepositoryDataImpl(
 
     companion object {
         const val CURRENT_LOCATION_ID = 0
-        const val UPDATE_TIME = 10000
+        const val UPDATE_TIME = 3600
         const val POSITION_ID_START = 0
         const val POSITION_ID_NEXT = 1
 
