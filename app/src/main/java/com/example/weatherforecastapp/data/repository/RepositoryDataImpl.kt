@@ -81,14 +81,23 @@ class RepositoryDataImpl(
         locationDao.deleteLocation(cityId)
     }
 
-    override suspend fun getCity(cityId: Int): LiveData<City> {
+    override  fun getCity(cityId: Int): LiveData<City> {
+        val locationLiveDataDb = locationDao.getLocation(cityId)
+        val currentLiveDataDb = currentDao.getCurrent(cityId)
+        val forecastDayLiveDataDb = forecastDayDao.getForecastDay(cityId)
+      //  if (locationLiveDataDb.value != null && currentLiveDataDb.value != null && forecastDayLiveDataDb.value != null) {
+            val locationLiveData= locationLiveDataDb
+                .map { mapper.mapperLocationDbToEntityLocation(it) }
+           val currentLiveData = currentLiveDataDb
+               .map { mapper.mapperCurrentDbToEntityCurrent(it) }
+           val forecastDayLiveData = forecastDayLiveDataDb
+               .map { mapper.mapperForecastDaysDbToEntityForecastDays(it) }
+            return CityLiveData(cityId, locationLiveData, currentLiveData, forecastDayLiveData)
+     //   }else{
+         //   return MutableLiveData<City>()
+       // }
 
-        val locationLiveData = locationDao.getLocation(cityId).map { mapper.mapperLocationDbToEntityLocation(it) }
-        val currentLiveData = currentDao.getCurrent(cityId)
-            .map { mapper.mapperCurrentDbToEntityCurrent(it)}
-        val forecastDayLiveData = forecastDayDao.getForecastDay(cityId)
-            .map { mapper.mapperForecastDaysDbToEntityForecastDays(it) }
-        return CityLiveData(cityId,locationLiveData,currentLiveData,forecastDayLiveData)
+
     }
 
     override suspend fun getLocations(): List<Location> {

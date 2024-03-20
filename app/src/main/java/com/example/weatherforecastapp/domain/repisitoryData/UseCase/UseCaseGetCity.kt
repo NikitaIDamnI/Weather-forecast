@@ -7,7 +7,7 @@ import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 class UseCaseGetCity(
     private val repositoryData: RepositoryData
 ) {
-    suspend operator fun invoke(cityId: Int): LiveData<City> {
+     operator fun invoke(cityId: Int): LiveData<City> {
         return repositoryData.getCity(cityId)
 
     }

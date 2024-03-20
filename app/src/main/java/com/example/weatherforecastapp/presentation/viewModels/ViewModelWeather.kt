@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -33,12 +32,8 @@ class ViewModelWeather(private val application: Application) : AndroidViewModel(
     }
 
     fun getCity(cityId: Int) {
-        viewModelScope.launch {
-            val city = useCaseGetCity.invoke(cityId)
-            city.observeForever{
-                Log.d("ViewModelWeather","${it.current.weatherParameter}")
-            }
-
+        useCaseGetCity.invoke(cityId).observeForever {
+            city.value = it
         }
     }
 
