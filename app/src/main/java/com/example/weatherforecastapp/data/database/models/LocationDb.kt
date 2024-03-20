@@ -24,6 +24,7 @@ data class LocationDb(
     val condition_icon: String,
     val condition_code: Int
 ) {
+
     companion object {
         const val START_ID = 0
     }

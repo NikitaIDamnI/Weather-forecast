@@ -104,7 +104,7 @@ class Mapper {
         )
     }
 
-   private fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb): List<ForecastDay> {
+    fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb): List<ForecastDay> {
         val type = object : TypeToken<List<ForecastDayDto>>() {}.type
         val dbModel = Gson().fromJson<List<ForecastDayDto>>(forecastDaysDb.json, type)
         return dbModel.map { mapperForecastDaysDtoToEntityForecastDays(it, forecastDaysDb) }
@@ -144,13 +144,13 @@ class Mapper {
                 isMoonUp = dto.astro.isMoonUp,
                 isSunUp = dto.astro.isSunUp,
             ),
-            forecastHour =dto.hour.map { mapperHourDtoToEntity(it)},
+            forecastHour = dto.hour.map { mapperHourDtoToEntity(it) },
         )
 
     private fun mapperHourDtoToEntity(dto: HourDto) = ForecastHour(
-        time =dto.time,
-        temp_c =dto.tempC,
-        is_day =dto.isDay,
+        time = dto.time,
+        temp_c = dto.tempC,
+        is_day = dto.isDay,
         condition = dto.condition,
         feelslike_c = dto.feelslikeC,
     )
@@ -280,7 +280,7 @@ class Mapper {
 
     private fun formatTime(epochTime: Long): String {
         val dateFormat = SimpleDateFormat("EEEE, d MMM yyyy", Locale.ENGLISH)
-        val date = Date(epochTime*1000)
+        val date = Date(epochTime * 1000)
         return dateFormat.format(date)
     }
 }

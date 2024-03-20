@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.data.database.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -20,7 +21,7 @@ interface LocationDao {
     suspend fun getAllLocations(): List<LocationDb>
 
     @Query("SELECT * FROM location WHERE position_id =:id")
-    suspend fun getLocation(id: Int): LocationDb
+     fun getLocation(id: Int): LiveData<LocationDb>
 
     @Query("SELECT position_id,position,last_updated_epoch FROM location WHERE position_id = :id")
     suspend fun checkPosition(id: Int): Position?

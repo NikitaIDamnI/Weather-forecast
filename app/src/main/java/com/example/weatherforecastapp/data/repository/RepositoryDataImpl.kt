@@ -3,11 +3,10 @@ package com.example.weatherforecastapp.data.repository
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import com.example.testapi.network.ApiFactory
 import com.example.testapi.network.ApiService
 import com.example.weatherforecastapp.data.database.AppDatabase
-import com.example.weatherforecastapp.data.database.models.CityDb
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
 import com.example.weatherforecastapp.domain.models.City
@@ -24,7 +23,7 @@ class RepositoryDataImpl(
     private val forecastDayDao = AppDatabase.getInstance(context).forecastDayDao()
     private val locationDao = AppDatabase.getInstance(context).locationDao()
 
-     var upDate: ((Boolean) -> Unit)?= null
+    var upDate: ((Boolean) -> Unit)? = null
 
 
     override suspend fun saveUserLocation(position: Position): Boolean {
@@ -51,7 +50,7 @@ class RepositoryDataImpl(
         writingAPItoDatabase(datePosition, thisPosition, positionId)
     }
 
-    private suspend fun weatherUpdate(){ // WORKER
+    private suspend fun weatherUpdate() { // WORKER
         val dataListLocation = locationDao.getAllLocations()
         val time = System.currentTimeMillis() / 1000
         var positionId = POSITION_ID_START
@@ -84,15 +83,12 @@ class RepositoryDataImpl(
 
     override suspend fun getCity(cityId: Int): LiveData<City> {
 
-        val cityDb = CityDb(
-            id = cityId,
-            locationDb = locationDao.getLocation(cityId),
-            currentDb = currentDao.getCurrent(cityId),
-            forecastDaysDb = forecastDayDao.getForecastDay(cityId)
-        )
-        val city: City = mapper.mapperCityDbToEntityCity(cityDb)
-        Log.d("Repository_Log", "getCity ")
-        return MutableLiveData<City>(city)
+        val locationLiveData = locationDao.getLocation(cityId).map { mapper.mapperLocationDbToEntityLocation(it) }
+        val currentLiveData = currentDao.getCurrent(cityId)
+            .map { mapper.mapperCurrentDbToEntityCurrent(it)}
+        val forecastDayLiveData = forecastDayDao.getForecastDay(cityId)
+            .map { mapper.mapperForecastDaysDbToEntityForecastDays(it) }
+        return CityLiveData(cityId,locationLiveData,currentLiveData,forecastDayLiveData)
     }
 
     override suspend fun getLocations(): List<Location> {
@@ -146,14 +142,12 @@ class RepositoryDataImpl(
 
     companion object {
         const val CURRENT_LOCATION_ID = 0
-        const val UPDATE_TIME = 0
+        const val UPDATE_TIME = 10000
         const val POSITION_ID_START = 0
         const val POSITION_ID_NEXT = 1
 
         val NO_POSITION = Position(-1, "", 0)
     }
-
-
 
 
 }
