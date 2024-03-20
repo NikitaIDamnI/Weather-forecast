@@ -22,8 +22,8 @@ data class HourDto(
    // @SerializedName("snow_cm") val snowCm: Double, // Количество снега в сантиметрах
    // @SerializedName("humidity") val humidity: Int, // Влажность воздуха в процентах
    // @SerializedName("cloud") val cloud: Int, // Облачность в процентах
-   // @SerializedName("feelslike_c") val feelslikeC: Double, // Ощущаемая температура в градусах Цельсия
-    @SerializedName("feelslike_f") val feelslikeF: Double, // Ощущаемая температура в градусах Фаренгейта
+    @SerializedName("feelslike_c") val feelslikeC: Double, // Ощущаемая температура в градусах Цельсия
+  //  @SerializedName("feelslike_f") val feelslikeF: Double, // Ощущаемая температура в градусах Фаренгейта
   //  @SerializedName("windchill_c") val windchillC: Double, // Ощущаемая температура ветра в градусах Цельсия
   //  @SerializedName("windchill_f") val windchillF: Double, // Ощущаемая температура ветра в градусах Фаренгейта
   //  @SerializedName("heatindex_c") val heatindexC: Double, // Температурный индекс в градусах Цельсия

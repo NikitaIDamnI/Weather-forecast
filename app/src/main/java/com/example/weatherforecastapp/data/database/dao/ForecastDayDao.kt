@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.data.database.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -13,11 +14,8 @@ interface ForecastDayDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(forecastDaysDb: ForecastDaysDb)
 
-    @Query("DELETE FROM forecast_day WHERE id =:id")
-    suspend fun deleteForecastDay(id: Int)
-
     @Query("SELECT * FROM forecast_day WHERE id = :id")
-    fun getForecastDay(id:Int):  ForecastDaysDb
+    fun getForecastDay(id:Int): LiveData<ForecastDaysDb>
 
 
 }

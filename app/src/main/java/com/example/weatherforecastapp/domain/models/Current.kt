@@ -9,6 +9,7 @@ data class Current(
     val temp_c: Double, // Температура в градусах Цельсия
     val is_day: Int, // Показывает, является ли сейчас день (1 - да, 0 - нет)
     val currentDay: Day,
+    val weatherParameter : List<WeatherParameter>,
     val astro: Astro,
     val condition: Condition, // Объект, содержащий текстовое описание погодных условий, иконку и код состояния
 

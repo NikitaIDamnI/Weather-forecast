@@ -6,8 +6,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "location")
 data class LocationDb(
-    @ColumnInfo(name = "location_id")
-    @PrimaryKey
+    @ColumnInfo(name = "position_id")
+    @PrimaryKey()
+    val positionId:Int,
     val id: Int ,
     val name: String,
     val last_updated_epoch: Long,
@@ -23,6 +24,7 @@ data class LocationDb(
     val condition_icon: String,
     val condition_code: Int
 ) {
+
     companion object {
         const val START_ID = 0
     }

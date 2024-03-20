@@ -1,4 +1,4 @@
-package com.example.weatherforecastapp
+package com.example.weatherforecastapp.presentation.activity
 
 import android.content.Context
 import android.content.Intent
@@ -20,9 +20,11 @@ class ActivityPreview : AppCompatActivity() {
 
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
 
         binding.button.setOnClickListener {
 
@@ -55,7 +57,7 @@ class ActivityPreview : AppCompatActivity() {
 
     }
 companion object{
-    fun newInstance(context: Context) = Intent(context,ActivityPreview::class.java)
+    fun newInstance(context: Context) = Intent(context, ActivityPreview::class.java)
 
 }
 }

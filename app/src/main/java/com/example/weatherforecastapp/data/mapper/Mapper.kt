@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.data.mapper
 
 import com.example.testapi.network.model.forecastdaysModels.ForecastDayDto
+import com.example.testapi.network.model.forecastdaysModels.HourDto
 import com.example.testapi.network.model.searchCityModels.SearchCityDto
 import com.example.weatherforecastapp.data.database.models.CityDb
 import com.example.weatherforecastapp.data.database.models.CurrentDb
@@ -13,23 +14,28 @@ import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.Day
 import com.example.weatherforecastapp.domain.models.ForecastDay
+import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
+import com.example.weatherforecastapp.domain.models.WeatherParameter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 class Mapper {
 
 
-    fun mapperCityDtoToCurrentDb(id: Int, cityDto: CityDto) = CurrentDb(
-        id = id,
+    fun mapperCityDtoToCurrentDb(cityDto: CityDto, positionId: Int) = CurrentDb(
+        id = positionId,
         nameCity = cityDto.locationDto.name,
-        date = cityDto.forecast.days[0].date,
-        last_updated_epoch = cityDto.currentDto.last_updated_epoch,
-        last_updated = cityDto.currentDto.last_updated,
-        temp_c = cityDto.currentDto.temp_c,
-        is_day = cityDto.currentDto.is_day,
+        date = formatTime(cityDto.currentDto.lastUpdatedEpoch),
+        last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
+        last_updated = cityDto.currentDto.lastUpdated,
+        temp_c = cityDto.currentDto.temperatureCelsius,
+        is_day = cityDto.currentDto.isDay,
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.maxtempC,
         day_avgtempC = cityDto.forecast.days[0].day.avgvisKm,
@@ -53,17 +59,29 @@ class Mapper {
         condition_text = cityDto.forecast.days[0].day.condition.text,
         condition_icon = cityDto.forecast.days[0].day.condition.icon,
         condition_code = cityDto.forecast.days[0].day.condition.code,
+        param_windKph = cityDto.currentDto.windKph,
+        param_windDegree = cityDto.currentDto.windDegree,
+        param_pressureIn = cityDto.currentDto.pressureIn,
+        param_precipitationMm = cityDto.currentDto.precipitationMm,
+        param_humidity = cityDto.currentDto.humidity,
+        param_cloud = cityDto.currentDto.cloud,
+        param_feelsLikeCelsius = cityDto.currentDto.feelsLikeCelsius,
+        param_visibilityKm = cityDto.currentDto.visibilityKm,
+        param_uvIndex = cityDto.currentDto.uvIndex,
+        param_gustKph = cityDto.currentDto.gustKph,
     )
 
     fun mapperCityDtoToLocationDb(
         id: Int,
         cityDto: CityDto,
         position: String? = "",
+        positionId: Int
     ) = LocationDb(
         id = id,
+        positionId = positionId,
         name = cityDto.locationDto.name,
-        last_updated_epoch = cityDto.currentDto.last_updated_epoch,
-        temp_c = cityDto.currentDto.temp_c,
+        last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
+        temp_c = cityDto.currentDto.temperatureCelsius,
         localtime = cityDto.locationDto.localtime,
         region = cityDto.locationDto.region,
         country = cityDto.locationDto.country,
@@ -76,11 +94,11 @@ class Mapper {
         condition_code = cityDto.forecast.days[0].day.condition.code,
     )
 
-    fun mapperCityDtoToForecastDaysDb(id: Int, cityDto: CityDto): ForecastDaysDb {
+    fun mapperCityDtoToForecastDaysDb(cityDto: CityDto, positionId: Int): ForecastDaysDb {
         val forecastDays = cityDto.forecast.days
         val json = Gson().toJson(forecastDays)
         return ForecastDaysDb(
-            id = id,
+            id = positionId,
             nameCity = cityDto.locationDto.name,
             json = json
         )
@@ -88,8 +106,54 @@ class Mapper {
 
     fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb): List<ForecastDay> {
         val type = object : TypeToken<List<ForecastDayDto>>() {}.type
-        return Gson().fromJson(forecastDaysDb.json, type)
+        val dbModel = Gson().fromJson<List<ForecastDayDto>>(forecastDaysDb.json, type)
+        return dbModel.map { mapperForecastDaysDtoToEntityForecastDays(it, forecastDaysDb) }
     }
+
+    private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
+        ForecastDay(
+            nameCity = db.nameCity,
+            date = dto.date,
+            dateEpoch = dto.dateEpoch,
+            days = Day(
+                maxtempC = dto.day.maxtempC,
+                mintempC = dto.day.mintempC,
+                avgtempC = dto.day.avgtempC,
+                maxwindKph = dto.day.maxwindKph,
+                totalprecipMm = dto.day.totalprecipMm,
+                totalsnowCm = dto.day.totalsnowCm,
+                avgvisKm = dto.day.avgvisKm,
+                avghumidity = dto.day.avghumidity,
+                dailyWillItRain = dto.day.dailyWillItRain,
+                dailyChanceOfRain = dto.day.dailyChanceOfRain,
+                dailyWillItSnow = dto.day.dailyWillItSnow,
+                dailyChanceOfSnow = dto.day.dailyChanceOfSnow,
+                condition = Condition(
+                    text = dto.day.condition.text,
+                    icon = dto.day.condition.icon,
+                    code = dto.day.condition.code,
+                ),
+            ),
+            astro = Astro(
+                sunrise = dto.astro.sunrise,
+                sunset = dto.astro.sunset,
+                moonrise = dto.astro.moonrise,
+                moonset = dto.astro.moonset,
+                moonPhase = dto.astro.moonPhase,
+                moonIllumination = dto.astro.moonIllumination,
+                isMoonUp = dto.astro.isMoonUp,
+                isSunUp = dto.astro.isSunUp,
+            ),
+            forecastHour = dto.hour.map { mapperHourDtoToEntity(it) },
+        )
+
+    private fun mapperHourDtoToEntity(dto: HourDto) = ForecastHour(
+        time = dto.time,
+        temp_c = dto.tempC,
+        is_day = dto.isDay,
+        condition = dto.condition,
+        feelslike_c = dto.feelslikeC,
+    )
 
     fun mapperLocationDbToEntityLocation(locationDb: LocationDb) = Location(
         name = locationDb.name,
@@ -146,7 +210,55 @@ class Mapper {
             icon = currentDb.condition_icon,
             code = currentDb.condition_code,
         ),
+        weatherParameter = getWeatherParameter(currentDb),
     )
+
+
+    private fun getWeatherParameter(currentDb: CurrentDb): List<WeatherParameter> {
+        val windKph = WeatherParameter(
+            value = currentDb.param_windKph, name = "Wind", unit = WeatherParameter.VALUE_KM_H,
+        )
+        val windDegree = WeatherParameter(
+            value = currentDb.param_windDegree.toDouble(),
+            name = "Wind Degree", unit = WeatherParameter.VALUE_DEGREE,
+        )
+        val pressureIn = WeatherParameter(
+            value = currentDb.param_pressureIn,
+            name = "Pressure", unit = WeatherParameter.VALUE_MM_HG
+        )
+        val precipitation = WeatherParameter(
+            value = currentDb.param_precipitationMm,
+            name = "Precipitation", unit = WeatherParameter.VALUE_MM
+        )
+        val humidity = WeatherParameter(
+            value = currentDb.param_humidity.toDouble(),
+            name = "Humidity", unit = WeatherParameter.VALUE_PERCENT
+        )
+        val cloud = WeatherParameter(
+            value = currentDb.param_cloud.toDouble(),
+            name = "Cloud", unit = WeatherParameter.VALUE_PERCENT
+        )
+        val feelsLikeCelsius = WeatherParameter(
+            value = currentDb.param_feelsLikeCelsius,
+            name = "Feels Like", unit = WeatherParameter.VALUE_DEGREE
+        )
+        val visibilityKm = WeatherParameter(
+            value = currentDb.param_visibilityKm,
+            name = "Visibility", unit = WeatherParameter.VALUE_KM_H
+        )
+        val uvIndex = WeatherParameter(
+            value = currentDb.param_uvIndex,
+            name = "UV Index", unit = WeatherParameter.NOT_VALUE
+        )
+        val gustKph = WeatherParameter(
+            value = currentDb.param_gustKph,
+            name = "Gust", unit = WeatherParameter.VALUE_KM_H
+        )
+        return mutableListOf<WeatherParameter>(
+            feelsLikeCelsius, windKph, windDegree, visibilityKm, humidity, cloud, precipitation,
+            pressureIn, gustKph, uvIndex
+        )
+    }
 
 
     fun mapperSearchCityDtoToEntitySearchCity(searchCityDto: SearchCityDto) = SearchCity(
@@ -154,14 +266,21 @@ class Mapper {
         name = searchCityDto.name,
         region = searchCityDto.region,
         country = searchCityDto.country,
+        lat = searchCityDto.lat,
+        lon = searchCityDto.lon,
     )
 
 
     fun mapperCityDbToEntityCity(cityDb: CityDb) = City(
         id = cityDb.id,
         location = mapperLocationDbToEntityLocation(cityDb.locationDb),
-        currentDto = mapperCurrentDbToEntityCurrent(cityDb.currentDb),
-        forecastDay = mapperForecastDaysDbToEntityForecastDays(cityDb.forecastDaysDb)
+        current = mapperCurrentDbToEntityCurrent(cityDb.currentDb),
+        forecastDays = mapperForecastDaysDbToEntityForecastDays(cityDb.forecastDaysDb)
     )
 
+    private fun formatTime(epochTime: Long): String {
+        val dateFormat = SimpleDateFormat("EEEE, d MMM yyyy", Locale.ENGLISH)
+        val date = Date(epochTime * 1000)
+        return dateFormat.format(date)
+    }
 }

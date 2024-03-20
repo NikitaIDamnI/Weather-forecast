@@ -3,19 +3,18 @@ package com.example.weatherforecastapp.data.repository
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
+import androidx.lifecycle.MediatorLiveData
 import com.example.testapi.network.ApiFactory
 import com.example.testapi.network.ApiService
 import com.example.weatherforecastapp.data.database.AppDatabase
-import com.example.weatherforecastapp.data.database.models.CityDb
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
 import com.example.weatherforecastapp.domain.models.City
+import com.example.weatherforecastapp.domain.models.Current
+import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
-import kotlinx.coroutines.delay
 
 class RepositoryDataImpl(
     context: Application
@@ -26,32 +25,54 @@ class RepositoryDataImpl(
     private val forecastDayDao = AppDatabase.getInstance(context).forecastDayDao()
     private val locationDao = AppDatabase.getInstance(context).locationDao()
 
+    var upDate: ((Boolean) -> Unit)? = null
 
-    override suspend fun saveUserLocation(position: Position) {
+
+    override suspend fun saveUserLocation(position: Position): Boolean {
         val datePosition = locationDao.checkPosition(CURRENT_LOCATION_ID) ?: NO_POSITION
         Log.d("Repository_Log", "saveUserLocation($position) datePosition| $datePosition")
         //if(datePosition.position != position.position) {
-        writingToDatabase(datePosition, position, CURRENT_LOCATION_ID)
+        writingAPItoDatabase(datePosition, position, POSITION_ID_START)
+       // addNewCity(searchCity("Костанай")[0])
+        // addNewCity(searchCity("Курган")[0])
+        weatherUpdate()
+        // writingAPItoDatabase(datePosition, position, POSITION_ID_START)
         // }
+        Log.d("Repository_Log", "saveUserLocation ")
+        return true
     }
 
 
     override suspend fun addNewCity(searchCity: SearchCity) {
-        val datePosition = locationDao.checkCity(searchCity.id) ?: NO_POSITION
+        val positionId = locationDao.getSumPosition()
+        val datePosition = locationDao.checkPosition(searchCity.id) ?: NO_POSITION
         val time = System.currentTimeMillis() / 1000
-        val thisPosition = Position(searchCity.id, searchCity.name, time)
-        writingToDatabase(datePosition, thisPosition, searchCity.id)
+        val searchPosition = "${searchCity.lat},${searchCity.lon}"
+        val thisPosition = Position(searchCity.id, searchPosition, time)
+        writingAPItoDatabase(datePosition, thisPosition, positionId)
     }
 
     private suspend fun weatherUpdate() { // WORKER
         val dataListLocation = locationDao.getAllLocations()
         val time = System.currentTimeMillis() / 1000
+        var positionId = POSITION_ID_START
+
         for (location in dataListLocation) {
-            val thisPosition = Position(location.id, location.name, time)
-            val datePosition = Position(location.id, location.name, location.last_updated_epoch)
-            writingToDatabase(datePosition, thisPosition, location.id)
+            val thisPosition = Position(location.id, location.position, time)
+            val datePosition = Position(location.id, location.position, location.last_updated_epoch)
+
+            //  Log.d("Repository_Log", "weatherUpdate thisPosition -$thisPosition ||" + "datePosition| $datePosition" + " positionId | $positionId")
+            writingAPItoDatabase(datePosition, thisPosition, positionId)
+            positionId += POSITION_ID_NEXT
         }
+        upDate?.invoke(true)
     }
+
+
+    override suspend fun numberOfCities(): Int {
+        return locationDao.getSumPosition()
+    }
+
 
     override suspend fun searchCity(city: String): List<SearchCity> {
         val searchCity = apiService.searchCity(city = city)
@@ -62,58 +83,69 @@ class RepositoryDataImpl(
         locationDao.deleteLocation(cityId)
     }
 
-    override suspend fun getCity(cityId: Int): LiveData<City> {
+    override fun getCity(cityId: Int): LiveData<City> {
+        val locationLiveDataDb = locationDao.getLocation(cityId)
+        val currentLiveDataDb = currentDao.getCurrent(cityId)
+        val forecastDayLiveDataDb = forecastDayDao.getForecastDay(cityId)
 
-        val cityDb = CityDb(
-            id = cityId,
-            locationDb = locationDao.getLocation(cityId),
-            currentDb = currentDao.getCurrent(cityId),
-            forecastDaysDb = forecastDayDao.getForecastDay(cityId)
-        )
-
-        return MutableLiveData<City>().map {
-            mapper.mapperCityDbToEntityCity(cityDb)
+        val currentLiveData = MediatorLiveData<Current>().apply {
+            addSource(currentLiveDataDb) {
+                if (it != null) {
+                    value = mapper.mapperCurrentDbToEntityCurrent(it)
+                }
+            }
         }
+        val locationLiveData = MediatorLiveData<Location>().apply {
+            addSource(locationLiveDataDb) {
+                if (it != null) {
+                    value = mapper.mapperLocationDbToEntityLocation(it)
+                }
+            }
+        }
+        val forecastDayLiveData = MediatorLiveData<List<ForecastDay>>().apply {
+            addSource(forecastDayLiveDataDb) {
+                if (it != null) {
+                    value = mapper.mapperForecastDaysDbToEntityForecastDays(it)
+                }
+            }
+        }
+        Log.d("Repository_Log", "getCity ")
+
+        return CityLiveData(cityId,locationLiveData,currentLiveData,forecastDayLiveData)
     }
 
-    override suspend fun getLocation(): List<Location> {
+    override suspend fun getLocations(): List<Location> {
         TODO("Not yet implemented")
     }
 
 
-    private suspend fun writingToDatabase(
+    private suspend fun writingAPItoDatabase(
         datePosition: Position,
         thisPosition: Position,
-        id: Int,
+        positionId: Int
     ) {
         if (checkingForUpdates(datePosition, thisPosition)) {
-            var loading = true
-            while (loading) {
-                try {
-                    val city = apiService.forecastDays(city = thisPosition.position)
-                    locationDao.insert(
-                        mapper.mapperCityDtoToLocationDb(
-                            id = id,
-                            cityDto = city,
-                            position = thisPosition.position,
-                        )
-                    )
-                    currentDao.insert(
-                        mapper.mapperCityDtoToCurrentDb(
-                            id = id, cityDto = city
-                        )
-                    )
-                    val forecastItem = mapper.mapperCityDtoToForecastDaysDb(
-                        id = id, cityDto = city
-                    )
-                    Log.d("Repository_Log", "forecastItem|$forecastItem")
-                    forecastDayDao.insert(forecastItem)
-                    loading = false
-                } catch (e: Exception) {
-                    Log.d("Repository_Log", "searchCity(${thisPosition.position})")
-                }
-                delay(2000)
-            }
+            val city = apiService.forecastDays(city = thisPosition.position)
+            // Log.d("Repository_Log", "writingAPItoDatabase|$city")
+
+            locationDao.insert(
+                mapper.mapperCityDtoToLocationDb(
+                    id = thisPosition.id,
+                    cityDto = city,
+                    position = "${city.locationDto.lat},${city.locationDto.lon}",
+                    positionId = positionId
+                )
+            )
+            currentDao.insert(
+                mapper.mapperCityDtoToCurrentDb(
+                    positionId = positionId, cityDto = city
+                )
+            )
+            val forecastItem = mapper.mapperCityDtoToForecastDaysDb(
+                positionId = positionId, cityDto = city
+            )
+            forecastDayDao.insert(forecastItem)
+
             Log.d("Repository_Log", "saveUserLocation = finish")
         } else {
             Log.d("Repository_Log", "not_update")
@@ -125,8 +157,7 @@ class RepositoryDataImpl(
         datePosition: Position,
         thisPosition: Position
     ): Boolean {
-
-        val updateTime = datePosition.timeEpoch.let { +UPDATE_TIME }
+        val updateTime = datePosition.timeEpoch + UPDATE_TIME
         return (datePosition.position != thisPosition.position
                 || updateTime < thisPosition.timeEpoch && updateTime.toInt() != UPDATE_TIME)
     }
@@ -135,7 +166,11 @@ class RepositoryDataImpl(
     companion object {
         const val CURRENT_LOCATION_ID = 0
         const val UPDATE_TIME = 3600
+        const val POSITION_ID_START = 0
+        const val POSITION_ID_NEXT = 1
 
         val NO_POSITION = Position(-1, "", 0)
     }
+
+
 }

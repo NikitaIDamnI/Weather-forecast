@@ -59,7 +59,7 @@
         tools:text="TORONTO" />
 
     <TextView
-        android:id="@+id/tv_day"
+        android:id="@+id/tv_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
@@ -103,7 +103,6 @@
                     android:id="@+id/tv_degree"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
                     android:layout_marginTop="50dp"
                     android:fontFamily="sans-serif-light"
                     android:gravity="start"
@@ -111,6 +110,7 @@
                     android:textSize="150sp"
                     android:textStyle="normal"
                     app:layout_constraintEnd_toStartOf="@+id/progressBar3"
+                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:text="- 7°" />
@@ -122,18 +122,20 @@
                     android:fontFamily="@font/cambay"
                     android:gravity="start"
                     android:textColor="@color/colore_text"
-                    android:textSize="20sp"
+                    android:textSize="15sp"
                     android:textStyle="normal"
+                    app:layout_constraintEnd_toEndOf="@+id/tv_degree"
+                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toEndOf="@+id/im_weather"
                     app:layout_constraintTop_toTopOf="@+id/im_weather"
-                    tools:text="Snowing" />
+                    tools:text="Patchy rain nearby" />
 
 
                 <ImageView
                     android:id="@+id/im_weather"
-                    android:layout_width="73dp"
-                    android:layout_height="63dp"
-                    app:layout_constraintStart_toStartOf="@+id/tv_degree"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tv_degree"
                     app:srcCompat="@drawable/ic_launcher_foreground" />
 

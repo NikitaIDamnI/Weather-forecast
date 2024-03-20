@@ -1,13 +1,13 @@
 package com.example.weatherforecastapp.domain.repisitoryData.UseCase
 
-import com.example.weatherforecastapp.data.database.models.Position
+import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 
-class UseCaseSaveUserLocation (
+class UseCaseGetLocations (
     private val repositoryData: RepositoryData
 ){
-    suspend operator fun invoke(position: Position){
-        repositoryData.saveUserLocation(position)
+    suspend operator fun invoke(): List<Location>{
+        return repositoryData.getLocations()
 
     }
 }
