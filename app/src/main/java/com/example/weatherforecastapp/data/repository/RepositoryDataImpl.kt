@@ -9,7 +9,6 @@ import com.example.testapi.network.ApiService
 import com.example.weatherforecastapp.data.database.AppDatabase
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
-import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.Location
@@ -33,8 +32,9 @@ class RepositoryDataImpl(
         Log.d("Repository_Log", "saveUserLocation($position) datePosition| $datePosition")
         //if(datePosition.position != position.position) {
         writingAPItoDatabase(datePosition, position, POSITION_ID_START)
-       // addNewCity(searchCity("Костанай")[0])
+        //addNewCity(searchCity("Костанай")[0])
         // addNewCity(searchCity("Курган")[0])
+       //deleteCity(2)
         weatherUpdate()
         // writingAPItoDatabase(datePosition, position, POSITION_ID_START)
         // }
@@ -83,36 +83,41 @@ class RepositoryDataImpl(
         locationDao.deleteLocation(cityId)
     }
 
-    override fun getCity(cityId: Int): LiveData<City> {
-        val locationLiveDataDb = locationDao.getLocation(cityId)
-        val currentLiveDataDb = currentDao.getCurrent(cityId)
-        val forecastDayLiveDataDb = forecastDayDao.getForecastDay(cityId)
-
-        val currentLiveData = MediatorLiveData<Current>().apply {
-            addSource(currentLiveDataDb) {
-                if (it != null) {
-                    value = mapper.mapperCurrentDbToEntityCurrent(it)
-                }
-            }
-        }
-        val locationLiveData = MediatorLiveData<Location>().apply {
+    override fun gerLocation(id: Int): LiveData<Location> {
+        val locationLiveDataDb = locationDao.getLocation(id)
+        return MediatorLiveData<Location>().apply {
             addSource(locationLiveDataDb) {
                 if (it != null) {
                     value = mapper.mapperLocationDbToEntityLocation(it)
                 }
             }
         }
-        val forecastDayLiveData = MediatorLiveData<List<ForecastDay>>().apply {
+    }
+
+    override fun getCurrentDay(id: Int): LiveData<Current> {
+        val currentLiveDataDb = currentDao.getCurrent(id)
+
+        return MediatorLiveData<Current>().apply {
+            addSource(currentLiveDataDb) {
+                if (it != null) {
+                    value = mapper.mapperCurrentDbToEntityCurrent(it)
+                }
+            }
+        }
+    }
+
+    override fun forecastDas(id: Int): LiveData<List<ForecastDay>> {
+        val forecastDayLiveDataDb = forecastDayDao.getForecastDay(id)
+
+        return MediatorLiveData<List<ForecastDay>>().apply {
             addSource(forecastDayLiveDataDb) {
                 if (it != null) {
                     value = mapper.mapperForecastDaysDbToEntityForecastDays(it)
                 }
             }
         }
-        Log.d("Repository_Log", "getCity ")
-
-        return CityLiveData(cityId,locationLiveData,currentLiveData,forecastDayLiveData)
     }
+
 
     override suspend fun getLocations(): List<Location> {
         TODO("Not yet implemented")
