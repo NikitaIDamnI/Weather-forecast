@@ -98,7 +98,7 @@ class Mapper {
         return ForecastDaysDb(
             id = positionId,
             nameCity = cityDto.locationDto.name,
-            timeLocation = cityDto.locationDto.localtime,
+            timeLocation = cityDto.locationDto.localtime.split(" ")[1],
             json = json
         )
     }
@@ -112,7 +112,7 @@ class Mapper {
     private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
         ForecastDay(
             nameCity = db.nameCity,
-            timeLocation = db.timeLocation.split(" ")[1],
+            timeLocation = db.timeLocation,
             date = dto.date,
             dateEpoch = dto.dateEpoch,
             days = Day(
