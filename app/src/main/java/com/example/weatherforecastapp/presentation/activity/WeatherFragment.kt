@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
+import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
 
@@ -42,20 +43,21 @@ class WeatherFragment : Fragment() {
     }
 
     private fun initView() = with(binding) {
+        val adapterCurrent = CurrentAdapter(requireContext())
         viewModel.city.observe(viewLifecycleOwner, Observer {
+            adapterCurrent.submitList(it.forecastDays.get(0).forecastHour)
             tvCity.text = it.location.name
             tvData.text = it.current.date
             tvDegree.text = it.current.temp_c.toInt().toString()
             tvCondition.text = it.current.condition.text
-            Picasso.get().load("https:"+it.current.condition.icon).into(imWeather)
-            rvCurrentDay
+            Picasso.get().load(it.current.condition.icon).into(imWeather)
+            rvCurrentDay.adapter = adapterCurrent
             rvPrecipitation
             rvForecastFor10Days
-
         })
-
-
     }
+
+
 
     private fun parseArgument(): Int {
         return requireArguments().getInt(KEY_ID_CITY)
