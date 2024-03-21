@@ -37,4 +37,6 @@ class CurrentAdapter(
         val format = time.split(" ")
         return format[1]
     }
+
+
 }

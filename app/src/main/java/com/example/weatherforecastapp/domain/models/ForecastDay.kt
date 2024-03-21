@@ -2,6 +2,7 @@ package com.example.weatherforecastapp.domain.models
 
 data class ForecastDay(
     val nameCity: String,
+    val timeLocation: String,
     val date: String, // Дата прогноза
     val dateEpoch: Long, // Дата прогноза в формате Unix Epoch
     val days: Day, // Прогноз на день

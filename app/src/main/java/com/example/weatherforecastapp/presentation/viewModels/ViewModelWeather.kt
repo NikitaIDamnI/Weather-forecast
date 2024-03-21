@@ -1,45 +1,61 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.data.gps.LocationRepositoryImpl
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
-import com.example.weatherforecastapp.domain.models.City
+import com.example.weatherforecastapp.domain.models.Current
+import com.example.weatherforecastapp.domain.models.ForecastDay
+import com.example.weatherforecastapp.domain.models.ForecastHour
+import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasNumberOfCities
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCity
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import java.util.Timer
+import java.util.TimerTask
 
-class ViewModelWeather( application: Application) : AndroidViewModel(application) {
+
+class ViewModelWeather(application: Application) : AndroidViewModel(application) {
 
     private val repository = RepositoryDataImpl(application)
     private val repositoryLocal = LocationRepositoryImpl(application)
-    private val useCaseGetCity = UseCaseGetCity(repository)
     private val useCaseCheckLocation = UseCaseCheckLocation(repositoryLocal)
     private val useCasNumberOfCities = UseCasNumberOfCities(repository)
 
-
-    val city = MutableLiveData<City>()
+    var time = MutableLiveData<String>()
+    private var localTime: String? = ""
+    val location = MutableLiveData<Location>()
+    val current = MutableLiveData<Current>()
+    val forecastDay = MutableLiveData<List<ForecastDay>>()
     var sizeCity = MutableLiveData<Int>(MIN_SIZE_CITY)
 
     init {
         numberOfCities()
-
     }
 
     fun getCity(cityId: Int) {
-        useCaseGetCity.invoke(cityId).observeForever {
-            if (it != city.value) {
-                city.value = it
-                Log.d("ViewModelWeather", "useCaseGetCity - ${it.location.name}")
-                if (city.value != null) {
-                    Log.d("ViewModelWeather", "ViewModel - ${city.value?.location?.name}")
-                }
-            }
+        repository.gerLocation(cityId).observeForever {
+            location.value = it
         }
+        repository.getCurrentDay(cityId).observeForever {
+            current.value = it
+        }
+        repository.forecastDas(cityId).observeForever {
+            forecastDay.value = it
+
+        }
+    }
+
+    fun getWeatherHour(forecastDay: ForecastDay): List<ForecastHour> {
+       val startIndex = forecastDay.timeLocation.split(":")[0].toInt()
+        val list = forecastDay.forecastHour
+        return list.slice(startIndex until list.size)
     }
 
     private fun numberOfCities() {
@@ -50,9 +66,33 @@ class ViewModelWeather( application: Application) : AndroidViewModel(application
     }
 
 
+    private fun startTime(timeLocation: String) {
+        val timer = Timer()
+
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                if(localTime == "") {
+                    val currentTimeMiles = System.currentTimeMillis()
+                    time.postValue(formatTime(currentTimeMiles))
+                }else{
+
+                }
+
+            }
+        }, 0, 10000)
+    }
+
+
     fun checkLocation() {
         useCaseCheckLocation.invoke()
     }
+
+    private fun formatTime(timeEpochMillis: Long): String {
+        val instant = Instant.ofEpochMilli(timeEpochMillis)
+        val formatter = DateTimeFormatter.ofPattern("HH:mm:ss").withLocale(Locale.ENGLISH)
+        return formatter.format(instant.atZone(ZoneId.systemDefault()))
+    }
+
 
     companion object {
         const val MIN_SIZE_CITY = 1

@@ -3,13 +3,11 @@ package com.example.weatherforecastapp.data.mapper
 import com.example.testapi.network.model.forecastdaysModels.ForecastDayDto
 import com.example.testapi.network.model.forecastdaysModels.HourDto
 import com.example.testapi.network.model.searchCityModels.SearchCityDto
-import com.example.weatherforecastapp.data.database.models.CityDb
 import com.example.weatherforecastapp.data.database.models.CurrentDb
 import com.example.weatherforecastapp.data.database.models.ForecastDaysDb
 import com.example.weatherforecastapp.data.database.models.LocationDb
 import com.example.weatherforecastapp.data.network.model.CityDto
 import com.example.weatherforecastapp.domain.models.Astro
-import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.Day
@@ -100,6 +98,7 @@ class Mapper {
         return ForecastDaysDb(
             id = positionId,
             nameCity = cityDto.locationDto.name,
+            timeLocation = cityDto.locationDto.localtime,
             json = json
         )
     }
@@ -113,6 +112,7 @@ class Mapper {
     private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
         ForecastDay(
             nameCity = db.nameCity,
+            timeLocation = db.timeLocation.split(" ")[1],
             date = dto.date,
             dateEpoch = dto.dateEpoch,
             days = Day(
@@ -275,12 +275,7 @@ class Mapper {
     )
 
 
-    fun mapperCityDbToEntityCity(cityDb: CityDb) = City(
-        id = cityDb.id,
-        location = mapperLocationDbToEntityLocation(cityDb.locationDb),
-        current = mapperCurrentDbToEntityCurrent(cityDb.currentDb),
-        forecastDays = mapperForecastDaysDbToEntityForecastDays(cityDb.forecastDaysDb)
-    )
+
 
     private fun formatTime(epochTime: Long): String {
         val dateFormat = SimpleDateFormat("EEEE, d MMM yyyy", Locale.ENGLISH)

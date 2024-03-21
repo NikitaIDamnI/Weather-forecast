@@ -4,8 +4,11 @@ import PagerAdapter
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.data.gps.PermissionsLauncher
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
@@ -29,31 +32,58 @@ class ActivityWeather : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         initial()
-        //viewModel.getCity(parseArg())
+        viewModel.getCity(1)
     }
 
     private fun initial() {
+        animationToolbar()
+        binding.bMenu.setOnClickListener {
+            val intent = ActivityPreview.newInstance(this)
+            startActivity(intent)
+        }
         viewModel.sizeCity.observe(this) {
-            binding.viewPager.adapter = PagerAdapter(this, it)
+            val pager = PagerAdapter(this, it)
 
-            TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-                when (position) {
-                    0 -> {
-                        tab.setIcon(R.drawable.ic_nav)
+            with(binding) {
+                viewPager.adapter = pager
+                viewPager.setCurrentItem(parseArg(), false)
+                val animation = AnimationUtils.loadAnimation(
+                    this@ActivityWeather,
+                    com.google.android.material.R.anim.abc_popup_enter
+                )
+                viewPager.startAnimation(animation)
+                TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+                    when (position) {
+                        0 -> {
+                            tab.setIcon(R.drawable.ic_nav)
+                        }
 
+                        else -> {
+                            tab.setIcon(R.drawable.ic_tochka)
+                        }
                     }
+                }.attach()
 
-                    else -> {
-                        tab.setIcon(R.drawable.ic_tochka)
-                    }
-                }
-            }.attach()
 
-            binding.bMenu.setOnClickListener {
-                val intent = ActivityPreview.newInstance(this)
-                startActivity(intent)
+                viewPager.visibility = View.VISIBLE
+                //binding.cardToolbar.visibility = View.VISIBLE
             }
         }
+
+    }
+
+    fun animationToolbar() = with(binding){
+        cardToolbar.alpha = 0f
+        viewPager.registerOnPageChangeCallback(object :ViewPager2.OnPageChangeCallback(){
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                root.visibility = View.VISIBLE
+                cardToolbar.animate()
+                    .alpha(1f)
+                    .setDuration(500)
+                    .start()
+            }
+        })
     }
 
 

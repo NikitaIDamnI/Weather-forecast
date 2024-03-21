@@ -17,5 +17,6 @@ data class ForecastDaysDb(
     @PrimaryKey
     val id: Int ,
     val nameCity: String,
+    val timeLocation: String,
     val json: String,
 )

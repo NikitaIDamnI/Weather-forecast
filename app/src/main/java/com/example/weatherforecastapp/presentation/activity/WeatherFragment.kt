@@ -38,25 +38,36 @@ class WeatherFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initView()
-
+        initCurrent()
+        initForecast()
     }
 
-    private fun initView() = with(binding) {
+
+    private fun initCurrent() {
+        with(binding) {
+            viewModel.current.observe(viewLifecycleOwner, Observer {
+
+                tvCity.text = it.nameCity
+                tvData.text = it.date
+                tvDegree.text = it.temp_c.toInt().toString()
+                tvCondition.text = it.condition.text
+                Picasso.get().load(it.condition.icon).into(imWeather)
+
+            })
+
+        }
+    }
+
+    private fun initForecast() {
         val adapterCurrent = CurrentAdapter(requireContext())
-        viewModel.city.observe(viewLifecycleOwner, Observer {
-            adapterCurrent.submitList(it.forecastDays.get(0).forecastHour)
-            tvCity.text = it.location.name
-            tvData.text = it.current.date
-            tvDegree.text = it.current.temp_c.toInt().toString()
-            tvCondition.text = it.current.condition.text
-            Picasso.get().load(it.current.condition.icon).into(imWeather)
-            rvCurrentDay.adapter = adapterCurrent
-            rvPrecipitation
-            rvForecastFor10Days
+        viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
+            with(binding) {
+                //val list = viewModel.getWeatherHour(it[0])
+                adapterCurrent.submitList(it[0].forecastHour)
+                rvCurrentDay.adapter = adapterCurrent
+            }
         })
     }
-
 
 
     private fun parseArgument(): Int {
