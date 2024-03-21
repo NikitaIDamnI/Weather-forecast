@@ -1,6 +1,6 @@
 package com.example.weatherforecastapp.domain.models
 
-data class WeatherParameter(
+data class WeatherPrecipitation(
     val name: String,
     val value: Double,
     val maxValue: Int = MAX_VALUE,

@@ -17,7 +17,7 @@ import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
-import com.example.weatherforecastapp.domain.models.WeatherParameter
+import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
@@ -57,7 +57,7 @@ class Mapper {
         astro_isMoonUp = cityDto.forecast.days[0].astro.isSunUp,
         astro_isSunUp = cityDto.forecast.days[0].astro.isSunUp,
         condition_text = cityDto.forecast.days[0].day.condition.text,
-        condition_icon = cityDto.forecast.days[0].day.condition.icon,
+        condition_icon = HTTPS_TEG+cityDto.forecast.days[0].day.condition.icon,
         condition_code = cityDto.forecast.days[0].day.condition.code,
         param_windKph = cityDto.currentDto.windKph,
         param_windDegree = cityDto.currentDto.windDegree,
@@ -90,7 +90,7 @@ class Mapper {
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.mintempC,
         condition_text = cityDto.forecast.days[0].day.condition.text,
-        condition_icon = cityDto.forecast.days[0].day.condition.icon,
+        condition_icon = HTTPS_TEG+cityDto.forecast.days[0].day.condition.icon,
         condition_code = cityDto.forecast.days[0].day.condition.code,
     )
 
@@ -130,7 +130,7 @@ class Mapper {
                 dailyChanceOfSnow = dto.day.dailyChanceOfSnow,
                 condition = Condition(
                     text = dto.day.condition.text,
-                    icon = dto.day.condition.icon,
+                    icon = HTTPS_TEG+dto.day.condition.icon,
                     code = dto.day.condition.code,
                 ),
             ),
@@ -151,7 +151,11 @@ class Mapper {
         time = dto.time,
         temp_c = dto.tempC,
         is_day = dto.isDay,
-        condition = dto.condition,
+        condition = Condition(
+            text = dto.condition.text,
+            icon = HTTPS_TEG+dto.condition.icon,
+            code = dto.condition.code
+        ) ,
         feelslike_c = dto.feelslikeC,
     )
 
@@ -210,51 +214,51 @@ class Mapper {
             icon = currentDb.condition_icon,
             code = currentDb.condition_code,
         ),
-        weatherParameter = getWeatherParameter(currentDb),
+        weatherPrecipitation = getWeatherParameter(currentDb),
     )
 
 
-    private fun getWeatherParameter(currentDb: CurrentDb): List<WeatherParameter> {
-        val windKph = WeatherParameter(
-            value = currentDb.param_windKph, name = "Wind", unit = WeatherParameter.VALUE_KM_H,
+    private fun getWeatherParameter(currentDb: CurrentDb): List<WeatherPrecipitation> {
+        val windKph = WeatherPrecipitation(
+            value = currentDb.param_windKph, name = "Wind", unit = WeatherPrecipitation.VALUE_KM_H,
         )
-        val windDegree = WeatherParameter(
+        val windDegree = WeatherPrecipitation(
             value = currentDb.param_windDegree.toDouble(),
-            name = "Wind Degree", unit = WeatherParameter.VALUE_DEGREE,
+            name = "Wind Degree", unit = WeatherPrecipitation.VALUE_DEGREE,
         )
-        val pressureIn = WeatherParameter(
+        val pressureIn = WeatherPrecipitation(
             value = currentDb.param_pressureIn,
-            name = "Pressure", unit = WeatherParameter.VALUE_MM_HG
+            name = "Pressure", unit = WeatherPrecipitation.VALUE_MM_HG
         )
-        val precipitation = WeatherParameter(
+        val precipitation = WeatherPrecipitation(
             value = currentDb.param_precipitationMm,
-            name = "Precipitation", unit = WeatherParameter.VALUE_MM
+            name = "Precipitation", unit = WeatherPrecipitation.VALUE_MM
         )
-        val humidity = WeatherParameter(
+        val humidity = WeatherPrecipitation(
             value = currentDb.param_humidity.toDouble(),
-            name = "Humidity", unit = WeatherParameter.VALUE_PERCENT
+            name = "Humidity", unit = WeatherPrecipitation.VALUE_PERCENT
         )
-        val cloud = WeatherParameter(
+        val cloud = WeatherPrecipitation(
             value = currentDb.param_cloud.toDouble(),
-            name = "Cloud", unit = WeatherParameter.VALUE_PERCENT
+            name = "Cloud", unit = WeatherPrecipitation.VALUE_PERCENT
         )
-        val feelsLikeCelsius = WeatherParameter(
+        val feelsLikeCelsius = WeatherPrecipitation(
             value = currentDb.param_feelsLikeCelsius,
-            name = "Feels Like", unit = WeatherParameter.VALUE_DEGREE
+            name = "Feels Like", unit = WeatherPrecipitation.VALUE_DEGREE
         )
-        val visibilityKm = WeatherParameter(
+        val visibilityKm = WeatherPrecipitation(
             value = currentDb.param_visibilityKm,
-            name = "Visibility", unit = WeatherParameter.VALUE_KM_H
+            name = "Visibility", unit = WeatherPrecipitation.VALUE_KM_H
         )
-        val uvIndex = WeatherParameter(
+        val uvIndex = WeatherPrecipitation(
             value = currentDb.param_uvIndex,
-            name = "UV Index", unit = WeatherParameter.NOT_VALUE
+            name = "UV Index", unit = WeatherPrecipitation.NOT_VALUE
         )
-        val gustKph = WeatherParameter(
+        val gustKph = WeatherPrecipitation(
             value = currentDb.param_gustKph,
-            name = "Gust", unit = WeatherParameter.VALUE_KM_H
+            name = "Gust", unit = WeatherPrecipitation.VALUE_KM_H
         )
-        return mutableListOf<WeatherParameter>(
+        return mutableListOf<WeatherPrecipitation>(
             feelsLikeCelsius, windKph, windDegree, visibilityKm, humidity, cloud, precipitation,
             pressureIn, gustKph, uvIndex
         )
@@ -282,5 +286,8 @@ class Mapper {
         val dateFormat = SimpleDateFormat("EEEE, d MMM yyyy", Locale.ENGLISH)
         val date = Date(epochTime * 1000)
         return dateFormat.format(date)
+    }
+    companion object{
+        const val HTTPS_TEG = "https:"
     }
 }
