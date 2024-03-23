@@ -23,7 +23,11 @@ class CurrentAdapter(
         val forecastHour = getItem(position)
         with(holder.binding) {
             with(forecastHour) {
-                tvTime.text = formatTime(time)
+                if (position == 0) {
+                    tvTime.text = "Сейчас"
+                }else{
+                    tvTime.text = formatTime(time)
+                }
                 val degree = temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvDegree.text = degree
                 Picasso.get().load(condition.icon).into(imWeather)

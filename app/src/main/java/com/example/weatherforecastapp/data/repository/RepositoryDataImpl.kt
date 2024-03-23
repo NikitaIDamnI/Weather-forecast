@@ -119,7 +119,7 @@ class RepositoryDataImpl(
     }
 
 
-    override suspend fun getLocations(): List<Location> {
+    override suspend fun getLocations(): LiveData<List<Location>> {
         TODO("Not yet implemented")
     }
 

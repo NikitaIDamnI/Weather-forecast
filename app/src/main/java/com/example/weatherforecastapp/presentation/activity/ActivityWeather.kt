@@ -32,13 +32,12 @@ class ActivityWeather : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         initial()
-        viewModel.getCity(1)
     }
 
     private fun initial() {
         animationToolbar()
         binding.bMenu.setOnClickListener {
-            val intent = ActivityPreview.newInstance(this)
+            val intent = ActivityAllCities.newInstance(this)
             startActivity(intent)
         }
         viewModel.sizeCity.observe(this) {

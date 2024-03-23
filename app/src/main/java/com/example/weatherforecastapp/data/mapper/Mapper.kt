@@ -222,10 +222,7 @@ class Mapper {
         val windKph = WeatherPrecipitation(
             value = currentDb.param_windKph, name = "Wind", unit = WeatherPrecipitation.VALUE_KM_H,
         )
-        val windDegree = WeatherPrecipitation(
-            value = currentDb.param_windDegree.toDouble(),
-            name = "Wind Degree", unit = WeatherPrecipitation.VALUE_DEGREE,
-        )
+
         val pressureIn = WeatherPrecipitation(
             value = currentDb.param_pressureIn,
             name = "Pressure", unit = WeatherPrecipitation.VALUE_MM_HG
@@ -244,7 +241,7 @@ class Mapper {
         )
         val feelsLikeCelsius = WeatherPrecipitation(
             value = currentDb.param_feelsLikeCelsius,
-            name = "Feels Like", unit = WeatherPrecipitation.VALUE_DEGREE
+            name = "Feels", unit = WeatherPrecipitation.VALUE_DEGREE
         )
         val visibilityKm = WeatherPrecipitation(
             value = currentDb.param_visibilityKm,
@@ -259,7 +256,7 @@ class Mapper {
             name = "Gust", unit = WeatherPrecipitation.VALUE_KM_H
         )
         return mutableListOf<WeatherPrecipitation>(
-            feelsLikeCelsius, windKph, windDegree, visibilityKm, humidity, cloud, precipitation,
+            feelsLikeCelsius, windKph,visibilityKm, humidity, cloud, precipitation,
             pressureIn, gustKph, uvIndex
         )
     }

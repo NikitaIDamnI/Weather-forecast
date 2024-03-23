@@ -10,6 +10,7 @@ import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.Location
+import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasNumberOfCities
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import kotlinx.coroutines.launch
@@ -48,12 +49,18 @@ class ViewModelWeather(application: Application) : AndroidViewModel(application)
         }
         repository.forecastDas(cityId).observeForever {
             forecastDay.value = it
+        }
+    }
 
+    fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
+        return current.weatherPrecipitation.filter {
+            (it.unit == WeatherPrecipitation.VALUE_DEGREE)
+                    || (it.unit != WeatherPrecipitation.VALUE_PERCENT && it.value > 0)
         }
     }
 
     fun getWeatherHour(forecastDay: ForecastDay): List<ForecastHour> {
-       val startIndex = forecastDay.timeLocation.split(":")[0].toInt()
+        val startIndex = forecastDay.timeLocation.split(":")[0].toInt()
         val list = forecastDay.forecastHour
         return list.slice(startIndex until list.size)
     }
@@ -71,10 +78,10 @@ class ViewModelWeather(application: Application) : AndroidViewModel(application)
 
         timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                if(localTime == "") {
+                if (localTime == "") {
                     val currentTimeMiles = System.currentTimeMillis()
                     time.postValue(formatTime(currentTimeMiles))
-                }else{
+                } else {
 
                 }
 

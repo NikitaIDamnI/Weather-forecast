@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ActivityPreview : AppCompatActivity() {
+class ActivityAllCities : AppCompatActivity() {
 
     private val binding by lazy {
         ActivityPreviewBinding.inflate(layoutInflater)
@@ -57,7 +57,7 @@ class ActivityPreview : AppCompatActivity() {
 
     }
 companion object{
-    fun newInstance(context: Context) = Intent(context, ActivityPreview::class.java)
+    fun newInstance(context: Context) = Intent(context, ActivityAllCities::class.java)
 
 }
 }

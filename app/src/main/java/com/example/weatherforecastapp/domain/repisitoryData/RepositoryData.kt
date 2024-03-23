@@ -14,7 +14,7 @@ interface RepositoryData {
     suspend fun addNewCity(searchCity: SearchCity)
     suspend fun searchCity(city: String): List<SearchCity>
     suspend fun deleteCity(cityId: Int)
-    suspend fun getLocations(): List<Location>
+    suspend fun getLocations(): LiveData<List<Location>>
     fun gerLocation(id: Int): LiveData<Location>
     fun getCurrentDay(id: Int): LiveData<Current>
     fun forecastDas(id: Int): LiveData<List<ForecastDay>>
