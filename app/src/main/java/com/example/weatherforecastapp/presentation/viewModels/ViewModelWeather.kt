@@ -96,7 +96,7 @@ class ViewModelWeather(application: Application) : AndroidViewModel(application)
 
     private fun formatTime(timeEpochMillis: Long): String {
         val instant = Instant.ofEpochMilli(timeEpochMillis)
-        val formatter = DateTimeFormatter.ofPattern("HH:mm:ss").withLocale(Locale.ENGLISH)
+        val formatter = DateTimeFormatter.ofPattern("HH:mm").withLocale(Locale.ENGLISH)
         return formatter.format(instant.atZone(ZoneId.systemDefault()))
     }
 

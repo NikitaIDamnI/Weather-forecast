@@ -73,14 +73,16 @@ class Mapper {
         id: Int,
         cityDto: CityDto,
         position: String? = "",
-        positionId: Int
+        positionId: Int,
+        timeUpdate: String
     ) = LocationDb(
         id = id,
         positionId = positionId,
         name = cityDto.locationDto.name,
         last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
+        last_updated = timeUpdate,
         temp_c = cityDto.currentDto.temperatureCelsius,
-        localtime = cityDto.locationDto.localtime,
+        localtime = formatTimeLocation(cityDto.locationDto.localtime),
         region = cityDto.locationDto.region,
         country = cityDto.locationDto.country,
         position = position ?: "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
@@ -278,6 +280,11 @@ class Mapper {
         val dateFormat = SimpleDateFormat("EEEE, d MMM yyyy", Locale.ENGLISH)
         val date = Date(epochTime * 1000)
         return dateFormat.format(date)
+    }
+
+    private fun formatTimeLocation(localtime: String): String {
+        return localtime.split(" ")[1]
+
     }
     companion object{
         const val HTTPS_TEG = "https:"

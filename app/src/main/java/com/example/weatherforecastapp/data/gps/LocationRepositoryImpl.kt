@@ -21,21 +21,20 @@ import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 
-class LocationRepositoryImpl (
-   private val context: Application,
-    ) : LocationRepository {
+class LocationRepositoryImpl(
+    private val context: Application,
+) : LocationRepository {
     private val repositoryImpl = RepositoryDataImpl(context)
     private val saveToDB = UseCaseSaveUserLocation(repositoryImpl)
-  // private val pPermissionsLauncher =  PermissionsLauncher(context)
     private var fLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
 
-
-
     private fun getLocation() {
-       // pPermissionsLauncher
         val ct = CancellationTokenSource()
         if (ActivityCompat.checkSelfPermission(
                 context,
@@ -75,14 +74,27 @@ class LocationRepositoryImpl (
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
-   private fun dataRounding(location:Task<Location>): Position{
-       val latitude = "%.2f".format( location.result.latitude).toDouble()
-       val longitude = "%.2f".format(location.result.longitude).toDouble()
-       val time = System.currentTimeMillis() / 1000
-       Log.d("My_Log", "$latitude,$longitude")
+    private fun dataRounding(location: Task<Location>): Position {
+        val latitude = "%.2f".format(location.result.latitude).toDouble()
+        val longitude = "%.2f".format(location.result.longitude).toDouble()
+        val time = System.currentTimeMillis()
+        Log.d("My_Log", "$latitude,$longitude")
 
-       return Position(RepositoryDataImpl.CURRENT_LOCATION_ID,"$latitude,$longitude",time)
-   }
+        return Position(
+            RepositoryDataImpl.CURRENT_LOCATION_ID,
+            "$latitude,$longitude",
+            time,
+            formatTimeFromEpoch(time)
+        )
+    }
+
+   private fun formatTimeFromEpoch(timeEpoch: Long): String {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timeEpoch
+
+        val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return dateFormat.format(calendar.time)
+    }
 
 
 }

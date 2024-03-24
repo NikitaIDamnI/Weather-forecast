@@ -2,8 +2,10 @@ package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
+import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
@@ -17,10 +19,23 @@ class ViewModelAllCities(
     private val useCaseGetLocations = UseCaseGetLocations(repository)
     private val useCaseSearchCity = UseCaseSearchCity(repository)
 
-    fun searchCity(city: String): List<SearchCity> {
-        viewModelScope.launch {
-        }
-        TODO()
+    val listLocation = MutableLiveData<List<Location>>()
+
+    val searchCityList = MutableLiveData<List<SearchCity>>()
+
+    init {
+        getCities()
     }
 
+    fun searchCity(city: String){
+        viewModelScope.launch {
+            searchCityList.value = useCaseSearchCity(city)
+        }
+    }
+
+    private fun getCities(){
+        viewModelScope.launch {
+            listLocation.value =  useCaseGetLocations()
+        }
+    }
 }

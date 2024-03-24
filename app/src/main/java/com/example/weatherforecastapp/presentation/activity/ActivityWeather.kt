@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
@@ -45,12 +44,8 @@ class ActivityWeather : AppCompatActivity() {
 
             with(binding) {
                 viewPager.adapter = pager
-                viewPager.setCurrentItem(parseArg(), false)
-                val animation = AnimationUtils.loadAnimation(
-                    this@ActivityWeather,
-                    com.google.android.material.R.anim.abc_popup_enter
-                )
-                viewPager.startAnimation(animation)
+                viewPager.setCurrentItem(parseArg(), true)
+
                 TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
                     when (position) {
                         0 -> {
@@ -97,7 +92,7 @@ class ActivityWeather : AppCompatActivity() {
 
     companion object {
         private const val CITY_ID = "city_id"
-        fun newIntent(context: Context, idCity: Int): Intent {
+        fun newIntent(context: Context, idCity: Int): Intent{
             val intent = Intent(context, ActivityWeather::class.java)
             intent.putExtra(CITY_ID, idCity)
             return intent

@@ -23,10 +23,10 @@ interface LocationDao {
     @Query("SELECT * FROM location WHERE position_id =:id")
      fun getLocation(id: Int): LiveData<LocationDb>
 
-    @Query("SELECT position_id,position,last_updated_epoch FROM location WHERE position_id = :id")
+    @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE position_id = :id")
     suspend fun checkPosition(id: Int): Position?
 
-    @Query("SELECT position_id,position,last_updated_epoch FROM location WHERE position_id = :id")
+    @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE position_id = :id")
     suspend fun checkCity(id: Int): Position?
 
     @Query("DELETE FROM location WHERE position_id =:id")
