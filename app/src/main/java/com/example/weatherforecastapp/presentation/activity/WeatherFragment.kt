@@ -2,6 +2,7 @@ package com.example.weatherforecastapp.presentation.activity
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
+import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
+import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
+import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
 
@@ -44,15 +48,19 @@ class WeatherFragment : Fragment() {
 
 
     private fun initCurrent() {
+        val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
             viewModel.current.observe(viewLifecycleOwner, Observer {
-
                 tvCity.text = it.nameCity
                 tvData.text = it.date
-                tvDegree.text = it.temp_c.toInt().toString()
+                val temp = it.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
+                tvDegree.text = temp
                 tvCondition.text = it.condition.text
                 Picasso.get().load(it.condition.icon).into(imWeather)
-
+                Log.d("WeatherFragment", "weatherPrecipitation: ${it.weatherPrecipitation}")
+                val listPrecipitation = viewModel.getWeatherPrecipitation(it)
+                adapterPrecipitation.submitList(listPrecipitation)
+                rvPrecipitation.adapter = adapterPrecipitation
             })
 
         }
@@ -60,14 +68,18 @@ class WeatherFragment : Fragment() {
 
     private fun initForecast() {
         val adapterCurrent = CurrentAdapter(requireContext())
+        val adapterForecastDays = ForecastDaysAdapter(requireContext())
         viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
             with(binding) {
-                val list = viewModel.getWeatherHour(it[0])
-                adapterCurrent.submitList(list)
+                val listWeatherHour = viewModel. getWeatherHour(it[0])
+                adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
+                adapterForecastDays.submitList(it)
+                rvForecastForDays.adapter = adapterForecastDays
             }
         })
     }
+
 
 
     private fun parseArgument(): Int {

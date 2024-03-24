@@ -14,6 +14,9 @@ import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class RepositoryDataImpl(
     context: Application
@@ -29,14 +32,14 @@ class RepositoryDataImpl(
 
     override suspend fun saveUserLocation(position: Position): Boolean {
         val datePosition = locationDao.checkPosition(CURRENT_LOCATION_ID) ?: NO_POSITION
-        Log.d("Repository_Log", "saveUserLocation($position) datePosition| $datePosition")
+        //Log.d("Repository_Log", "saveUserLocation($position) datePosition| $datePosition")
         //if(datePosition.position != position.position) {
         writingAPItoDatabase(datePosition, position, POSITION_ID_START)
         //addNewCity(searchCity("Костанай")[0])
         // addNewCity(searchCity("Курган")[0])
-       //deleteCity(2)
+        //deleteCity(2)
         weatherUpdate()
-        // writingAPItoDatabase(datePosition, position, POSITION_ID_START)
+        //writingAPItoDatabase(datePosition, position, POSITION_ID_START)
         // }
         Log.d("Repository_Log", "saveUserLocation ")
         return true
@@ -46,22 +49,31 @@ class RepositoryDataImpl(
     override suspend fun addNewCity(searchCity: SearchCity) {
         val positionId = locationDao.getSumPosition()
         val datePosition = locationDao.checkPosition(searchCity.id) ?: NO_POSITION
-        val time = System.currentTimeMillis() / 1000
+        val time = System.currentTimeMillis()
         val searchPosition = "${searchCity.lat},${searchCity.lon}"
-        val thisPosition = Position(searchCity.id, searchPosition, time)
+        val thisPosition = Position(searchCity.id, searchPosition, time, formatTimeFromEpoch(time))
+        Log.d("Repository_Log", "thisPosition $thisPosition ")
+
+
         writingAPItoDatabase(datePosition, thisPosition, positionId)
     }
 
     private suspend fun weatherUpdate() { // WORKER
         val dataListLocation = locationDao.getAllLocations()
-        val time = System.currentTimeMillis() / 1000
+        val time = System.currentTimeMillis()
         var positionId = POSITION_ID_START
 
         for (location in dataListLocation) {
-            val thisPosition = Position(location.id, location.position, time)
-            val datePosition = Position(location.id, location.position, location.last_updated_epoch)
+            val thisPosition =
+                Position(location.id, location.position, time, formatTimeFromEpoch(time))
+            val datePosition = Position(
+                location.id,
+                location.position,
+                location.last_updated_epoch,
+                timeFormat = location.last_updated
+            )
 
-            //  Log.d("Repository_Log", "weatherUpdate thisPosition -$thisPosition ||" + "datePosition| $datePosition" + " positionId | $positionId")
+             Log.d("Repository_Log", "weatherUpdate thisPosition -$thisPosition ||" + "datePosition| $datePosition" + " positionId | $positionId")
             writingAPItoDatabase(datePosition, thisPosition, positionId)
             positionId += POSITION_ID_NEXT
         }
@@ -120,7 +132,7 @@ class RepositoryDataImpl(
 
 
     override suspend fun getLocations(): List<Location> {
-        TODO("Not yet implemented")
+        return locationDao.getAllLocations().map { mapper.mapperLocationDbToEntityLocation(it) }
     }
 
 
@@ -138,7 +150,8 @@ class RepositoryDataImpl(
                     id = thisPosition.id,
                     cityDto = city,
                     position = "${city.locationDto.lat},${city.locationDto.lon}",
-                    positionId = positionId
+                    positionId = positionId,
+                    timeUpdate = thisPosition.timeFormat
                 )
             )
             currentDao.insert(
@@ -163,10 +176,27 @@ class RepositoryDataImpl(
         thisPosition: Position
     ): Boolean {
         val updateTime = datePosition.timeEpoch + UPDATE_TIME
-        return (datePosition.position != thisPosition.position
-                || updateTime < thisPosition.timeEpoch && updateTime.toInt() != UPDATE_TIME)
+        val thisHour = formatTimeByHour(thisPosition.timeFormat)
+        val dataHour = formatTimeByHour(datePosition.timeFormat)
+        Log.d("Repository_Log", "checkingForUpdates thisHour - $thisHour" +
+                "dataHour - $dataHour")
+
+        return (datePosition.position != thisPosition.position || thisHour != dataHour)
+
     }
 
+
+    private fun formatTimeFromEpoch(timeEpoch: Long): String {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timeEpoch
+        val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return dateFormat.format(calendar.time)
+    }
+
+    private fun formatTimeByHour(time: String): String {
+        return time.split(":")[0]
+
+    }
 
     companion object {
         const val CURRENT_LOCATION_ID = 0
@@ -174,7 +204,7 @@ class RepositoryDataImpl(
         const val POSITION_ID_START = 0
         const val POSITION_ID_NEXT = 1
 
-        val NO_POSITION = Position(-1, "", 0)
+        val NO_POSITION = Position(-1, "", 0, "")
     }
 
 

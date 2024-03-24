@@ -107,7 +107,7 @@
                     android:fontFamily="sans-serif-light"
                     android:gravity="start"
                     android:textColor="@color/colore_text"
-                    android:textSize="150sp"
+                    android:textSize="130sp"
                     android:textStyle="normal"
                     app:layout_constraintEnd_toStartOf="@+id/progressBar3"
                     app:layout_constraintHorizontal_bias="0.0"
@@ -142,10 +142,9 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_precipitation"
-                    android:layout_width="66dp"
-                    android:layout_height="322dp"
-                    android:layout_marginTop="30dp"
-                    android:layout_marginEnd="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="350dp"
+                    android:layout_marginEnd="10dp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -156,20 +155,19 @@
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="3dp"
                     android:layout_height="0dp"
-                    android:layout_marginEnd="50dp"
+                    android:layout_marginEnd="20dp"
                     android:progress="20"
                     android:progressDrawable="@drawable/vert_progress_bar"
                     app:layout_constraintBottom_toTopOf="@+id/rv_current_day"
                     app:layout_constraintEnd_toStartOf="@+id/rv_precipitation"
-                    app:layout_constraintTop_toTopOf="parent"
-                   />
+                    app:layout_constraintTop_toTopOf="parent" />
 
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_current_day"
                     android:layout_width="0dp"
                     android:layout_height="120dp"
-                    android:layout_marginTop="50dp"
+                    android:layout_marginTop="40dp"
                     android:orientation="horizontal"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -211,9 +209,10 @@
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rv_forecast_for_10_days"
+                            android:id="@+id/rv_forecast_for_days"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/tv_forecast_for_10_days"

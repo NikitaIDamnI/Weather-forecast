@@ -12,6 +12,7 @@ data class LocationDb(
     val id: Int ,
     val name: String,
     val last_updated_epoch: Long,
+    val last_updated: String,
     val region: String,
     val country: String,
     val position: String,

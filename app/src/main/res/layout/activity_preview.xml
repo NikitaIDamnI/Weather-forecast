@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".presentation.activity.ActivityPreview">
+    tools:context=".presentation.activity.ActivityAllCities">
 
     <TextView
         android:id="@+id/textView"
@@ -46,6 +46,7 @@
         app:layout_constraintStart_toStartOf="@+id/vert_start_guideline"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/vert_start_guideline"
         android:layout_width="wrap_content"
@@ -63,6 +64,7 @@
         app:layout_constraintGuide_end="10dp" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_all_city"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -73,7 +75,7 @@
         app:layout_constraintStart_toStartOf="@+id/vert_start_guideline"
         app:layout_constraintTop_toBottomOf="@+id/searchView"
         app:layout_constraintVertical_bias="0"
-        tools:listitem="@layout/item_fragmet_city" />
+        tools:listitem="@layout/item_city_location" />
 
     <ProgressBar
         android:id="@+id/progressBar2"

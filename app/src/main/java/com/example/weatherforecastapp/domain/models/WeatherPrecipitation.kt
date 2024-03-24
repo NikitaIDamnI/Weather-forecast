@@ -13,7 +13,7 @@ data class WeatherPrecipitation(
         const val MAX_VALUE = 100
         const val NORMAL_VALUE = 0
         const val VALUE_KM_H = "km/h"
-        const val VALUE_PERCENT = "percent"
+        const val VALUE_PERCENT = "%"
         const val VALUE_MM = "mm"
         const val VALUE_DEGREE= "°"
         const val VALUE_MM_HG= "mm Hg"
