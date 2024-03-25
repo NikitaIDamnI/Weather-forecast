@@ -54,9 +54,9 @@ class Mapper {
         astro_moonIllumination = cityDto.forecast.days[0].astro.moonIllumination,
         astro_isMoonUp = cityDto.forecast.days[0].astro.isSunUp,
         astro_isSunUp = cityDto.forecast.days[0].astro.isSunUp,
-        condition_text = cityDto.forecast.days[0].day.condition.text,
-        condition_icon = HTTPS_TEG+cityDto.forecast.days[0].day.condition.icon,
-        condition_code = cityDto.forecast.days[0].day.condition.code,
+        condition_text = cityDto.currentDto.conditionDto.text,
+        condition_icon = HTTPS_TEG+cityDto.currentDto.conditionDto.icon,
+        condition_code = cityDto.currentDto.conditionDto.code,
         param_windKph = cityDto.currentDto.windKph,
         param_windDegree = cityDto.currentDto.windDegree,
         param_pressureIn = cityDto.currentDto.pressureIn,
@@ -89,9 +89,9 @@ class Mapper {
         tz_id = cityDto.locationDto.tz_id,
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.mintempC,
-        condition_text = cityDto.forecast.days[0].day.condition.text,
-        condition_icon = HTTPS_TEG+cityDto.forecast.days[0].day.condition.icon,
-        condition_code = cityDto.forecast.days[0].day.condition.code,
+        condition_text = cityDto.currentDto.conditionDto.text,
+        condition_icon = HTTPS_TEG+cityDto.currentDto.conditionDto.icon,
+        condition_code = cityDto.currentDto.conditionDto.code,
     )
 
     fun mapperCityDtoToForecastDaysDb(cityDto: CityDto, positionId: Int): ForecastDaysDb {
@@ -162,6 +162,7 @@ class Mapper {
     )
 
     fun mapperLocationDbToEntityLocation(locationDb: LocationDb) = Location(
+        positionId = locationDb.positionId,
         name = locationDb.name,
         temp_c = locationDb.temp_c,
         localtime = locationDb.localtime,

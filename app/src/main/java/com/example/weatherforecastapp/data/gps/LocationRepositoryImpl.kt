@@ -83,7 +83,6 @@ class LocationRepositoryImpl(
         return Position(
             RepositoryDataImpl.CURRENT_LOCATION_ID,
             "$latitude,$longitude",
-            time,
             formatTimeFromEpoch(time)
         )
     }

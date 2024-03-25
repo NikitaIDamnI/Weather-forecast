@@ -31,21 +31,60 @@
         android:backgroundTint="#EFE6E6"
         android:backgroundTintMode="src_atop"
         android:contentDescription="@string/app_name"
-        app:layout_constraintBottom_toTopOf="@+id/searchView"
+        app:layout_constraintBottom_toTopOf="@+id/card_searchView"
         app:layout_constraintEnd_toStartOf="@+id/vert_end_guideline"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <SearchView
-        android:id="@+id/searchView"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_searchView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:background="#CCC7C7"
-        android:iconifiedByDefault="false"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/black"
+        app:cardCornerRadius="10dp"
         app:layout_constraintEnd_toStartOf="@+id/vert_end_guideline"
         app:layout_constraintStart_toStartOf="@+id/vert_start_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/textView">
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:backgroundTint="#CECECE">
+
+            <SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#CCC7C7"
+                android:iconifiedByDefault="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" >
+
+            </SearchView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_search"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/searchView"
+                tools:listitem="@layout/item_seach_city" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/g_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.14" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/vert_start_guideline"
@@ -66,27 +105,17 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_all_city"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:visibility="visible"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/vert_end_guideline"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/vert_start_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/searchView"
-        app:layout_constraintVertical_bias="0"
+        app:layout_constraintTop_toBottomOf="@+id/g_horizontal"
+        app:layout_constraintVertical_bias="0.874"
         tools:listitem="@layout/item_city_location" />
-
-    <ProgressBar
-        android:id="@+id/progressBar2"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@+id/vert_end_guideline"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="@+id/vert_start_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/searchView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
