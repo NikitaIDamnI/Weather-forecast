@@ -35,8 +35,6 @@ class RepositoryDataImpl(
 
         writingAPItoDatabase(datePosition, position, POSITION_ID_START)
 
-
-        weatherUpdateFromApi()
         Log.d("Repository_Log", "saveUserLocation ")
         return true
     }
@@ -51,28 +49,29 @@ class RepositoryDataImpl(
         val thisPosition = Position(searchCity.id, searchPosition, formatTimeFromEpoch(time))
 
         Log.d("Repository_Log", "thisPosition $thisPosition , datePosition | $datePosition")
-        if (checkingForUpdates(thisPosition,datePosition)) {
+        if (checkingForUpdates(thisPosition, datePosition)) {
             writingAPItoDatabase(datePosition, thisPosition, positionId)
         }
     }
 
-    private suspend fun weatherUpdateFromApi() { // WORKER
+    override suspend fun weatherUpdate() {
         val dataListLocation = locationDao.getAllLocations()
         val time = System.currentTimeMillis()
         var positionId = POSITION_ID_START
-
-        for (location in dataListLocation) {
-            val thisPosition =
-                Position(location.positionId, location.position, formatTimeFromEpoch(time))
-            val datePosition = Position(
-                location.positionId,
-                location.position,
-                timeFormat = location.localtime
-            )
-            writingAPItoDatabase(datePosition, thisPosition, positionId)
-            positionId += POSITION_ID_NEXT
+        if (dataListLocation.isNotEmpty()) {
+            for (location in dataListLocation) {
+                val thisPosition =
+                    Position(location.positionId, location.position, formatTimeFromEpoch(time))
+                val datePosition = Position(
+                    location.positionId,
+                    location.position,
+                    timeFormat = location.localtime
+                )
+                writingAPItoDatabase(datePosition, thisPosition, positionId)
+                positionId += POSITION_ID_NEXT
+            }
+            upDate?.invoke(true)
         }
-        upDate?.invoke(true)
     }
 
 
@@ -139,7 +138,6 @@ class RepositoryDataImpl(
     ) {
         if (checkingForUpdates(datePosition, thisPosition)) {
             val city = apiService.forecastDays(city = thisPosition.position)
-            // Log.d("Repository_Log", "writingAPItoDatabase|$city")
 
             locationDao.insert(
                 mapper.mapperCityDtoToLocationDb(
