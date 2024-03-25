@@ -12,7 +12,7 @@ interface ForecastDayDao {
 
     //функция записи в баз двнных
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(forecastDaysDb: ForecastDaysDb)
+    suspend fun insert(forecastDaysDb: ForecastDaysDb)
 
     @Query("SELECT * FROM forecast_day WHERE id = :id")
     fun getForecastDay(id:Int): LiveData<ForecastDaysDb>

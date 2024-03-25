@@ -10,7 +10,8 @@ import androidx.room.PrimaryKey
             entity = LocationDb::class,
             parentColumns = ["position_id"],
             childColumns = ["id"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.CASCADE,
+            onUpdate = ForeignKey.CASCADE
         )
     ])
 data class ForecastDaysDb(

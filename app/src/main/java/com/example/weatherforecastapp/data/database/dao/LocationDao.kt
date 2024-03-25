@@ -21,19 +21,22 @@ interface LocationDao {
     suspend fun getAllLocations(): List<LocationDb>
 
     @Query("SELECT * FROM location WHERE position_id =:id")
-     fun getLocation(id: Int): LiveData<LocationDb>
+    fun getLocation(id: Int): LiveData<LocationDb>
 
     @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE position_id = :id")
     suspend fun checkPosition(id: Int): Position?
 
-    @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE position_id = :id")
-    suspend fun checkCity(id: Int): Position?
+    @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE  position= :position")
+    suspend fun checkCity(position: String): Position?
 
     @Query("DELETE FROM location WHERE position_id =:id")
     suspend fun deleteLocation(id: Int)
 
     @Query("SELECT COUNT(*) FROM location")
     suspend fun getSumPosition(): Int
+
+    @Query("UPDATE location SET position_id = :newPositionId WHERE position_id =:oldPositionId")
+    suspend fun updatePosition(oldPositionId: Int, newPositionId: Int)
 
     @Query("DELETE FROM location")
     fun deleteAll()

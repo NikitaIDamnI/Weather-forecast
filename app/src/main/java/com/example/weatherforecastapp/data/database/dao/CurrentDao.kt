@@ -12,7 +12,7 @@ interface CurrentDao {
 
     //функция записи в баз двнных
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-   fun insert(currentDb: CurrentDb)
+   suspend fun insert(currentDb: CurrentDb)
 
     @Query("SELECT * FROM current_day WHERE id= :id")
      fun getCurrent(id: Int): LiveData<CurrentDb>

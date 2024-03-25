@@ -38,6 +38,7 @@ class ActivityWeather : AppCompatActivity() {
         binding.bMenu.setOnClickListener {
             val intent = ActivityAllCities.newInstance(this)
             startActivity(intent)
+            finish()
         }
         viewModel.sizeCity.observe(this) {
             val pager = PagerAdapter(this, it)
@@ -58,9 +59,7 @@ class ActivityWeather : AppCompatActivity() {
                     }
                 }.attach()
 
-
                 viewPager.visibility = View.VISIBLE
-                //binding.cardToolbar.visibility = View.VISIBLE
             }
         }
 
