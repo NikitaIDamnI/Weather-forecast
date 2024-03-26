@@ -113,7 +113,7 @@ class RepositoryDataImpl(
         }
     }
 
-    override fun forecastDas(id: Int): LiveData<List<ForecastDay>> {
+    override fun getForecastDas(id: Int): LiveData<List<ForecastDay>> {
         val forecastDayLiveDataDb = forecastDayDao.getForecastDay(id)
 
         return MediatorLiveData<List<ForecastDay>>().apply {

@@ -9,7 +9,6 @@ import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.ForecastHour
-import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasNumberOfCities
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
@@ -17,7 +16,10 @@ import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseC
 import kotlinx.coroutines.launch
 
 
-class ViewModelWeather(application: Application) : AndroidViewModel(application) {
+class ViewModelWeather(
+    application: Application,
+    id: Int
+) : AndroidViewModel(application) {
 
     private val repository = RepositoryDataImpl(application)
     private val repositoryLocal = LocationRepositoryImpl(application)
@@ -27,9 +29,9 @@ class ViewModelWeather(application: Application) : AndroidViewModel(application)
 
 
     private var update: Boolean = false
-    val location = MutableLiveData<Location>()
-    val current = MutableLiveData<Current>()
-    val forecastDay = MutableLiveData<List<ForecastDay>>()
+    val location = repository.gerLocation(id)
+    val current = repository.getCurrentDay(id)
+    val forecastDay = repository.getForecastDas(id)
     var sizeCity = MutableLiveData<Int>(MIN_SIZE_CITY)
 
     init {
@@ -37,16 +39,9 @@ class ViewModelWeather(application: Application) : AndroidViewModel(application)
         numberOfCities()
     }
 
-    fun getCity(cityId: Int) {
-        repository.gerLocation(cityId).observeForever {
-            location.value = it
-        }
-        repository.getCurrentDay(cityId).observeForever {
-            current.value = it
-        }
-        repository.forecastDas(cityId).observeForever {
-            forecastDay.value = it
-        }
+
+
+    fun update() {
     }
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {

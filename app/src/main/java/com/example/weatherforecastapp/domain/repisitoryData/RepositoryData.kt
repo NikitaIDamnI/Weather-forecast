@@ -18,6 +18,6 @@ interface RepositoryData {
     fun gerLocation(id: Int): LiveData<Location>
     suspend fun weatherUpdate()
     fun getCurrentDay(id: Int): LiveData<Current>
-    fun forecastDas(id: Int): LiveData<List<ForecastDay>>
+    fun getForecastDas(id: Int): LiveData<List<ForecastDay>>
     suspend fun numberOfCities(): Int
 }
