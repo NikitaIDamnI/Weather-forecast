@@ -76,7 +76,7 @@ class ActivityWeather : AppCompatActivity() {
 
     }
 
-    fun animationToolbar() = with(binding){
+    private fun animationToolbar() = with(binding){
         cardToolbar.alpha = 0f
         viewPager.registerOnPageChangeCallback(object :ViewPager2.OnPageChangeCallback(){
             override fun onPageSelected(position: Int) {

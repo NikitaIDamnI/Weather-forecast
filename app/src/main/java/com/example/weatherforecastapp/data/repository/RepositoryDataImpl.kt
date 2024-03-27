@@ -40,7 +40,10 @@ class RepositoryDataImpl(
 
 
     override suspend fun addNewCity(searchCity: SearchCity) {
-        val positionId = locationDao.getSumPosition()
+        var positionId = locationDao.getSumPosition()
+        if(positionId  == CURRENT_LOCATION_ID ){
+            positionId = POSITION_ID_NEXT
+        }
         val positionLoc = "${searchCity.lat},${searchCity.lon}"
         val datePosition = locationDao.checkCity(positionLoc) ?: NO_POSITION
         val time = System.currentTimeMillis()
@@ -96,9 +99,7 @@ class RepositoryDataImpl(
         val locationLiveDataDb = locationDao.getLocation(id)
         return MediatorLiveData<Location>().apply {
             addSource(locationLiveDataDb) {
-                if (it != null) {
                     value = mapper.mapperLocationDbToEntityLocation(it)
-                }
             }
         }
     }
@@ -108,9 +109,7 @@ class RepositoryDataImpl(
 
         return MediatorLiveData<Current>().apply {
             addSource(currentLiveDataDb) {
-                if (it != null) {
                     value = mapper.mapperCurrentDbToEntityCurrent(it)
-                }
             }
         }
     }
@@ -120,9 +119,8 @@ class RepositoryDataImpl(
 
         return MediatorLiveData<List<ForecastDay>>().apply {
             addSource(forecastDayLiveDataDb) {
-                if (it != null) {
                     value = mapper.mapperForecastDaysDbToEntityForecastDays(it)
-                }
+
             }
         }
     }

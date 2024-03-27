@@ -105,10 +105,12 @@ class Mapper {
         )
     }
 
-    fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb): List<ForecastDay> {
-        val type = object : TypeToken<List<ForecastDayDto>>() {}.type
-        val dbModel = Gson().fromJson<List<ForecastDayDto>>(forecastDaysDb.json, type)
-        return dbModel.map { mapperForecastDaysDtoToEntityForecastDays(it, forecastDaysDb) }
+    fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb?): List<ForecastDay> {
+        return forecastDaysDb?.let {
+            val type = object : TypeToken<List<ForecastDayDto>>() {}.type
+            val dbModel = Gson().fromJson<List<ForecastDayDto>>(it.json, type)
+            dbModel.map { dto -> mapperForecastDaysDtoToEntityForecastDays(dto, forecastDaysDb) }
+        } ?: emptyList()
     }
 
     private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
@@ -175,50 +177,52 @@ class Mapper {
 
     )
 
-    fun mapperCurrentDbToEntityCurrent(currentDb: CurrentDb) = Current(
-        id = currentDb.id,
-        nameCity = currentDb.nameCity,
-        date = currentDb.date,
-        last_updated_epoch = currentDb.last_updated_epoch,
-        last_updated = currentDb.last_updated,
-        temp_c = currentDb.temp_c,
-        is_day = currentDb.is_day,
-        currentDay = Day(
-            maxtempC = currentDb.day_maxtempC,
-            mintempC = currentDb.day_mintempC,
-            avgtempC = currentDb.day_avgtempC,
-            maxwindKph = currentDb.day_maxwindKph,
-            totalprecipMm = currentDb.day_totalprecipMm,
-            totalsnowCm = currentDb.day_totalsnowCm,
-            avgvisKm = currentDb.day_avgvisKm,
-            avghumidity = currentDb.day_avghumidity,
-            dailyWillItRain = currentDb.day_dailyWillItRain,
-            dailyChanceOfRain = currentDb.day_dailyChanceOfRain,
-            dailyWillItSnow = currentDb.day_dailyWillItSnow,
-            dailyChanceOfSnow = currentDb.day_dailyChanceOfSnow,
+    fun mapperCurrentDbToEntityCurrent(currentDb: CurrentDb?) = currentDb?.let { db ->
+        Current(
+            id = db.id,
+            nameCity = db.nameCity,
+            date = db.date,
+            last_updated_epoch = db.last_updated_epoch,
+            last_updated = db.last_updated,
+            temp_c = db.temp_c,
+            is_day = db.is_day,
+            currentDay = Day(
+                maxtempC = db.day_maxtempC,
+                mintempC = db.day_mintempC,
+                avgtempC = db.day_avgtempC,
+                maxwindKph = db.day_maxwindKph,
+                totalprecipMm = db.day_totalprecipMm,
+                totalsnowCm = db.day_totalsnowCm,
+                avgvisKm = db.day_avgvisKm,
+                avghumidity = db.day_avghumidity,
+                dailyWillItRain = db.day_dailyWillItRain,
+                dailyChanceOfRain = db.day_dailyChanceOfRain,
+                dailyWillItSnow = db.day_dailyWillItSnow,
+                dailyChanceOfSnow = db.day_dailyChanceOfSnow,
+                condition = Condition(
+                    text = db.condition_text,
+                    icon = db.condition_icon,
+                    code = db.condition_code,
+                )
+            ),
+            astro = Astro(
+                sunrise = db.astro_sunrise,
+                sunset = db.astro_sunset,
+                moonrise = db.astro_moonrise,
+                moonset = db.astro_moonset,
+                moonPhase = db.astro_moonPhase,
+                moonIllumination = db.astro_moonIllumination,
+                isMoonUp = db.astro_isMoonUp,
+                isSunUp = db.astro_isSunUp,
+            ),
             condition = Condition(
-                text = currentDb.condition_text,
-                icon = currentDb.condition_icon,
-                code = currentDb.condition_code,
-            )
-        ),
-        astro = Astro(
-            sunrise = currentDb.astro_sunrise,
-            sunset = currentDb.astro_sunset,
-            moonrise = currentDb.astro_moonrise,
-            moonset = currentDb.astro_moonset,
-            moonPhase = currentDb.astro_moonPhase,
-            moonIllumination = currentDb.astro_moonIllumination,
-            isMoonUp = currentDb.astro_isMoonUp,
-            isSunUp = currentDb.astro_isSunUp,
-        ),
-        condition = Condition(
-            text = currentDb.condition_text,
-            icon = currentDb.condition_icon,
-            code = currentDb.condition_code,
-        ),
-        weatherPrecipitation = getWeatherParameter(currentDb),
-    )
+                text = db.condition_text,
+                icon = db.condition_icon,
+                code = db.condition_code,
+            ),
+            weatherPrecipitation = getWeatherParameter(db),
+        )
+    } ?: Current()
 
 
     private fun getWeatherParameter(currentDb: CurrentDb): List<WeatherPrecipitation> {
