@@ -4,7 +4,6 @@ import PagerAdapter
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -47,11 +46,7 @@ class ActivityWeather : AppCompatActivity() {
             finish()
         }
         viewModel.sizeCity.observe(this) {
-            Log.d("ActivityWeather_Log", "sizeCity: $it")
 
-            while (it <= 0 || it == null){
-                Log.d("ActivityWeather_Log", "while(sizeCity: $it")
-            }
             val pager = PagerAdapter(this, it)
 
             with(binding) {
@@ -69,6 +64,11 @@ class ActivityWeather : AppCompatActivity() {
                         }
                     }
                 }.attach()
+
+                if (it == 0){
+                    viewPager.visibility = View.GONE
+
+                }
 
                 viewPager.visibility = View.VISIBLE
             }

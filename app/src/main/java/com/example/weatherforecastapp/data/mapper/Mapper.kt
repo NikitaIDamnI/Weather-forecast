@@ -161,17 +161,17 @@ class Mapper {
         feelslike_c = dto.feelslikeC,
     )
 
-    fun mapperLocationDbToEntityLocation(locationDb: LocationDb) = Location(
-        positionId = locationDb.positionId,
-        name = locationDb.name,
-        temp_c = locationDb.temp_c,
-        localtime = locationDb.localtime,
-        day_maxtempC = locationDb.day_maxtempC,
-        day_mintempC = locationDb.day_mintempC,
-        condition_text = locationDb.condition_text,
-        condition_icon = locationDb.condition_icon,
-        condition_code = locationDb.condition_code,
-        position = locationDb.position
+    fun mapperLocationDbToEntityLocation(locationDb: LocationDb?) = Location(
+        positionId = locationDb?.positionId ?: 0,
+        name = locationDb?.name ?: "",
+        temp_c = locationDb?.temp_c ?: 0.0,
+        localtime = locationDb?.localtime ?: "",
+        day_maxtempC = locationDb?.day_maxtempC ?: 0.0,
+        day_mintempC = locationDb?.day_mintempC ?: 0.0,
+        condition_text = locationDb?.condition_text ?: "",
+        condition_icon = locationDb?.condition_icon ?: "",
+        condition_code = locationDb?.condition_code ?: 0,
+        position = locationDb?.position ?: ""
 
     )
 

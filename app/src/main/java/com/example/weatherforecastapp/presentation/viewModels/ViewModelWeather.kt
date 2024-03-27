@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class ViewModelWeather(
     application: Application,
-    id: Int
+    val id: Int
 ) : AndroidViewModel(application) {
 
     private val repository = RepositoryDataImpl(application)
@@ -28,20 +28,24 @@ class ViewModelWeather(
     private val useCaseWeatherUpdate = UseCaseWeatherUpdate(repository)
 
 
-    private var update: Boolean = false
-    val location = repository.gerLocation(id)
-    val current = repository.getCurrentDay(id)
-    val forecastDay = repository.getForecastDas(id)
-    var sizeCity = MutableLiveData<Int>(MIN_SIZE_CITY)
+    var location = repository.getLocation(id)
+    var current = repository.getCurrentDay(id)
+    var forecastDay = repository.getForecastDas(id)
+    var sizeCity = MutableLiveData<Int>()
 
     init {
+        repositoryLocal.updateData = {
+            update()
+        }
         weatherUpdate()
         numberOfCities()
     }
 
-
-
     fun update() {
+        location = repository.getLocation(id)
+        current = repository.getCurrentDay(id)
+        forecastDay = repository.getForecastDas(id)
+        numberOfCities()
     }
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {

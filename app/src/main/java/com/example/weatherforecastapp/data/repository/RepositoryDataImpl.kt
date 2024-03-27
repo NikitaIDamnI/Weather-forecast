@@ -27,7 +27,6 @@ class RepositoryDataImpl(
     private val forecastDayDao = AppDatabase.getInstance(context).forecastDayDao()
     private val locationDao = AppDatabase.getInstance(context).locationDao()
 
-    var upDate: ((Boolean) -> Unit)? = null
 
 
     override suspend fun saveUserLocation(position: Position): Boolean {
@@ -70,8 +69,11 @@ class RepositoryDataImpl(
                 writingAPItoDatabase(datePosition, thisPosition, positionId)
                 positionId += POSITION_ID_NEXT
             }
-            upDate?.invoke(true)
         }
+    }
+
+    override suspend fun getUserLocation(): Location {
+        return mapper.mapperLocationDbToEntityLocation(locationDao.getUserLocation())
     }
 
 
@@ -90,7 +92,7 @@ class RepositoryDataImpl(
         updatePositionToDb(positionId)
     }
 
-    override fun gerLocation(id: Int): LiveData<Location> {
+    override fun getLocation(id: Int): LiveData<Location> {
         val locationLiveDataDb = locationDao.getLocation(id)
         return MediatorLiveData<Location>().apply {
             addSource(locationLiveDataDb) {
