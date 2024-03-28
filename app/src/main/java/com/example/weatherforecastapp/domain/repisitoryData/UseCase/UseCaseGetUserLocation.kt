@@ -1,16 +1,14 @@
 package com.example.weatherforecastapp.domain.repisitoryData.UseCase
 
+import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 
-class UseCaseGetCity(
+class UseCaseGetUserLocation (
     private val repositoryData: RepositoryData
-) {
-    /*
-     operator fun invoke(cityId: Int): LiveData<City> {
-        return repositoryData.getCity(cityId)
+){
+    suspend operator fun invoke(): Location {
+        return repositoryData.getUserLocation()
 
     }
-
-     */
 }
 

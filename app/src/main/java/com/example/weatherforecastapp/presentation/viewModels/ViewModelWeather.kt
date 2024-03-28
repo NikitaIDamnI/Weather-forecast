@@ -9,48 +9,49 @@ import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.ForecastHour
-import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasNumberOfCities
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
+import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
+import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseUpdateDataLocation
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-import java.util.Timer
-import java.util.TimerTask
 
 
-class ViewModelWeather(application: Application) : AndroidViewModel(application) {
+class ViewModelWeather(
+    application: Application,
+    val id: Int
+) : AndroidViewModel(application) {
 
     private val repository = RepositoryDataImpl(application)
     private val repositoryLocal = LocationRepositoryImpl(application)
     private val useCaseCheckLocation = UseCaseCheckLocation(repositoryLocal)
     private val useCasNumberOfCities = UseCasNumberOfCities(repository)
+    private val useCaseWeatherUpdate = UseCaseWeatherUpdate(repository)
+    private val setUpdateListener = UseCaseUpdateDataLocation(repositoryLocal)
 
-    var time = MutableLiveData<String>()
-    private var localTime: String? = ""
-    val location = MutableLiveData<Location>()
-    val current = MutableLiveData<Current>()
-    val forecastDay = MutableLiveData<List<ForecastDay>>()
-    var sizeCity = MutableLiveData<Int>(MIN_SIZE_CITY)
+
+    var location = repository.getLocation(id)
+    var current = repository.getCurrentDay(id)
+    var forecastDay = repository.getForecastDas(id)
+    var sizeCity = MutableLiveData<Int>()
 
     init {
+        setUpdateListener(update())
+        weatherUpdate()
         numberOfCities()
     }
 
-    fun getCity(cityId: Int) {
-        repository.gerLocation(cityId).observeForever {
-            location.value = it
-        }
-        repository.getCurrentDay(cityId).observeForever {
-            current.value = it
-        }
-        repository.forecastDas(cityId).observeForever {
-            forecastDay.value = it
+
+    private fun update() = object : LocationRepository.LocationUpdateListener {
+        override fun onUpdate() {
+            location = repository.getLocation(id)
+            current = repository.getCurrentDay(id)
+            forecastDay = repository.getForecastDas(id)
+            numberOfCities()
         }
     }
+
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
         return current.weatherPrecipitation.filter {
@@ -72,21 +73,10 @@ class ViewModelWeather(application: Application) : AndroidViewModel(application)
 
     }
 
-
-    private fun startTime(timeLocation: String) {
-        val timer = Timer()
-
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                if (localTime == "") {
-                    val currentTimeMiles = System.currentTimeMillis()
-                    time.postValue(formatTime(currentTimeMiles))
-                } else {
-
-                }
-
-            }
-        }, 0, 10000)
+    private fun weatherUpdate() {
+        viewModelScope.launch {
+            useCaseWeatherUpdate.invoke()
+        }
     }
 
 
@@ -94,14 +84,5 @@ class ViewModelWeather(application: Application) : AndroidViewModel(application)
         useCaseCheckLocation.invoke()
     }
 
-    private fun formatTime(timeEpochMillis: Long): String {
-        val instant = Instant.ofEpochMilli(timeEpochMillis)
-        val formatter = DateTimeFormatter.ofPattern("HH:mm").withLocale(Locale.ENGLISH)
-        return formatter.format(instant.atZone(ZoneId.systemDefault()))
-    }
 
-
-    companion object {
-        const val MIN_SIZE_CITY = 1
-    }
 }

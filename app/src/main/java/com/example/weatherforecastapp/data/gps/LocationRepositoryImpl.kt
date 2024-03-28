@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
 import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
 import com.google.android.gms.location.LocationServices
@@ -30,8 +31,11 @@ class LocationRepositoryImpl(
     private val context: Application,
 ) : LocationRepository {
     private val repositoryImpl = RepositoryDataImpl(context)
-    private val saveToDB = UseCaseSaveUserLocation(repositoryImpl)
+    private val saveUserLocation = UseCaseSaveUserLocation(repositoryImpl)
     private var fLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    private var getUserLocation = UseCaseGetUserLocation(repositoryImpl)
+    //var updateData: (() -> Unit)? = null
+    private var updateListener: LocationRepository.LocationUpdateListener? = null
 
 
     private fun getLocation() {
@@ -51,10 +55,20 @@ class LocationRepositoryImpl(
             .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, ct.token)
             .addOnCompleteListener {
                 CoroutineScope(Dispatchers.IO).launch {
-                    saveToDB(dataRounding(it))
+                    val locationDb = getUserLocation.invoke()
+                    Log.d("LocationRepositoryImpl", "locationDb: $locationDb ")
+                    val positionGPS = dataRounding(it)
+                    if (locationDb.position != positionGPS.position) {
+                        Log.d("LocationRepositoryImpl", "Update: true ")
+                        saveUserLocation(dataRounding(it))
+                        //updateData?.invoke()
+                        updateListener?.onUpdate()
+                    } else {
+                        Log.d("LocationRepositoryImpl", "locationDb: false ")
+                    }
                 }
-            }
 
+            }
     }
 
     override fun checkLocation() {
@@ -67,6 +81,10 @@ class LocationRepositoryImpl(
                 }
             })
         }
+    }
+
+    override fun setUpdateListener(listener: LocationRepository.LocationUpdateListener) {
+        updateListener = listener
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -87,7 +105,7 @@ class LocationRepositoryImpl(
         )
     }
 
-   private fun formatTimeFromEpoch(timeEpoch: Long): String {
+    private fun formatTimeFromEpoch(timeEpoch: Long): String {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = timeEpoch
 

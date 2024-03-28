@@ -14,6 +14,7 @@ import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
 
@@ -23,12 +24,15 @@ class WeatherFragment : Fragment() {
     private val binding: WeatherFragmentBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
+    private val viewModelFactory by lazy {
+        ViewModelFactory(requireActivity().application, parseArgument())
+    }
+
     private val viewModel by lazy {
-        ViewModelProvider(this)[ViewModelWeather::class.java]
+        ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
     }
 
     override fun onAttach(context: Context) {
-        viewModel.getCity(parseArgument())
         super.onAttach(context)
     }
 
@@ -71,7 +75,7 @@ class WeatherFragment : Fragment() {
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
             with(binding) {
-                val listWeatherHour = viewModel. getWeatherHour(it[0])
+                val listWeatherHour = viewModel.getWeatherHour(it[0])
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
                 adapterForecastDays.submitList(it)
@@ -79,7 +83,6 @@ class WeatherFragment : Fragment() {
             }
         })
     }
-
 
 
     private fun parseArgument(): Int {

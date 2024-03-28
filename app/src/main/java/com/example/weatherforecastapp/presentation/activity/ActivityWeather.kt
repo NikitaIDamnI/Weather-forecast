@@ -11,6 +11,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.data.gps.PermissionsLauncher
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -19,8 +20,12 @@ class ActivityWeather : AppCompatActivity() {
     private val binding by lazy {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
+
+    private val viewModelFactory by lazy {
+        ViewModelFactory(application,parseArg())
+    }
     private val viewModel by lazy {
-        ViewModelProvider(this)[ViewModelWeather::class.java]
+        ViewModelProvider(this,viewModelFactory)[ViewModelWeather::class.java]
     }
     private val permission by lazy {
         PermissionsLauncher(this)
@@ -41,6 +46,7 @@ class ActivityWeather : AppCompatActivity() {
             finish()
         }
         viewModel.sizeCity.observe(this) {
+
             val pager = PagerAdapter(this, it)
 
             with(binding) {
@@ -59,13 +65,18 @@ class ActivityWeather : AppCompatActivity() {
                     }
                 }.attach()
 
+                if (it == 0){
+                    viewPager.visibility = View.GONE
+
+                }
+
                 viewPager.visibility = View.VISIBLE
             }
         }
 
     }
 
-    fun animationToolbar() = with(binding){
+    private fun animationToolbar() = with(binding){
         cardToolbar.alpha = 0f
         viewPager.registerOnPageChangeCallback(object :ViewPager2.OnPageChangeCallback(){
             override fun onPageSelected(position: Int) {

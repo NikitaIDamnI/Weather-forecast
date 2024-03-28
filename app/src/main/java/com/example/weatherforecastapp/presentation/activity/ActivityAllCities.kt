@@ -3,7 +3,6 @@ package com.example.weatherforecastapp.presentation.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -84,27 +83,35 @@ class ActivityAllCities : AppCompatActivity() {
     }
 
     private fun setupSwipeListener(rvShopList: RecyclerView) {
-        val callback = object : ItemTouchHelper
-        .SimpleCallback(0, ItemTouchHelper.LEFT) {
+        val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                TODO("Not yet implemented")
+                return false
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val item = adapterAllCities.currentList[viewHolder.adapterPosition]
-                Log.d("ActivityAllCities_log", "item| ${item.positionId} ")
-                if (item.positionId != 0){
-                    viewModel.deleteCity(item)
-                }else{
-                    adapterAllCities.notifyItemChanged(viewHolder.adapterPosition)
-                }
+                val position = viewHolder.adapterPosition
+                val item = adapterAllCities.currentList[position]
 
+                if (position != 0) {
+                    viewModel.deleteCity(item)
+                } else {
+                    adapterAllCities.notifyItemChanged(position)
+                }
             }
 
+            override fun getSwipeDirs(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder
+            ): Int {
+                return if (viewHolder.adapterPosition == 0) 0 else super.getSwipeDirs(
+                    recyclerView,
+                    viewHolder
+                )
+            }
         }
         val itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(rvShopList)

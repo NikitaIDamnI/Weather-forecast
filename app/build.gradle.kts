@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.resolve.featureDependencies
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -43,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.work.runtime.ktx)
     implementation (libs.dagger)
     implementation(libs.play.services.location)
     ksp (libs.dagger.compiler )

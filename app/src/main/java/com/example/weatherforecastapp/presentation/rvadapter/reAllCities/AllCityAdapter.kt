@@ -26,8 +26,9 @@ class AllCityAdapter(
             with(city) {
                 if (position == 0) {
                     tvCity.text = "Текущее положение"
+                }else {
+                    tvCity.text = name
                 }
-                tvCity.text = name
                 tvTime.text = localtime
                 tvCondition.text = condition_text
                 tvMaxMin.text = formatTime(day_maxtempC.toInt(), day_mintempC.toInt())
