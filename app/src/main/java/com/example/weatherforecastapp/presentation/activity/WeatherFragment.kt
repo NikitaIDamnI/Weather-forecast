@@ -84,6 +84,9 @@ class WeatherFragment : Fragment() {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
 
     private fun parseArgument(): Int {
         return requireArguments().getInt(KEY_ID_CITY)

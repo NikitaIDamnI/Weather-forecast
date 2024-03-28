@@ -96,7 +96,7 @@ class ActivityWeather : AppCompatActivity() {
     }
 
     override fun onResume() {
-        viewModel.checkLocation()
+        viewModel.checkLocation(this)
         super.onResume()
     }
 

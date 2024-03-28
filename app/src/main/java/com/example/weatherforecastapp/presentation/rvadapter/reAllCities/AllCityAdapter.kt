@@ -24,7 +24,7 @@ class AllCityAdapter(
         val city = getItem(position)
         with(holder.binding) {
             with(city) {
-                if (position == 0) {
+                if (city.positionId == 0) {
                     tvCity.text = "Текущее положение"
                 }else {
                     tvCity.text = name

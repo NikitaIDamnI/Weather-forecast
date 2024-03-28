@@ -15,6 +15,7 @@ import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
 import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
+import com.example.weatherforecastapp.presentation.activity.ActivityAllCities
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -34,6 +35,7 @@ class LocationRepositoryImpl(
     private val saveUserLocation = UseCaseSaveUserLocation(repositoryImpl)
     private var fLocationClient = LocationServices.getFusedLocationProviderClient(context)
     private var getUserLocation = UseCaseGetUserLocation(repositoryImpl)
+
     //var updateData: (() -> Unit)? = null
     private var updateListener: LocationRepository.LocationUpdateListener? = null
 
@@ -71,13 +73,20 @@ class LocationRepositoryImpl(
             }
     }
 
-    override fun checkLocation() {
-        if (isLocationEnabled()) {
+    override fun checkLocation(context: Context) {
+        val isLocationEnabled = isLocationEnabled()
+        if (isLocationEnabled) {
+            Log.d("LocationRepositoryImpl", "isLocationEnabled:$isLocationEnabled ")
             getLocation()
         } else {
             DialogManager.locationSettingsDialog(context, object : DialogManager.Listener {
-                override fun onClick() {
+                override fun onClickPositive() {
                     context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+
+                override fun onClickNegative() {
+                    val intent = ActivityAllCities.newInstance(context)
+                    context.startActivity(intent)
                 }
             })
         }
