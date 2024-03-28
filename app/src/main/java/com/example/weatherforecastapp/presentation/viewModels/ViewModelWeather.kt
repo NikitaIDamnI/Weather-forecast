@@ -12,7 +12,9 @@ import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasNumberOfCities
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
+import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
+import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseUpdateDataLocation
 import kotlinx.coroutines.launch
 
 
@@ -26,6 +28,7 @@ class ViewModelWeather(
     private val useCaseCheckLocation = UseCaseCheckLocation(repositoryLocal)
     private val useCasNumberOfCities = UseCasNumberOfCities(repository)
     private val useCaseWeatherUpdate = UseCaseWeatherUpdate(repository)
+    private val setUpdateListener = UseCaseUpdateDataLocation(repositoryLocal)
 
 
     var location = repository.getLocation(id)
@@ -34,19 +37,21 @@ class ViewModelWeather(
     var sizeCity = MutableLiveData<Int>()
 
     init {
-        repositoryLocal.updateData = {
-            update()
-        }
+        setUpdateListener(update())
         weatherUpdate()
         numberOfCities()
     }
 
-    fun update() {
-        location = repository.getLocation(id)
-        current = repository.getCurrentDay(id)
-        forecastDay = repository.getForecastDas(id)
-        numberOfCities()
+
+    private fun update() = object : LocationRepository.LocationUpdateListener {
+        override fun onUpdate() {
+            location = repository.getLocation(id)
+            current = repository.getCurrentDay(id)
+            forecastDay = repository.getForecastDas(id)
+            numberOfCities()
+        }
     }
+
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
         return current.weatherPrecipitation.filter {
@@ -80,7 +85,4 @@ class ViewModelWeather(
     }
 
 
-    companion object {
-        const val MIN_SIZE_CITY = 1
-    }
 }

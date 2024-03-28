@@ -33,8 +33,9 @@ class LocationRepositoryImpl(
     private val repositoryImpl = RepositoryDataImpl(context)
     private val saveUserLocation = UseCaseSaveUserLocation(repositoryImpl)
     private var fLocationClient = LocationServices.getFusedLocationProviderClient(context)
-   private var getUserLocation = UseCaseGetUserLocation(repositoryImpl)
-    var updateData: (() -> Unit)? = null
+    private var getUserLocation = UseCaseGetUserLocation(repositoryImpl)
+    //var updateData: (() -> Unit)? = null
+    private var updateListener: LocationRepository.LocationUpdateListener? = null
 
 
     private fun getLocation() {
@@ -60,7 +61,8 @@ class LocationRepositoryImpl(
                     if (locationDb.position != positionGPS.position) {
                         Log.d("LocationRepositoryImpl", "Update: true ")
                         saveUserLocation(dataRounding(it))
-                        updateData?.invoke()
+                        //updateData?.invoke()
+                        updateListener?.onUpdate()
                     } else {
                         Log.d("LocationRepositoryImpl", "locationDb: false ")
                     }
@@ -79,6 +81,10 @@ class LocationRepositoryImpl(
                 }
             })
         }
+    }
+
+    override fun setUpdateListener(listener: LocationRepository.LocationUpdateListener) {
+        updateListener = listener
     }
 
     private fun isLocationEnabled(): Boolean {
