@@ -51,7 +51,7 @@ class ActivityWeather : AppCompatActivity() {
 
             with(binding) {
                 viewPager.adapter = pager
-                viewPager.setCurrentItem(parseArg(), true)
+                viewPager.setCurrentItem(parseArg(), false)
 
                 TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
                     when (position) {
@@ -102,9 +102,13 @@ class ActivityWeather : AppCompatActivity() {
 
     companion object {
         private const val CITY_ID = "city_id"
-        fun newIntent(context: Context, idCity: Int): Intent{
+        private const val TRANSITION_ELEMENT = "transition"
+
+
+        fun newIntent(context: Context, idCity: Int,transition: Boolean): Intent{
             val intent = Intent(context, ActivityWeather::class.java)
             intent.putExtra(CITY_ID, idCity)
+            intent.putExtra(TRANSITION_ELEMENT,transition)
             return intent
         }
     }

@@ -37,6 +37,7 @@ class ActivityAllCities : AppCompatActivity() {
 
     }
 
+
     private fun setupAllCitiesAdapter() = with(binding) {
         adapterAllCities = AllCityAdapter(applicationContext)
         viewModel.listLocation.observe(this@ActivityAllCities, Observer {
@@ -44,8 +45,9 @@ class ActivityAllCities : AppCompatActivity() {
         })
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
-        adapterAllCities.onClick = {
-            val intent = ActivityWeather.newIntent(this@ActivityAllCities, it)
+        adapterAllCities.onClick = { id, binding ->
+            val intent = ActivityWeather.newIntent(this@ActivityAllCities,id,true)
+
             startActivity(intent)
             finish()
         }
@@ -119,6 +121,10 @@ class ActivityAllCities : AppCompatActivity() {
 
 
     companion object {
+        const val EXTRA_ID = "extra_it"
+
         fun newInstance(context: Context) = Intent(context, ActivityAllCities::class.java)
     }
+
+
 }

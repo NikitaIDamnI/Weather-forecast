@@ -1,48 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item_card"
     android:layout_width="match_parent"
-    android:layout_height="110dp"
-    android:backgroundTint="#29B6F6"
-    app:cardCornerRadius="20dp"
-    android:layout_marginTop="10dp">
+    android:layout_height="100dp"
+    android:layout_marginTop="5dp"
+    app:cardCornerRadius="15dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.0"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    android:transitionName="weather_background"
+    >
+
+    <ImageView
+        android:id="@+id/im_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/back_dark_d"
+        />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent">
 
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:scaleType="centerCrop"
-            app:srcCompat="@drawable/back_zima"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/vert_end_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_begin="15dp" />
+            app:layout_constraintGuide_percent="0.02" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/vert_start_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_end="15dp" />
+            app:layout_constraintGuide_percent="0.98" />
 
         <TextView
             android:id="@+id/tv_city"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-                    android:textColor="@color/colore_text"
+            android:textColor="@color/colore_text"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
@@ -53,7 +59,7 @@
             android:id="@+id/tv_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-                    android:textColor="@color/colore_text"
+            android:textColor="@color/colore_text"
             android:textStyle="bold"
 
             app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
@@ -64,7 +70,7 @@
             android:id="@+id/tv_condition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-                    android:textColor="@color/colore_text"
+            android:textColor="@color/colore_text"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
             app:layout_constraintTop_toBottomOf="@id/tv_time"
@@ -76,10 +82,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-                    android:textColor="@color/colore_text"
+            android:textColor="@color/colore_text"
             android:textSize="50sp"
             android:textStyle="normal"
-            app:layout_constraintEnd_toEndOf="@+id/vert_start_guideline"
+            app:layout_constraintEnd_toStartOf="@+id/vert_start_guideline"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="-10°" />
 
@@ -87,9 +93,8 @@
             android:id="@+id/tv_max_min"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
             android:layout_marginBottom="8dp"
-                    android:textColor="@color/colore_text"
+            android:textColor="@color/colore_text"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/vert_start_guideline"
