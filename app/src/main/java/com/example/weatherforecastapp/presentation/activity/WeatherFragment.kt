@@ -46,8 +46,11 @@ class WeatherFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().supportStartPostponedEnterTransition()
+        postponeEnterTransition()
         initCurrent()
         initForecast()
+        requireActivity().supportStartPostponedEnterTransition()
     }
 
 
@@ -65,6 +68,7 @@ class WeatherFragment : Fragment() {
                 val listPrecipitation = viewModel.getWeatherPrecipitation(it)
                 adapterPrecipitation.submitList(listPrecipitation)
                 rvPrecipitation.adapter = adapterPrecipitation
+                binding.imBackground.transitionName =  "${parseArgument()}"
             })
 
         }

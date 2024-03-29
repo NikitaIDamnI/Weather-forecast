@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.safeArgsNav)
 }
 
 android {
@@ -35,16 +36,19 @@ android {
         jvmTarget = "1.8"
     }
 
-   buildFeatures{
-       viewBinding = true
-   }
-}
+    buildFeatures {
+        viewBinding = true
+    }
 
+}
 dependencies {
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+
     implementation(libs.androidx.work.runtime.ktx)
-    implementation (libs.dagger)
+    implementation(libs.dagger)
     implementation(libs.play.services.location)
-    ksp (libs.dagger.compiler )
+    ksp(libs.dagger.compiler)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.androidx.room.runtime)

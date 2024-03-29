@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -46,10 +47,13 @@ class ActivityAllCities : AppCompatActivity() {
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
         adapterAllCities.onClick = { id, binding ->
-            val intent = ActivityWeather.newIntent(this@ActivityAllCities,id,true)
-
-            startActivity(intent)
-            finish()
+                val intent = ActivityWeather.newIntent(this@ActivityAllCities, id, true)
+                val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    this@ActivityAllCities,
+                    binding.itemCard,
+                    binding.itemCard.transitionName
+                )
+                startActivity(intent, options.toBundle())
         }
     }
 

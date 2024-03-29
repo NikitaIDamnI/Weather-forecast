@@ -4,7 +4,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.weatherforecastapp.presentation.activity.WeatherFragment
 
 class PagerAdapter(
-    fragmentActivity: FragmentActivity,
+    private val fragmentActivity: FragmentActivity,
     private val itemCount: Int
 ) : FragmentStateAdapter(fragmentActivity) {
 

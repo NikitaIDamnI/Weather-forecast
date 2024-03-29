@@ -50,6 +50,7 @@ class ActivityWeather : AppCompatActivity() {
             val pager = PagerAdapter(this, it)
 
             with(binding) {
+
                 viewPager.adapter = pager
                 viewPager.setCurrentItem(parseArg(), false)
 
