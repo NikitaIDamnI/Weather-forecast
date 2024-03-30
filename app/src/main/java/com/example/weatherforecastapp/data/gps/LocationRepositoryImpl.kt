@@ -15,7 +15,6 @@ import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
 import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
-import com.example.weatherforecastapp.presentation.activity.ActivityAllCities
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -85,8 +84,7 @@ class LocationRepositoryImpl(
                 }
 
                 override fun onClickNegative() {
-                    val intent = ActivityAllCities.newInstance(context)
-                    context.startActivity(intent)
+
                 }
             })
         }

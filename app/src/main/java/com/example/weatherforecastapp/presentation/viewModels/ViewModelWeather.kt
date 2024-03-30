@@ -38,11 +38,12 @@ class ViewModelWeather(
     var sizeCity = MutableLiveData<Int>()
 
     init {
-        setUpdateListener(update())
-        weatherUpdate()
         numberOfCities()
     }
 
+    fun updateData(){
+        setUpdateListener(update())
+    }
 
     private fun update() = object : LocationRepository.LocationUpdateListener {
         override fun onUpdate() {
@@ -74,7 +75,7 @@ class ViewModelWeather(
 
     }
 
-    private fun weatherUpdate() {
+    fun weatherUpdate() {
         viewModelScope.launch {
             useCaseWeatherUpdate.invoke()
         }

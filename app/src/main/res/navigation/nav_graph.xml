@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragmentPagerWeather">
+    <fragment
+        android:id="@+id/fragmentPagerWeather"
+        android:name="com.example.weatherforecastapp.presentation.activity.fragments.FragmentPagerWeather"
+        android:label="fragment_pager_weather"
+        tools:layout="@layout/fragment_pager_weather" >
+        <argument android:name="id"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <action
+            android:id="@+id/action_fragmentPagerWeather_to_fragmentAllCities"
+            app:destination="@id/fragmentAllCities" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentAllCities"
+        android:name="com.example.weatherforecastapp.presentation.activity.fragments.FragmentAllCities"
+        android:label="fragment_all_cities"
+        tools:layout="@layout/fragment_all_cities" >
+        <action
+            android:id="@+id/action_fragmentAllCities_to_fragmentPagerWeather"
+            app:destination="@id/fragmentPagerWeather"
+            app:launchSingleTop="false"
+            app:popUpTo="@id/fragmentAllCities"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/weatherFragment"
+        android:name="com.example.weatherforecastapp.presentation.activity.fragments.WeatherFragment"
+        android:label="weather_fragment"
+        tools:layout="@layout/weather_fragment" >
+        <argument
+            android:name="id"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+</navigation>

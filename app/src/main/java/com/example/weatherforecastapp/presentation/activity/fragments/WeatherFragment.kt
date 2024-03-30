@@ -1,4 +1,4 @@
-package com.example.weatherforecastapp.presentation.activity
+package com.example.weatherforecastapp.presentation.activity.fragments
 
 import android.content.Context
 import android.os.Bundle
@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
@@ -24,13 +25,18 @@ class WeatherFragment : Fragment() {
     private val binding: WeatherFragmentBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
+    private val args by navArgs<WeatherFragmentArgs>()
+
+
     private val viewModelFactory by lazy {
-        ViewModelFactory(requireActivity().application, parseArgument())
+        ViewModelFactory(requireActivity().application, args.id)
     }
 
     private val viewModel by lazy {
         ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
     }
+
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -46,11 +52,8 @@ class WeatherFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        requireActivity().supportStartPostponedEnterTransition()
-        postponeEnterTransition()
         initCurrent()
         initForecast()
-        requireActivity().supportStartPostponedEnterTransition()
     }
 
 
@@ -68,7 +71,7 @@ class WeatherFragment : Fragment() {
                 val listPrecipitation = viewModel.getWeatherPrecipitation(it)
                 adapterPrecipitation.submitList(listPrecipitation)
                 rvPrecipitation.adapter = adapterPrecipitation
-                binding.imBackground.transitionName =  "${parseArgument()}"
+                binding.imBackground.transitionName =  "${args.id}"
             })
 
         }
@@ -88,22 +91,5 @@ class WeatherFragment : Fragment() {
         })
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
 
-    private fun parseArgument(): Int {
-        return requireArguments().getInt(KEY_ID_CITY)
-    }
-
-    companion object {
-        private const val KEY_ID_CITY = "id city"
-        fun newInstance(idCity: Int): WeatherFragment {
-            return WeatherFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(KEY_ID_CITY, idCity)
-                }
-            }
-        }
-    }
 }

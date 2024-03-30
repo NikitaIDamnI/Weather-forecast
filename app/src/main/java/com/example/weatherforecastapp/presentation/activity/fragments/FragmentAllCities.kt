@@ -1,16 +1,17 @@
-package com.example.weatherforecastapp.presentation.activity
+package com.example.weatherforecastapp.presentation.activity.fragments
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityOptionsCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.example.weatherforecastapp.databinding.ActivityAllCitiesBinding
+import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
@@ -18,11 +19,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ActivityAllCities : AppCompatActivity() {
 
-    private val binding by lazy {
-        ActivityAllCitiesBinding.inflate(layoutInflater)
-    }
+class FragmentAllCities : Fragment() {
+
+    private var _binding: FragmentAllCitiesBinding? = null
+    private val binding: FragmentAllCitiesBinding
+        get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
+
+
     private val viewModel by lazy {
         ViewModelProvider(this)[ViewModelAllCities::class.java]
     }
@@ -30,36 +34,37 @@ class ActivityAllCities : AppCompatActivity() {
     lateinit var adapterAllCities: AllCityAdapter
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-        setupAllCitiesAdapter()
-        setupSearchAdapter()
-
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAllCitiesBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupAllCitiesAdapter()
+        setupSearchAdapter()
+    }
 
     private fun setupAllCitiesAdapter() = with(binding) {
-        adapterAllCities = AllCityAdapter(applicationContext)
-        viewModel.listLocation.observe(this@ActivityAllCities, Observer {
+        adapterAllCities = AllCityAdapter(requireActivity().applicationContext)
+        viewModel.listLocation.observe(viewLifecycleOwner, Observer {
             adapterAllCities.submitList(it)
         })
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
         adapterAllCities.onClick = { id, binding ->
-                val intent = ActivityWeather.newIntent(this@ActivityAllCities, id, true)
-                val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                    this@ActivityAllCities,
-                    binding.itemCard,
-                    binding.itemCard.transitionName
-                )
-                startActivity(intent, options.toBundle())
+            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather().setId(id)
+            findNavController().navigate(action)
+
         }
     }
 
     private fun setupSearchAdapter() {
 
-        searchCityAdapter = SearchCityAdapter(this@ActivityAllCities)
+        searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
         searchCityAdapter.onClick = {
             viewModel.addCity(it)
@@ -70,7 +75,7 @@ class ActivityAllCities : AppCompatActivity() {
                 CoroutineScope(Dispatchers.Main).launch {
                     if (!query.isNullOrEmpty()) {
                         viewModel.searchCity(query)
-                        viewModel.searchCityList.observe(this@ActivityAllCities, Observer {
+                        viewModel.searchCityList.observe(viewLifecycleOwner, Observer {
                             searchCityAdapter.submitList(it)
                         })
                     }
@@ -121,13 +126,6 @@ class ActivityAllCities : AppCompatActivity() {
         }
         val itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(rvShopList)
-    }
-
-
-    companion object {
-        const val EXTRA_ID = "extra_it"
-
-        fun newInstance(context: Context) = Intent(context, ActivityAllCities::class.java)
     }
 
 
