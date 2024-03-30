@@ -14,7 +14,10 @@
             android:defaultValue="0" />
         <action
             android:id="@+id/action_fragmentPagerWeather_to_fragmentAllCities"
-            app:destination="@id/fragmentAllCities" />
+            app:destination="@id/fragmentAllCities"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:launchSingleTop="true" />
 
     </fragment>
     <fragment
@@ -25,8 +28,10 @@
         <action
             android:id="@+id/action_fragmentAllCities_to_fragmentPagerWeather"
             app:destination="@id/fragmentPagerWeather"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
             app:launchSingleTop="false"
-            app:popUpTo="@id/fragmentAllCities"
+            app:popUpTo="@id/fragmentPagerWeather"
             app:popUpToInclusive="true" />
     </fragment>
     <fragment

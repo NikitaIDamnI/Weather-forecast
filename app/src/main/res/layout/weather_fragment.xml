@@ -163,7 +163,7 @@
                     android:layout_marginBottom="20dp"
                     android:progress="20"
                     android:progressDrawable="@drawable/vert_progress_bar"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     app:layout_constraintBottom_toTopOf="@+id/rv_current_day"
                     app:layout_constraintEnd_toStartOf="@+id/rv_precipitation"
                     app:layout_constraintTop_toTopOf="parent" />

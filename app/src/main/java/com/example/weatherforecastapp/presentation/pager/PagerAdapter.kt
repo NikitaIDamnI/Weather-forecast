@@ -8,8 +8,9 @@ import com.example.weatherforecastapp.presentation.activity.fragments.WeatherFra
 
 class PagerAdapter(
     private val fragmentActivity: FragmentActivity,
+    private val idLocation: Int,
     private val argsList: List<Bundle>
-) : FragmentStateAdapter(fragmentActivity) {
+) : FragmentStateAdapter(fragmentActivity){
 
     override fun getItemCount(): Int {
         Log.d("PagerAdapter_Log", "getItemCount:${argsList.size} ")
@@ -21,5 +22,6 @@ class PagerAdapter(
             arguments = argsList[position]
         }
     }
+
 
 }

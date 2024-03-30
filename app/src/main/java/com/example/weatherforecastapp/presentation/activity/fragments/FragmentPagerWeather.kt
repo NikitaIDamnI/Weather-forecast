@@ -58,12 +58,12 @@ class FragmentPagerWeather : Fragment() {
         viewModel.sizeCity.observe(viewLifecycleOwner) {
             val argsList = getListArgs(it)
             Log.d("FragmentPagerWeather_Log", "sizeCity: $it")
-            val pager = PagerAdapter(requireActivity(), argsList)
+            val pager = PagerAdapter(requireActivity(),args.id,argsList)
 
             with(binding) {
 
                 viewPager.adapter = pager
-                viewPager.setCurrentItem(args.id, false)
+                viewPager.setCurrentItem(args.id, false,)
 
                 TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
                     when (position) {
