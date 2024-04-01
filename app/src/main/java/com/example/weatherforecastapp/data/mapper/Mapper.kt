@@ -1,8 +1,12 @@
 package com.example.weatherforecastapp.data.mapper
 
+import android.content.Context
+import android.util.Log
+import androidx.core.content.ContextCompat
 import com.example.testapi.network.model.forecastdaysModels.ForecastDayDto
 import com.example.testapi.network.model.forecastdaysModels.HourDto
 import com.example.testapi.network.model.searchCityModels.SearchCityDto
+import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.data.database.models.CurrentDb
 import com.example.weatherforecastapp.data.database.models.ForecastDaysDb
 import com.example.weatherforecastapp.data.database.models.LocationDb
@@ -55,11 +59,11 @@ class Mapper {
         astro_isMoonUp = cityDto.forecast.days[0].astro.isSunUp,
         astro_isSunUp = cityDto.forecast.days[0].astro.isSunUp,
         condition_text = cityDto.currentDto.conditionDto.text,
-        condition_icon = HTTPS_TEG+cityDto.currentDto.conditionDto.icon,
+        condition_icon = HTTPS_TEG + cityDto.currentDto.conditionDto.icon,
         condition_code = cityDto.currentDto.conditionDto.code,
         param_windKph = cityDto.currentDto.windKph,
         param_windDegree = cityDto.currentDto.windDegree,
-        param_pressureIn = cityDto.currentDto.pressureIn,
+        param_pressureMb = cityDto.currentDto.pressureMb,
         param_precipitationMm = cityDto.currentDto.precipitationMm,
         param_humidity = cityDto.currentDto.humidity,
         param_cloud = cityDto.currentDto.cloud,
@@ -90,7 +94,7 @@ class Mapper {
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.mintempC,
         condition_text = cityDto.currentDto.conditionDto.text,
-        condition_icon = HTTPS_TEG+cityDto.currentDto.conditionDto.icon,
+        condition_icon = HTTPS_TEG + cityDto.currentDto.conditionDto.icon,
         condition_code = cityDto.currentDto.conditionDto.code,
     )
 
@@ -134,7 +138,7 @@ class Mapper {
                 dailyChanceOfSnow = dto.day.dailyChanceOfSnow,
                 condition = Condition(
                     text = dto.day.condition.text,
-                    icon = HTTPS_TEG+dto.day.condition.icon,
+                    icon = HTTPS_TEG + dto.day.condition.icon,
                     code = dto.day.condition.code,
                 ),
             ),
@@ -157,9 +161,9 @@ class Mapper {
         is_day = dto.isDay,
         condition = Condition(
             text = dto.condition.text,
-            icon = HTTPS_TEG+dto.condition.icon,
+            icon = HTTPS_TEG + dto.condition.icon,
             code = dto.condition.code
-        ) ,
+        ),
         feelslike_c = dto.feelslikeC,
     )
 
@@ -177,7 +181,7 @@ class Mapper {
 
     )
 
-    fun mapperCurrentDbToEntityCurrent(currentDb: CurrentDb?) = currentDb?.let { db ->
+    fun mapperCurrentDbToEntityCurrent(currentDb: CurrentDb?,context: Context) = currentDb?.let { db ->
         Current(
             id = db.id,
             nameCity = db.nameCity,
@@ -220,54 +224,153 @@ class Mapper {
                 icon = db.condition_icon,
                 code = db.condition_code,
             ),
-            weatherPrecipitation = getWeatherParameter(db),
+            weatherPrecipitation = getWeatherParameter(db,context),
         )
     } ?: Current()
 
 
-    private fun getWeatherParameter(currentDb: CurrentDb): List<WeatherPrecipitation> {
+    private fun getWeatherParameter(currentDb: CurrentDb,context: Context): List<WeatherPrecipitation> {
+
+
         val windKph = WeatherPrecipitation(
-            value = currentDb.param_windKph, name = "Wind", unit = WeatherPrecipitation.VALUE_KM_H,
+            value = currentDb.param_windKph.toInt(),
+            name = "Wind",
+            unit = WeatherPrecipitation.VALUE_KM_H,
+            maxValue = 50,
+            normalValue = 177 / 2,
+            minValue = 0,
+            valueString = currentDb.param_windKph.toInt().toString()
         )
+        windKph.color = getColor(windKph,context)
+        windKph.valuePercent = calculatePercentage(windKph)
 
         val pressureIn = WeatherPrecipitation(
-            value = currentDb.param_pressureIn,
-            name = "Pressure", unit = WeatherPrecipitation.VALUE_MM_HG
+            value = currentDb.param_pressureMb.toInt(),
+            name = "Pressure", unit = WeatherPrecipitation.VALUE_MM_HG,
+            maxValue = 1065, normalValue = 1035, minValue = 960,
+            valueString = currentDb.param_pressureMb.toInt().toString()
+
         )
+        pressureIn.color = getColor(pressureIn,context)
+        pressureIn.valuePercent = calculatePercentage(pressureIn)
+
         val precipitation = WeatherPrecipitation(
-            value = currentDb.param_precipitationMm,
-            name = "Precipitation", unit = WeatherPrecipitation.VALUE_MM
+            value = currentDb.param_precipitationMm.toInt(),
+            name = "Precipitation", unit = WeatherPrecipitation.VALUE_MBAR,
+            maxValue = 10, minValue = 0, normalValue = 6,
+            valueString = currentDb.param_precipitationMm.toInt().toString()
         )
+        precipitation.color = getColor(precipitation,context)
+        precipitation.valuePercent = calculatePercentage(precipitation)
+
         val humidity = WeatherPrecipitation(
-            value = currentDb.param_humidity.toDouble(),
-            name = "Humidity", unit = WeatherPrecipitation.VALUE_PERCENT
+            value = currentDb.param_humidity,
+            name = "Humidity", unit = WeatherPrecipitation.VALUE_PERCENT,
+            maxValue = 100, minValue = 0, normalValue = 50,
+            valueString = "%${currentDb.param_humidity.toDouble()}",
+            valuePercent = currentDb.param_humidity
+
         )
+        humidity.color = getColor(humidity,context)
+
         val cloud = WeatherPrecipitation(
-            value = currentDb.param_cloud.toDouble(),
-            name = "Cloud", unit = WeatherPrecipitation.VALUE_PERCENT
+            value = currentDb.param_cloud,
+            name = "Cloud",
+            unit = WeatherPrecipitation.VALUE_PERCENT,
+            maxValue = 100,
+            minValue = 0,
+            normalValue = 50,
+            valueString = "%${currentDb.param_cloud.toDouble()}",
+            valuePercent = currentDb.param_cloud
         )
+        cloud.color = getColor(cloud,context)
+
         val feelsLikeCelsius = WeatherPrecipitation(
-            value = currentDb.param_feelsLikeCelsius,
-            name = "Feels", unit = WeatherPrecipitation.VALUE_DEGREE
+            value = currentDb.param_feelsLikeCelsius.toInt(),
+            name = "Feels",
+            unit = WeatherPrecipitation.VALUE_DEGREE,
+            maxValue = 50,
+            minValue = -50,
+            normalValue = 0,
+            valueString = currentDb.param_feelsLikeCelsius.toInt()
+                .toString() + WeatherPrecipitation.VALUE_DEGREE
         )
+        feelsLikeCelsius.color = getColorFeels(feelsLikeCelsius,context)
+        feelsLikeCelsius.valuePercent = feelsPercentage(feelsLikeCelsius)
+
         val visibilityKm = WeatherPrecipitation(
-            value = currentDb.param_visibilityKm,
-            name = "Visibility", unit = WeatherPrecipitation.VALUE_KM_H
+            value = currentDb.param_visibilityKm.toInt(),
+            name = "Visibility", unit = WeatherPrecipitation.VALUE_KM_H,
+            maxValue = 45, minValue = 0, normalValue = 25,
+            valueString = currentDb.param_visibilityKm.toString()
         )
+        visibilityKm.color = getColor(visibilityKm,context)
+        visibilityKm.valuePercent = calculatePercentage(visibilityKm)
+
         val uvIndex = WeatherPrecipitation(
-            value = currentDb.param_uvIndex,
-            name = "UV Index", unit = WeatherPrecipitation.NOT_VALUE
-        )
+            value = currentDb.param_uvIndex.toInt(),
+            name = "UV Index", unit = WeatherPrecipitation.NOT_VALUE,
+            maxValue = 11, minValue = 0, normalValue = 5,
+            valueString = currentDb.param_uvIndex.toString(),
+
+            )
+        uvIndex.color = getColor(uvIndex,context)
+        uvIndex.valuePercent = calculatePercentage(uvIndex)
+
         val gustKph = WeatherPrecipitation(
-            value = currentDb.param_gustKph,
-            name = "Gust", unit = WeatherPrecipitation.VALUE_KM_H
+            value = currentDb.param_gustKph.toInt(),
+            name = "Gust", unit = WeatherPrecipitation.VALUE_KM_H,
+            maxValue = 0, minValue = 0, normalValue = 0,
+            valueString = currentDb.param_gustKph.toString()
+
         )
         return mutableListOf<WeatherPrecipitation>(
-            feelsLikeCelsius, windKph,visibilityKm, humidity, cloud, precipitation,
-            pressureIn, gustKph, uvIndex
+            feelsLikeCelsius, windKph, precipitation, visibilityKm, humidity, cloud,
+            pressureIn, uvIndex
         )
     }
 
+    fun feelsPercentage(weather: WeatherPrecipitation): Int {
+       return weather.value + weather.maxValue
+    }
+
+    fun calculatePercentage(weather: WeatherPrecipitation): Int {
+        with(weather) {
+            require(minValue <= maxValue) { "minValue должно быть меньше или равно maxValue" }
+            require(value in minValue..maxValue) { "value должно быть в пределах от minValue до maxValue" }
+
+            val range = maxValue - minValue
+            val adjustedValue = value - minValue
+            val percentage = if (range != 0) {
+                ((adjustedValue.toDouble() / range.toDouble()) * 100).toInt()
+            } else {
+                0 // В случае, если range равен 0, возвращаем 0, чтобы избежать деления на 0.
+            }
+            Log.d("Mapper", "calculatePercentage: $percentage")
+            return percentage
+        }
+    }
+
+
+    fun getColorFeels(weather: WeatherPrecipitation,context:Context): Int {
+        val temperature = weather.value
+        return when {
+            temperature < 0 ->  ContextCompat.getColor(context, R.color.precipitation_cold)
+            temperature in 0..20 -> ContextCompat.getColor(context,R.color.precipitation_lite)
+            temperature in 21..30 -> ContextCompat.getColor(context,R.color.precipitation_normal)
+            else -> ContextCompat.getColor(context,R.color.precipitation_hard)
+        }
+    }
+
+    fun getColor(weather: WeatherPrecipitation,context: Context): Int {
+        val value = weather.value
+        return when {
+            value < weather.normalValue/ 1.5-> ContextCompat.getColor(context,R.color.precipitation_lite)
+            value < weather.normalValue -> ContextCompat.getColor(context,R.color.precipitation_normal)
+            value > weather.normalValue -> ContextCompat.getColor(context,R.color.precipitation_hard)
+            else -> 0
+        }
+    }
 
     fun mapperSearchCityDtoToEntitySearchCity(searchCityDto: SearchCityDto) = SearchCity(
         id = searchCityDto.id,
@@ -277,8 +380,6 @@ class Mapper {
         lat = searchCityDto.lat,
         lon = searchCityDto.lon,
     )
-
-
 
 
     private fun formatTime(epochTime: Long): String {
@@ -291,7 +392,8 @@ class Mapper {
         return localtime.split(" ")[1]
 
     }
-    companion object{
+
+    companion object {
         const val HTTPS_TEG = "https:"
     }
 }

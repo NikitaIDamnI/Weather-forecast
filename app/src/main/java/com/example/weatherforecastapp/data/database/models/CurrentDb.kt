@@ -27,7 +27,7 @@ data class CurrentDb(
     val is_day: Int, // Показывает, является ли сейчас день (1 - да, 0 - нет)
     val param_windKph: Double,// Скорость ветра в километрах в час
     val param_windDegree: Int,// Направление ветра в градусах
-    val param_pressureIn: Double,// Давление в дюймах ртутного столба
+    val param_pressureMb: Double,
     val param_precipitationMm: Double,// Количество осадков в миллиметрах
     val param_humidity: Int,// Влажность в процентах
     val param_cloud: Int,// Облачность в процентах

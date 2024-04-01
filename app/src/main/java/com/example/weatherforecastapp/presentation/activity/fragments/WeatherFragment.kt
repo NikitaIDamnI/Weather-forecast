@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
@@ -35,7 +36,6 @@ class WeatherFragment : Fragment() {
     private val viewModel by lazy {
         ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
     }
-
 
 
     override fun onAttach(context: Context) {
@@ -67,14 +67,26 @@ class WeatherFragment : Fragment() {
                 tvDegree.text = temp
                 tvCondition.text = it.condition.text
                 Picasso.get().load(it.condition.icon).into(imWeather)
-                Log.d("WeatherFragment", "weatherPrecipitation: ${it.weatherPrecipitation}")
                 val listPrecipitation = viewModel.getWeatherPrecipitation(it)
+                Log.d("WeatherFragment_Log", "initCurrent: $listPrecipitation")
                 adapterPrecipitation.submitList(listPrecipitation)
+                setupPullAdapter(rvPrecipitation)
                 rvPrecipitation.adapter = adapterPrecipitation
-                binding.imBackground.transitionName =  "${args.id}"
+                binding.imBackground.transitionName = "${args.id}"
             })
 
         }
+    }
+
+    private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
+
+        rvPrecipitation.recycledViewPool.setMaxRecycledViews(
+            PrecipitationAdapter.ENABLE,
+            PrecipitationAdapter.MAX_PULL_SIZE
+        )
+
+
+
     }
 
     private fun initForecast() {
@@ -82,7 +94,7 @@ class WeatherFragment : Fragment() {
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
             with(binding) {
-                val listWeatherHour = viewModel.getWeatherHour(it[0])
+                val listWeatherHour = viewModel.getWeatherHour24(it)
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
                 adapterForecastDays.submitList(it)

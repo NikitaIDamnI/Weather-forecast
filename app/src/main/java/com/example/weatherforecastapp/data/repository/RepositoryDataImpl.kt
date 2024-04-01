@@ -19,7 +19,7 @@ import java.util.Calendar
 import java.util.Locale
 
 class RepositoryDataImpl(
-    context: Application
+    private val context: Application
 ) : RepositoryData {
     private val apiService: ApiService = ApiFactory.apiService
     private val mapper = Mapper()
@@ -111,7 +111,7 @@ class RepositoryDataImpl(
         return MediatorLiveData<Current>().apply {
             addSource(currentLiveDataDb) {
                 if (it != null) {
-                    value = mapper.mapperCurrentDbToEntityCurrent(it)
+                    value = mapper.mapperCurrentDbToEntityCurrent(it,context)
                 }
             }
         }
