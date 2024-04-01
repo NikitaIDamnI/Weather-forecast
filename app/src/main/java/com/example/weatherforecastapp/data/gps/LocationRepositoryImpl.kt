@@ -34,6 +34,7 @@ class LocationRepositoryImpl(
     private val saveUserLocation = UseCaseSaveUserLocation(repositoryImpl)
     private var fLocationClient = LocationServices.getFusedLocationProviderClient(context)
     private var getUserLocation = UseCaseGetUserLocation(repositoryImpl)
+
     //var updateData: (() -> Unit)? = null
     private var updateListener: LocationRepository.LocationUpdateListener? = null
 
@@ -71,13 +72,19 @@ class LocationRepositoryImpl(
             }
     }
 
-    override fun checkLocation() {
-        if (isLocationEnabled()) {
+    override fun checkLocation(context: Context) {
+        val isLocationEnabled = isLocationEnabled()
+        if (isLocationEnabled) {
+            Log.d("LocationRepositoryImpl", "isLocationEnabled:$isLocationEnabled ")
             getLocation()
         } else {
             DialogManager.locationSettingsDialog(context, object : DialogManager.Listener {
-                override fun onClick() {
+                override fun onClickPositive() {
                     context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+
+                override fun onClickNegative() {
+
                 }
             })
         }

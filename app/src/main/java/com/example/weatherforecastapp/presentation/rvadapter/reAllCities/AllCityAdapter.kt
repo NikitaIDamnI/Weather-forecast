@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
-import com.example.weatherforecastapp.databinding.ItemCityLocationBinding
+import com.example.weatherforecastapp.databinding.ItemFragmetCityBinding
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 
@@ -12,10 +12,10 @@ class AllCityAdapter(
     private val context: Context
 ) : ListAdapter<Location, AllCityAdapterViewHolder>(AllCityAdapterDiffUtil()) {
 
-    var onClick: ((id: Int) -> Unit)? = null
+    var onClick: ((id: Int, binding: ItemFragmetCityBinding) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AllCityAdapterViewHolder {
-        val binding = ItemCityLocationBinding
+        val binding =ItemFragmetCityBinding
             .inflate(LayoutInflater.from(context), parent, false)
         return AllCityAdapterViewHolder(binding)
     }
@@ -24,7 +24,8 @@ class AllCityAdapter(
         val city = getItem(position)
         with(holder.binding) {
             with(city) {
-                if (position == 0) {
+
+                if (city.positionId == 0) {
                     tvCity.text = "Текущее положение"
                 }else {
                     tvCity.text = name
@@ -35,8 +36,10 @@ class AllCityAdapter(
                 val temp = temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvDegree.text = temp
                 root.setOnClickListener {
-                    onClick?.invoke(position)
+                    onClick?.invoke(position,holder.binding)
                 }
+
+
             }
 
 

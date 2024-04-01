@@ -1,4 +1,4 @@
-package com.example.weatherforecastapp.presentation.activity
+package com.example.weatherforecastapp.presentation.activity.fragments
 
 import android.content.Context
 import android.os.Bundle
@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
@@ -24,13 +26,17 @@ class WeatherFragment : Fragment() {
     private val binding: WeatherFragmentBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
+    private val args by navArgs<WeatherFragmentArgs>()
+
+
     private val viewModelFactory by lazy {
-        ViewModelFactory(requireActivity().application, parseArgument())
+        ViewModelFactory(requireActivity().application, args.id)
     }
 
     private val viewModel by lazy {
         ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
     }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -61,13 +67,26 @@ class WeatherFragment : Fragment() {
                 tvDegree.text = temp
                 tvCondition.text = it.condition.text
                 Picasso.get().load(it.condition.icon).into(imWeather)
-                Log.d("WeatherFragment", "weatherPrecipitation: ${it.weatherPrecipitation}")
                 val listPrecipitation = viewModel.getWeatherPrecipitation(it)
+                Log.d("WeatherFragment_Log", "initCurrent: $listPrecipitation")
                 adapterPrecipitation.submitList(listPrecipitation)
+                setupPullAdapter(rvPrecipitation)
                 rvPrecipitation.adapter = adapterPrecipitation
+                binding.imBackground.transitionName = "${args.id}"
             })
 
         }
+    }
+
+    private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
+
+        rvPrecipitation.recycledViewPool.setMaxRecycledViews(
+            PrecipitationAdapter.ENABLE,
+            PrecipitationAdapter.MAX_PULL_SIZE
+        )
+
+
+
     }
 
     private fun initForecast() {
@@ -75,7 +94,7 @@ class WeatherFragment : Fragment() {
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
             with(binding) {
-                val listWeatherHour = viewModel.getWeatherHour(it[0])
+                val listWeatherHour = viewModel.getWeatherHour24(it)
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
                 adapterForecastDays.submitList(it)
@@ -85,18 +104,4 @@ class WeatherFragment : Fragment() {
     }
 
 
-    private fun parseArgument(): Int {
-        return requireArguments().getInt(KEY_ID_CITY)
-    }
-
-    companion object {
-        private const val KEY_ID_CITY = "id city"
-        fun newInstance(idCity: Int): WeatherFragment {
-            return WeatherFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(KEY_ID_CITY, idCity)
-                }
-            }
-        }
-    }
 }

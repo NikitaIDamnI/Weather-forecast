@@ -1,11 +1,10 @@
 package com.example.weatherforecastapp.data.dagger
 
 import android.app.Application
-import com.example.weatherforecastapp.presentation.activity.ActivityAllCities
-import com.example.weatherforecastapp.presentation.activity.WeatherFragment
 import com.example.weatherforecastapp.data.dagger.module.ModuleData
 import com.example.weatherforecastapp.data.dagger.module.ModuleLocation
 import com.example.weatherforecastapp.data.dagger.subcomponent.ActivityWeatherSubComp
+import com.example.weatherforecastapp.presentation.activity.fragments.WeatherFragment
 import dagger.BindsInstance
 import dagger.Component
 
@@ -17,7 +16,6 @@ import dagger.Component
 )
 interface AppComponent {
 
-    fun inject(activityAllCities: ActivityAllCities)
     fun activityWeatherInject(): ActivityWeatherSubComp.Factory
 
     fun inject(fragment: WeatherFragment)

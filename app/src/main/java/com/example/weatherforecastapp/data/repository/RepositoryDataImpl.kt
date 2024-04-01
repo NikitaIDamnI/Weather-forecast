@@ -19,7 +19,7 @@ import java.util.Calendar
 import java.util.Locale
 
 class RepositoryDataImpl(
-    context: Application
+    private val context: Application
 ) : RepositoryData {
     private val apiService: ApiService = ApiFactory.apiService
     private val mapper = Mapper()
@@ -66,7 +66,7 @@ class RepositoryDataImpl(
                 val datePosition = Position(
                     location.positionId,
                     location.position,
-                    timeFormat = location.localtime
+                    timeFormat = location. last_updated
                 )
                 writingAPItoDatabase(datePosition, thisPosition, positionId)
                 positionId += POSITION_ID_NEXT
@@ -111,7 +111,7 @@ class RepositoryDataImpl(
         return MediatorLiveData<Current>().apply {
             addSource(currentLiveDataDb) {
                 if (it != null) {
-                    value = mapper.mapperCurrentDbToEntityCurrent(it)
+                    value = mapper.mapperCurrentDbToEntityCurrent(it,context)
                 }
             }
         }
@@ -183,6 +183,12 @@ class RepositoryDataImpl(
     ): Boolean {
         val thisHour = formatTimeByHour(thisPosition.timeFormat)
         val dataHour = formatTimeByHour(datePosition.timeFormat)
+        Log.d("RepositoryDataImpl",
+            "checkingForUpdates: datePosition -  ${datePosition.position}," +
+                    " thisPosition ${thisPosition.position} , ${datePosition.position != thisPosition.position} ")
+        Log.d("RepositoryDataImpl",
+            "checkingForUpdates: thisHour -  $thisHour," +
+                    " dataHour $dataHour , ${thisHour != dataHour}")
 
         return (datePosition.position != thisPosition.position ||
                 thisHour != dataHour)

@@ -4,6 +4,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="precipitation_lite">#5FE18B</color>
     <color name="precipitation_normal">#DCD16D</color>
+    <color name="precipitation_hard">#D3547F</color>
+    <color name="precipitation_cold">#06A2F8</color>
+
     <color name="colore_text">#FBFAFA</color>
     <color name="transparent">#00FFFFFF</color>
 

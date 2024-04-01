@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -37,11 +38,12 @@ class ViewModelWeather(
     var sizeCity = MutableLiveData<Int>()
 
     init {
-        setUpdateListener(update())
-        weatherUpdate()
         numberOfCities()
     }
 
+    fun updateData() {
+        setUpdateListener(update())
+    }
 
     private fun update() = object : LocationRepository.LocationUpdateListener {
         override fun onUpdate() {
@@ -54,35 +56,44 @@ class ViewModelWeather(
 
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
-        return current.weatherPrecipitation.filter {
-            (it.unit == WeatherPrecipitation.VALUE_DEGREE)
-                    || (it.unit != WeatherPrecipitation.VALUE_PERCENT && it.value > 0)
-        }
-    }
+        return current.weatherPrecipitation
+        /* current.weatherPrecipitation.filter {
+                    (it.unit == WeatherPrecipitation.VALUE_DEGREE)
+                            || (it.unit != WeatherPrecipitation.VALUE_PERCENT && it.value > 0)
 
-    fun getWeatherHour(forecastDay: ForecastDay): List<ForecastHour> {
-        val startIndex = forecastDay.timeLocation.split(":")[0].toInt()
-        val list = forecastDay.forecastHour
-        return list.slice(startIndex until list.size)
-    }
-
-    private fun numberOfCities() {
-        viewModelScope.launch {
-            sizeCity.value = useCasNumberOfCities.invoke()
-        }
-
-    }
-
-    private fun weatherUpdate() {
-        viewModelScope.launch {
-            useCaseWeatherUpdate.invoke()
-        }
+         */
     }
 
 
-    fun checkLocation() {
-        useCaseCheckLocation.invoke()
+fun getWeatherHour24(forecastDay: List<ForecastDay>): List<ForecastHour> {
+    val startIndex = forecastDay[0].timeLocation.split(":")[0].toInt()
+    val oldListTo24 = forecastDay[0].forecastHour
+    val oldListNextDay = forecastDay[1].forecastHour
+    val newListTo24 = oldListTo24.slice(startIndex until oldListTo24.size)
+    val newListNextDay = oldListNextDay.slice(0 until startIndex + 1)
+    return mutableListOf<ForecastHour>().apply {
+        addAll(newListTo24)
+        addAll(newListNextDay)
     }
+}
+
+private fun numberOfCities() {
+    viewModelScope.launch {
+        sizeCity.value = useCasNumberOfCities.invoke()
+    }
+
+}
+
+fun weatherUpdate() {
+    viewModelScope.launch {
+        useCaseWeatherUpdate.invoke()
+    }
+}
+
+
+fun checkLocation(context: Context) {
+    useCaseCheckLocation.invoke(context)
+}
 
 
 }
