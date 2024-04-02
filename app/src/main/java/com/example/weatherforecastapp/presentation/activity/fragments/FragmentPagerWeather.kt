@@ -98,6 +98,10 @@ class FragmentPagerWeather : Fragment() {
                     .alpha(1f)
                     .setDuration(500)
                     .start()
+                load.animate()
+                    .alpha(0f)
+                    .setDuration(500)
+                    .start()
             }
         })
     }

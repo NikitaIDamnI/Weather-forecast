@@ -33,7 +33,6 @@ class ActivityWeather : AppCompatActivity() {
 
     private fun initial() {
         viewModel.weatherUpdate()
-        viewModel.updateData()
 
     }
 

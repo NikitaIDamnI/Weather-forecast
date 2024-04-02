@@ -66,7 +66,7 @@ class RepositoryDataImpl(
                 val datePosition = Position(
                     location.positionId,
                     location.position,
-                    timeFormat = location. last_updated
+                    timeFormat = location.last_updated
                 )
                 writingAPItoDatabase(datePosition, thisPosition, positionId)
                 positionId += POSITION_ID_NEXT
@@ -94,11 +94,21 @@ class RepositoryDataImpl(
         updatePositionToDb(positionId)
     }
 
+    fun getSizePager(id: Int): LiveData<Int> {
+        return MediatorLiveData<Int>().apply {
+            addSource(locationDao.getSizePager()) {
+                if (value != it) {
+                    value = it
+                }
+            }
+        }
+    }
+
     override fun getLocation(id: Int): LiveData<Location> {
         val locationLiveDataDb = locationDao.getLocation(id)
         return MediatorLiveData<Location>().apply {
             addSource(locationLiveDataDb) {
-                if(it!= null) {
+                if (value != null) {
                     value = mapper.mapperLocationDbToEntityLocation(it)
                 }
             }
@@ -111,7 +121,7 @@ class RepositoryDataImpl(
         return MediatorLiveData<Current>().apply {
             addSource(currentLiveDataDb) {
                 if (it != null) {
-                    value = mapper.mapperCurrentDbToEntityCurrent(it,context)
+                    value = mapper.mapperCurrentDbToEntityCurrent(it, context)
                 }
             }
         }
@@ -183,12 +193,16 @@ class RepositoryDataImpl(
     ): Boolean {
         val thisHour = formatTimeByHour(thisPosition.timeFormat)
         val dataHour = formatTimeByHour(datePosition.timeFormat)
-        Log.d("RepositoryDataImpl",
+        Log.d(
+            "RepositoryDataImpl",
             "checkingForUpdates: datePosition -  ${datePosition.position}," +
-                    " thisPosition ${thisPosition.position} , ${datePosition.position != thisPosition.position} ")
-        Log.d("RepositoryDataImpl",
+                    " thisPosition ${thisPosition.position} , ${datePosition.position != thisPosition.position} "
+        )
+        Log.d(
+            "RepositoryDataImpl",
             "checkingForUpdates: thisHour -  $thisHour," +
-                    " dataHour $dataHour , ${thisHour != dataHour}")
+                    " dataHour $dataHour , ${thisHour != dataHour}"
+        )
 
         return (datePosition.position != thisPosition.position ||
                 thisHour != dataHour)
