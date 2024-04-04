@@ -16,6 +16,8 @@
         app:layout_constraintEnd_toEndOf="@+id/im_weather"
         app:layout_constraintStart_toStartOf="@+id/im_weather"
         app:layout_constraintTop_toTopOf="parent"
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
         tools:text="22:00" />
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
@@ -34,7 +36,8 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/cambay"
         android:textColor="@color/colore_text"
-
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@+id/im_weather"

@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@drawable/back_dark_d"
+        android:src="@drawable/back_sunny"
         />
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -51,6 +51,8 @@
             android:textColor="@color/colore_text"
             android:textSize="20sp"
             android:textStyle="bold"
+            android:shadowColor="@color/black"
+            android:shadowRadius="5"
             app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Текущее положение" />
@@ -61,7 +63,8 @@
             android:layout_height="wrap_content"
             android:textColor="@color/colore_text"
             android:textStyle="bold"
-
+            android:shadowColor="@color/black"
+            android:shadowRadius="5"
             app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
             app:layout_constraintTop_toBottomOf="@+id/tv_city"
             tools:text="18:39" />
@@ -72,6 +75,8 @@
             android:layout_height="wrap_content"
             android:textColor="@color/colore_text"
             android:textStyle="bold"
+            android:shadowColor="@color/black"
+            android:shadowRadius="5"
             app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
             app:layout_constraintTop_toBottomOf="@id/tv_time"
             tools:layout_editor_absoluteY="72dp"
@@ -85,6 +90,8 @@
             android:textColor="@color/colore_text"
             android:textSize="50sp"
             android:textStyle="normal"
+            android:shadowColor="@color/black"
+            android:shadowRadius="5"
             app:layout_constraintEnd_toStartOf="@+id/vert_start_guideline"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="-10°" />
@@ -96,6 +103,8 @@
             android:layout_marginBottom="8dp"
             android:textColor="@color/colore_text"
             android:textStyle="bold"
+            android:shadowColor="@color/black"
+            android:shadowRadius="5"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/vert_start_guideline"
             tools:text="Макс.: -3º,Мин.: -9º" />

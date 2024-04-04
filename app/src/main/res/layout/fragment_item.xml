@@ -9,6 +9,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
         android:textAppearance="?attr/textAppearanceListItem" />
 
     <TextView
@@ -16,5 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
         android:textAppearance="?attr/textAppearanceListItem" />
 </LinearLayout>

@@ -36,8 +36,11 @@
         android:id="@+id/card_toolbar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
+        android:background="#00FFFFFF"
         android:backgroundTint="#00FFFFFF"
         android:visibility="visible"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -50,22 +53,22 @@
                 android:id="@+id/b_menu"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="15dp"
                 android:layout_marginEnd="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/free_icon_menu_8931325" />
+                app:srcCompat="@drawable/menu1" />
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="#00FFFFFF"
-
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tabIconTint="@color/color_tab"
+                app:tabRippleColor="@null"
                 app:tabIndicatorHeight="0dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -87,6 +90,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/cambay"
+            android:shadowColor="@color/black"
+            android:shadowRadius="5"
             android:text="Идет загрузка данных"
             android:textColor="@color/white"
             android:textSize="15dp" />
