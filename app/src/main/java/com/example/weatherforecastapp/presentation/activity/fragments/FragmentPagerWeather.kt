@@ -13,7 +13,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactoryWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -26,11 +26,11 @@ class FragmentPagerWeather : Fragment() {
 
     private val args by navArgs<FragmentPagerWeatherArgs>()
 
-    private val viewModelFactory by lazy {
-        ViewModelFactory(requireActivity().application, args.id)
+    private val viewModelFactoryWeather by lazy {
+        ViewModelFactoryWeather(requireActivity().application, args.id)
     }
     private val viewModel by lazy {
-        ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
+        ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
     }
 
 
@@ -50,7 +50,8 @@ class FragmentPagerWeather : Fragment() {
     private fun initial() {
         animationToolbar()
         binding.bMenu.setOnClickListener {
-            val action = FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
+            val action =
+                FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
             findNavController().navigate(action)
 
 
@@ -58,24 +59,28 @@ class FragmentPagerWeather : Fragment() {
         viewModel.sizeCity.observe(viewLifecycleOwner) {
             val argsList = getListArgs(it)
             Log.d("FragmentPagerWeather_Log", "sizeCity: $it")
-            val pager = PagerAdapter(requireActivity(),args.id,argsList)
+            val pager = PagerAdapter(requireActivity(), args.id, argsList)
 
             with(binding) {
 
                 viewPager.adapter = pager
-                viewPager.setCurrentItem(args.id, false,)
+                viewPager.setCurrentItem(args.id, false)
 
                 TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
                     when (position) {
                         0 -> {
                             tab.setIcon(R.drawable.ic_nav)
+                            tab.view.isClickable = false
                         }
 
                         else -> {
                             tab.setIcon(R.drawable.ic_tochka)
+                            tab.view.isClickable = false
                         }
                     }
-                }.attach()
+                }
+                    .attach()
+
 
                 if (it == 0) {
                     viewPager.visibility = View.GONE
@@ -96,6 +101,10 @@ class FragmentPagerWeather : Fragment() {
                 root.visibility = View.VISIBLE
                 cardToolbar.animate()
                     .alpha(1f)
+                    .setDuration(500)
+                    .start()
+                load.animate()
+                    .alpha(0f)
                     .setDuration(500)
                     .start()
             }

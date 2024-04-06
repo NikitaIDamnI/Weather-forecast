@@ -37,6 +37,9 @@ interface LocationDao {
     @Query("SELECT COUNT(*) FROM location")
     suspend fun getSumPosition(): Int
 
+    @Query("SELECT COUNT(*) FROM location")
+     fun getSizePager(): LiveData<Int>
+
     @Query("UPDATE location SET position_id = :newPositionId WHERE position_id =:oldPositionId")
     suspend fun updatePosition(oldPositionId: Int, newPositionId: Int)
 

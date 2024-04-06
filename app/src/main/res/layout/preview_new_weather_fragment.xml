@@ -4,6 +4,7 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="30dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".presentation.activity.fragments.WeatherFragment">
 
@@ -247,6 +248,36 @@
 
     </androidx.cardview.widget.CardView>
 
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/cambay"
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
+        android:text="Отменить"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="5dp"
+            android:fontFamily="@font/cambay"
+            android:text="Добавить"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:shadowColor="@color/black"
+            android:shadowRadius="5"
+            app:layout_constraintEnd_toStartOf="@+id/vert_start_guideline"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 

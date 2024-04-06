@@ -9,6 +9,7 @@ import com.example.testapi.network.ApiService
 import com.example.weatherforecastapp.data.database.AppDatabase
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
+import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.Location
@@ -37,6 +38,10 @@ class RepositoryDataImpl(
         return true
     }
 
+    suspend fun getCityFromSearch(searchCity: SearchCity): City {
+        val cityDto = apiService.getCityDto(city = searchCity.name)
+       return mapper.mapperCityDtoToEntityCity(cityDto,context)
+    }
 
     override suspend fun addNewCity(searchCity: SearchCity) {
         var positionId = locationDao.getSumPosition()
@@ -66,7 +71,7 @@ class RepositoryDataImpl(
                 val datePosition = Position(
                     location.positionId,
                     location.position,
-                    timeFormat = location. last_updated
+                    timeFormat = location.last_updated
                 )
                 writingAPItoDatabase(datePosition, thisPosition, positionId)
                 positionId += POSITION_ID_NEXT
@@ -94,11 +99,21 @@ class RepositoryDataImpl(
         updatePositionToDb(positionId)
     }
 
+    fun getSizePager(): LiveData<Int> {
+        return MediatorLiveData<Int>().apply {
+            addSource(locationDao.getSizePager()) {
+                if (value != it) {
+                    value = it
+                }
+            }
+        }
+    }
+
     override fun getLocation(id: Int): LiveData<Location> {
         val locationLiveDataDb = locationDao.getLocation(id)
         return MediatorLiveData<Location>().apply {
             addSource(locationLiveDataDb) {
-                if(it!= null) {
+                if (value != null) {
                     value = mapper.mapperLocationDbToEntityLocation(it)
                 }
             }
@@ -111,7 +126,7 @@ class RepositoryDataImpl(
         return MediatorLiveData<Current>().apply {
             addSource(currentLiveDataDb) {
                 if (it != null) {
-                    value = mapper.mapperCurrentDbToEntityCurrent(it,context)
+                    value = mapper.mapperCurrentDbToEntityCurrent(it, context)
                 }
             }
         }
@@ -141,7 +156,7 @@ class RepositoryDataImpl(
         positionId: Int
     ) {
         if (checkingForUpdates(datePosition, thisPosition)) {
-            val city = apiService.forecastDays(city = thisPosition.position)
+            val city = apiService.getCityDto(city = thisPosition.position)
 
             locationDao.insert(
                 mapper.mapperCityDtoToLocationDb(
@@ -183,12 +198,16 @@ class RepositoryDataImpl(
     ): Boolean {
         val thisHour = formatTimeByHour(thisPosition.timeFormat)
         val dataHour = formatTimeByHour(datePosition.timeFormat)
-        Log.d("RepositoryDataImpl",
+        Log.d(
+            "RepositoryDataImpl",
             "checkingForUpdates: datePosition -  ${datePosition.position}," +
-                    " thisPosition ${thisPosition.position} , ${datePosition.position != thisPosition.position} ")
-        Log.d("RepositoryDataImpl",
+                    " thisPosition ${thisPosition.position} , ${datePosition.position != thisPosition.position} "
+        )
+        Log.d(
+            "RepositoryDataImpl",
             "checkingForUpdates: thisHour -  $thisHour," +
-                    " dataHour $dataHour , ${thisHour != dataHour}")
+                    " dataHour $dataHour , ${thisHour != dataHour}"
+        )
 
         return (datePosition.position != thisPosition.position ||
                 thisHour != dataHour)
