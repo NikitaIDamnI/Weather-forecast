@@ -12,6 +12,7 @@ import com.example.weatherforecastapp.data.database.models.ForecastDaysDb
 import com.example.weatherforecastapp.data.database.models.LocationDb
 import com.example.weatherforecastapp.data.network.model.CityDto
 import com.example.weatherforecastapp.domain.models.Astro
+import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.Day
@@ -113,11 +114,11 @@ class Mapper {
         return forecastDaysDb?.let {
             val type = object : TypeToken<List<ForecastDayDto>>() {}.type
             val dbModel = Gson().fromJson<List<ForecastDayDto>>(it.json, type)
-            dbModel.map { dto -> mapperForecastDaysDtoToEntityForecastDays(dto, forecastDaysDb) }
+            dbModel.map { dto -> mapperForecastDaysJSONToEntityForecastDays(dto,forecastDaysDb) }
         } ?: emptyList()
     }
 
-    private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
+    private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
         ForecastDay(
             nameCity = db.nameCity,
             timeLocation = db.timeLocation,
@@ -181,7 +182,7 @@ class Mapper {
 
     )
 
-    fun mapperCurrentDbToEntityCurrent(currentDb: CurrentDb?,context: Context) = currentDb?.let { db ->
+    fun mapperCurrentDbToEntityCurrent(db: CurrentDb, context: Context) =
         Current(
             id = db.id,
             nameCity = db.nameCity,
@@ -224,104 +225,125 @@ class Mapper {
                 icon = db.condition_icon,
                 code = db.condition_code,
             ),
-            weatherPrecipitation = getWeatherParameter(db,context),
+            weatherPrecipitation = getWeatherParameter(
+                param_windKph = db.param_windKph.toInt(),
+                param_pressureMb = db.param_pressureMb.toInt(),
+                param_precipitationMm = db.param_precipitationMm.toInt(),
+                param_humidity = db.param_humidity,
+                param_cloud = db.param_cloud,
+                param_feelsLikeCelsius = db.param_feelsLikeCelsius.toInt(),
+                param_visibilityKm = db.param_visibilityKm.toInt(),
+                param_uvIndex = db.param_uvIndex.toInt(),
+                param_gustKph = db.param_gustKph.toInt(),
+                context = context
+            ),
         )
-    } ?: Current()
 
 
-    private fun getWeatherParameter(currentDb: CurrentDb,context: Context): List<WeatherPrecipitation> {
+    private fun getWeatherParameter(
+        param_windKph: Int,
+        param_pressureMb: Int,
+        param_precipitationMm: Int,
+        param_humidity: Int,
+        param_cloud: Int,
+        param_feelsLikeCelsius: Int,
+        param_visibilityKm: Int,
+        param_uvIndex: Int,
+        param_gustKph: Int,
+        context: Context
+    ): List<WeatherPrecipitation> {
 
 
         val windKph = WeatherPrecipitation(
-            value = currentDb.param_windKph.toInt(),
+            value = param_windKph,
             name = "Wind",
             unit = WeatherPrecipitation.VALUE_KM_H,
             maxValue = 50,
             normalValue = 177 / 2,
             minValue = 0,
-            valueString = currentDb.param_windKph.toInt().toString()
+            valueString = param_windKph.toString()
         )
-        windKph.color = getColor(windKph,context)
+        windKph.color = getColor(windKph, context)
         windKph.valuePercent = calculatePercentage(windKph)
 
         val pressureIn = WeatherPrecipitation(
-            value = currentDb.param_pressureMb.toInt(),
+            value = param_pressureMb,
             name = "Pressure", unit = WeatherPrecipitation.VALUE_MM_HG,
             maxValue = 1065, normalValue = 1035, minValue = 960,
-            valueString = currentDb.param_pressureMb.toInt().toString()
+            valueString = param_pressureMb.toString()
 
         )
-        pressureIn.color = getColor(pressureIn,context)
+        pressureIn.color = getColor(pressureIn, context)
         pressureIn.valuePercent = calculatePercentage(pressureIn)
 
         val precipitation = WeatherPrecipitation(
-            value = currentDb.param_precipitationMm.toInt(),
+            value = param_precipitationMm,
             name = "Precipitation", unit = WeatherPrecipitation.VALUE_MBAR,
             maxValue = 10, minValue = 0, normalValue = 6,
-            valueString = currentDb.param_precipitationMm.toInt().toString()
+            valueString = param_precipitationMm.toString()
         )
-        precipitation.color = getColor(precipitation,context)
+        precipitation.color = getColor(precipitation, context)
         precipitation.valuePercent = calculatePercentage(precipitation)
 
         val humidity = WeatherPrecipitation(
-            value = currentDb.param_humidity,
+            value = param_humidity,
             name = "Humidity", unit = WeatherPrecipitation.VALUE_PERCENT,
             maxValue = 100, minValue = 0, normalValue = 50,
-            valueString = "%${currentDb.param_humidity.toDouble()}",
-            valuePercent = currentDb.param_humidity
+            valueString = "%${param_humidity.toDouble()}",
+            valuePercent = param_humidity
 
         )
-        humidity.color = getColor(humidity,context)
+        humidity.color = getColor(humidity, context)
 
         val cloud = WeatherPrecipitation(
-            value = currentDb.param_cloud,
+            value = param_cloud,
             name = "Cloud",
             unit = WeatherPrecipitation.VALUE_PERCENT,
             maxValue = 100,
             minValue = 0,
             normalValue = 50,
-            valueString = "%${currentDb.param_cloud.toDouble()}",
-            valuePercent = currentDb.param_cloud
+            valueString = "%${param_cloud.toDouble()}",
+            valuePercent = param_cloud
         )
-        cloud.color = getColor(cloud,context)
+        cloud.color = getColor(cloud, context)
 
         val feelsLikeCelsius = WeatherPrecipitation(
-            value = currentDb.param_feelsLikeCelsius.toInt(),
+            value = param_feelsLikeCelsius,
             name = "Feels",
             unit = WeatherPrecipitation.VALUE_DEGREE,
             maxValue = 50,
             minValue = -50,
             normalValue = 0,
-            valueString = currentDb.param_feelsLikeCelsius.toInt()
+            valueString = param_feelsLikeCelsius
                 .toString() + WeatherPrecipitation.VALUE_DEGREE
         )
-        feelsLikeCelsius.color = getColorFeels(feelsLikeCelsius,context)
+        feelsLikeCelsius.color = getColorFeels(feelsLikeCelsius, context)
         feelsLikeCelsius.valuePercent = feelsPercentage(feelsLikeCelsius)
 
         val visibilityKm = WeatherPrecipitation(
-            value = currentDb.param_visibilityKm.toInt(),
+            value = param_visibilityKm.toInt(),
             name = "Visibility", unit = WeatherPrecipitation.VALUE_KM_H,
             maxValue = 45, minValue = 0, normalValue = 25,
-            valueString = currentDb.param_visibilityKm.toString()
+            valueString = param_visibilityKm.toString()
         )
-        visibilityKm.color = getColor(visibilityKm,context)
+        visibilityKm.color = getColor(visibilityKm, context)
         visibilityKm.valuePercent = calculatePercentage(visibilityKm)
 
         val uvIndex = WeatherPrecipitation(
-            value = currentDb.param_uvIndex.toInt(),
+            value = param_uvIndex,
             name = "UV Index", unit = WeatherPrecipitation.NOT_VALUE,
             maxValue = 11, minValue = 0, normalValue = 5,
-            valueString = currentDb.param_uvIndex.toString(),
+            valueString = param_uvIndex.toString(),
 
             )
-        uvIndex.color = getColor(uvIndex,context)
+        uvIndex.color = getColor(uvIndex, context)
         uvIndex.valuePercent = calculatePercentage(uvIndex)
 
         val gustKph = WeatherPrecipitation(
-            value = currentDb.param_gustKph.toInt(),
+            value = param_gustKph,
             name = "Gust", unit = WeatherPrecipitation.VALUE_KM_H,
             maxValue = 0, minValue = 0, normalValue = 0,
-            valueString = currentDb.param_gustKph.toString()
+            valueString = param_gustKph.toString()
 
         )
         return mutableListOf<WeatherPrecipitation>(
@@ -331,7 +353,7 @@ class Mapper {
     }
 
     fun feelsPercentage(weather: WeatherPrecipitation): Int {
-       return weather.value + weather.maxValue
+        return weather.value + weather.maxValue
     }
 
     fun calculatePercentage(weather: WeatherPrecipitation): Int {
@@ -352,22 +374,34 @@ class Mapper {
     }
 
 
-    fun getColorFeels(weather: WeatherPrecipitation,context:Context): Int {
+    fun getColorFeels(weather: WeatherPrecipitation, context: Context): Int {
         val temperature = weather.value
         return when {
-            temperature < 0 ->  ContextCompat.getColor(context, R.color.precipitation_cold)
-            temperature in 0..20 -> ContextCompat.getColor(context,R.color.precipitation_lite)
-            temperature in 21..30 -> ContextCompat.getColor(context,R.color.precipitation_normal)
-            else -> ContextCompat.getColor(context,R.color.precipitation_hard)
+            temperature < 0 -> ContextCompat.getColor(context, R.color.precipitation_cold)
+            temperature in 0..20 -> ContextCompat.getColor(context, R.color.precipitation_lite)
+            temperature in 21..30 -> ContextCompat.getColor(context, R.color.precipitation_normal)
+            else -> ContextCompat.getColor(context, R.color.precipitation_hard)
         }
     }
 
-    fun getColor(weather: WeatherPrecipitation,context: Context): Int {
+    fun getColor(weather: WeatherPrecipitation, context: Context): Int {
         val value = weather.value
         return when {
-            value < weather.normalValue/ 1.5-> ContextCompat.getColor(context,R.color.precipitation_lite)
-            value < weather.normalValue -> ContextCompat.getColor(context,R.color.precipitation_normal)
-            value > weather.normalValue -> ContextCompat.getColor(context,R.color.precipitation_hard)
+            value < weather.normalValue / 1.5 -> ContextCompat.getColor(
+                context,
+                R.color.precipitation_lite
+            )
+
+            value < weather.normalValue -> ContextCompat.getColor(
+                context,
+                R.color.precipitation_normal
+            )
+
+            value > weather.normalValue -> ContextCompat.getColor(
+                context,
+                R.color.precipitation_hard
+            )
+
             else -> 0
         }
     }
@@ -381,6 +415,121 @@ class Mapper {
         lon = searchCityDto.lon,
     )
 
+    fun mapperCityDtoToEntityCity(dto: CityDto, context: Context) = City(
+        id = EMPTY_ID,
+        location = mapperCityDtoToLocationEntity(dto),
+        current = mapperCurrentDtoToEntityCurrent(dto,context),
+        forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it)}
+    )
+
+    private fun mapperCityDtoToLocationEntity(cityDto: CityDto) = Location(
+        positionId = EMPTY_ID,
+        name = cityDto.locationDto.name,
+        temp_c = cityDto.currentDto.temperatureCelsius,
+        localtime = formatTimeLocation(cityDto.locationDto.localtime),
+        position = "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
+        day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
+        day_mintempC = cityDto.forecast.days[0].day.mintempC,
+        condition_text = cityDto.currentDto.conditionDto.text,
+        condition_icon = HTTPS_TEG + cityDto.currentDto.conditionDto.icon,
+        condition_code = cityDto.currentDto.conditionDto.code,
+    )
+
+    fun mapperCurrentDtoToEntityCurrent(dto: CityDto, context: Context) =
+        Current(
+            id = EMPTY_ID,
+            nameCity = dto.locationDto.name,
+            date = dto.locationDto.localtime,
+            last_updated_epoch = dto.locationDto.localtime_epoch,
+            last_updated = dto.locationDto.localtime,
+            temp_c = dto.currentDto.temperatureCelsius,
+            is_day = dto.currentDto.isDay,
+            currentDay = Day(
+                maxtempC = dto.forecast.days[0].day.maxtempC,
+                mintempC = dto.forecast.days[0].day.mintempC,
+                avgtempC = dto.forecast.days[0].day.avgtempC,
+                maxwindKph = dto.forecast.days[0].day.maxwindKph,
+                totalprecipMm = dto.forecast.days[0].day.totalprecipMm,
+                totalsnowCm = dto.forecast.days[0].day.totalsnowCm,
+                avgvisKm = dto.forecast.days[0].day.avgvisKm,
+                avghumidity = dto.forecast.days[0].day.avghumidity,
+                dailyWillItRain = dto.forecast.days[0].day.dailyWillItRain,
+                dailyChanceOfRain = dto.forecast.days[0].day.dailyChanceOfRain,
+                dailyWillItSnow = dto.forecast.days[0].day.dailyWillItSnow,
+                dailyChanceOfSnow = dto.forecast.days[0].day.dailyChanceOfSnow,
+                condition = Condition(
+                    text = dto.currentDto.conditionDto.text,
+                    icon = dto.currentDto.conditionDto.icon,
+                    code = dto.currentDto.conditionDto.code,
+                )
+            ),
+            astro = Astro(
+                sunrise = dto.forecast.days[0].astro.sunrise,
+                sunset = dto.forecast.days[0].astro.sunset,
+                moonrise = dto.forecast.days[0].astro.moonrise,
+                moonset = dto.forecast.days[0].astro.moonset,
+                moonPhase = dto.forecast.days[0].astro.moonPhase,
+                moonIllumination = dto.forecast.days[0].astro.moonIllumination,
+                isMoonUp = dto.forecast.days[0].astro.isMoonUp,
+                isSunUp = dto.forecast.days[0].astro.isSunUp,
+            ),
+            condition = Condition(
+                text = dto.currentDto.conditionDto.text,
+                icon = dto.currentDto.conditionDto.icon,
+                code = dto.currentDto.conditionDto.code,
+            ),
+            weatherPrecipitation = getWeatherParameter(
+                param_windKph = dto.currentDto.windKph.toInt(),
+                param_pressureMb = dto.currentDto.pressureMb.toInt(),
+                param_precipitationMm = dto.currentDto.precipitationMm.toInt(),
+                param_humidity = dto.currentDto.humidity,
+                param_cloud = dto.currentDto.cloud,
+                param_feelsLikeCelsius = dto.currentDto.feelsLikeCelsius.toInt(),
+                param_visibilityKm = dto.currentDto.visibilityKm.toInt(),
+                param_uvIndex = dto.currentDto.uvIndex.toInt(),
+                param_gustKph = dto.currentDto.gustKph.toInt(),
+                context = context
+            ),
+        )
+
+    private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto) =
+        ForecastDay(
+            nameCity =  "",
+            timeLocation = dto.date,
+            date = dto.date,
+            dateEpoch = dto.dateEpoch,
+            days = Day(
+                maxtempC = dto.day.maxtempC,
+                mintempC = dto.day.mintempC,
+                avgtempC = dto.day.avgtempC,
+                maxwindKph = dto.day.maxwindKph,
+                totalprecipMm = dto.day.totalprecipMm,
+                totalsnowCm = dto.day.totalsnowCm,
+                avgvisKm = dto.day.avgvisKm,
+                avghumidity = dto.day.avghumidity,
+                dailyWillItRain = dto.day.dailyWillItRain,
+                dailyChanceOfRain = dto.day.dailyChanceOfRain,
+                dailyWillItSnow = dto.day.dailyWillItSnow,
+                dailyChanceOfSnow = dto.day.dailyChanceOfSnow,
+                condition = Condition(
+                    text = dto.day.condition.text,
+                    icon = HTTPS_TEG + dto.day.condition.icon,
+                    code = dto.day.condition.code,
+                ),
+            ),
+            astro = Astro(
+                sunrise = dto.astro.sunrise,
+                sunset = dto.astro.sunset,
+                moonrise = dto.astro.moonrise,
+                moonset = dto.astro.moonset,
+                moonPhase = dto.astro.moonPhase,
+                moonIllumination = dto.astro.moonIllumination,
+                isMoonUp = dto.astro.isMoonUp,
+                isSunUp = dto.astro.isSunUp,
+            ),
+            forecastHour = dto.hour.map { mapperHourDtoToEntity(it) },
+        )
+
 
     private fun formatTime(epochTime: Long): String {
         val dateFormat = SimpleDateFormat("EEEE, d MMM yyyy", Locale.ENGLISH)
@@ -393,7 +542,9 @@ class Mapper {
 
     }
 
+
     companion object {
         const val HTTPS_TEG = "https:"
+        const val EMPTY_ID = 0
     }
 }

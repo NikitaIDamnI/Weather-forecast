@@ -9,6 +9,7 @@ import com.example.testapi.network.ApiService
 import com.example.weatherforecastapp.data.database.AppDatabase
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
+import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.Location
@@ -37,6 +38,10 @@ class RepositoryDataImpl(
         return true
     }
 
+    suspend fun getCityFromSearch(searchCity: SearchCity): City {
+        val cityDto = apiService.getCityDto(city = searchCity.name)
+       return mapper.mapperCityDtoToEntityCity(cityDto,context)
+    }
 
     override suspend fun addNewCity(searchCity: SearchCity) {
         var positionId = locationDao.getSumPosition()
@@ -94,7 +99,7 @@ class RepositoryDataImpl(
         updatePositionToDb(positionId)
     }
 
-    fun getSizePager(id: Int): LiveData<Int> {
+    fun getSizePager(): LiveData<Int> {
         return MediatorLiveData<Int>().apply {
             addSource(locationDao.getSizePager()) {
                 if (value != it) {
@@ -151,7 +156,7 @@ class RepositoryDataImpl(
         positionId: Int
     ) {
         if (checkingForUpdates(datePosition, thisPosition)) {
-            val city = apiService.forecastDays(city = thisPosition.position)
+            val city = apiService.getCityDto(city = thisPosition.position)
 
             locationDao.insert(
                 mapper.mapperCityDtoToLocationDb(

@@ -5,7 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.data.gps.PermissionsLauncher
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactoryWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 
 class ActivityWeather : AppCompatActivity() {
@@ -14,11 +15,15 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
-    private val viewModelFactory by lazy {
-        ViewModelFactory(application, 0)
+    private val viewModelFactoryWeather by lazy {
+        ViewModelFactoryWeather(application, 0)
     }
-    private val viewModel by lazy {
-        ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
+    private val viewModelWeather by lazy {
+        ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
+    }
+
+    private val viewModelAllCities by lazy {
+        ViewModelProvider(this)[ViewModelAllCities::class.java]
     }
     private val permission by lazy {
         PermissionsLauncher(this)
@@ -32,14 +37,14 @@ class ActivityWeather : AppCompatActivity() {
     }
 
     private fun initial() {
-        viewModel.weatherUpdate()
+        viewModelWeather.weatherUpdate()
 
     }
 
 
     override fun onResume() {
         super.onResume()
-        viewModel.checkLocation(this)
+        viewModelWeather.checkLocation(this)
     }
 
 

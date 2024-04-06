@@ -248,21 +248,21 @@
 
     </androidx.cardview.widget.CardView>
 
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/cambay"
-            android:shadowColor="@color/black"
-            android:shadowRadius="5"
-            android:text="Отменить"
-            android:textColor="@color/white"
-            android:textSize="18dp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
-            app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/cambay"
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
+        android:text="Отменить"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/textView5"
@@ -273,7 +273,7 @@
             android:fontFamily="@font/cambay"
             android:text="Добавить"
             android:textColor="@color/white"
-            android:textSize="18dp"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:shadowColor="@color/black"
             android:shadowRadius="5"

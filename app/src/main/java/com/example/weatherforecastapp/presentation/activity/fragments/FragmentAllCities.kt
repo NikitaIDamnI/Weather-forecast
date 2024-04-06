@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,8 +28,9 @@ class FragmentAllCities : Fragment() {
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
 
+
     private val viewModel by lazy {
-        ViewModelProvider(this)[ViewModelAllCities::class.java]
+        ViewModelProvider(requireActivity())[ViewModelAllCities::class.java]
     }
     lateinit var searchCityAdapter: SearchCityAdapter
     lateinit var adapterAllCities: AllCityAdapter
@@ -44,6 +46,7 @@ class FragmentAllCities : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.getCities()
         setupAllCitiesAdapter()
         setupSearchAdapter()
     }
@@ -56,7 +59,8 @@ class FragmentAllCities : Fragment() {
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
         adapterAllCities.onClick = { id, binding ->
-            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather().setId(id)
+            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
+                .setId(id)
             findNavController().navigate(action)
 
         }
@@ -68,7 +72,12 @@ class FragmentAllCities : Fragment() {
         binding.rvSearch.adapter = searchCityAdapter
         searchCityAdapter.onClick = {
             //viewModel.addCity(it)
-            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+            viewModel.previewCity(it)
+            viewModel.city.observe(viewLifecycleOwner, Observer {
+                Log.d("FragmentAllCities_Log", "city: ${it.location.name}")
+            })
+            val action =
+                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
             findNavController().navigate(action)
         }
 

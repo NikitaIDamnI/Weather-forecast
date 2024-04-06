@@ -13,7 +13,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactoryWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -26,11 +26,11 @@ class FragmentPagerWeather : Fragment() {
 
     private val args by navArgs<FragmentPagerWeatherArgs>()
 
-    private val viewModelFactory by lazy {
-        ViewModelFactory(requireActivity().application, args.id)
+    private val viewModelFactoryWeather by lazy {
+        ViewModelFactoryWeather(requireActivity().application, args.id)
     }
     private val viewModel by lazy {
-        ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
+        ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
     }
 
 

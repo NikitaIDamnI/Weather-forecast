@@ -16,7 +16,7 @@ import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactoryWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
 
@@ -29,12 +29,12 @@ class WeatherFragment : Fragment() {
     private val args by navArgs<WeatherFragmentArgs>()
 
 
-    private val viewModelFactory by lazy {
-        ViewModelFactory(requireActivity().application, args.id)
+    private val viewModelFactoryWeather by lazy {
+        ViewModelFactoryWeather(requireActivity().application, args.id)
     }
 
     private val viewModel by lazy {
-        ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
+        ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
     }
 
 

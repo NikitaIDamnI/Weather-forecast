@@ -29,7 +29,7 @@ class ViewModelWeather(
     var location = repository.getLocation(id)
     var current = repository.getCurrentDay(id)
     var forecastDay = repository.getForecastDas(id)
-    var sizeCity = repository.getSizePager(id)
+    var sizeCity = repository.getSizePager()
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
         return current.weatherPrecipitation
