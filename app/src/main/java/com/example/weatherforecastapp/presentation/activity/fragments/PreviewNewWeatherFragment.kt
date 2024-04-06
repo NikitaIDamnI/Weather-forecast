@@ -6,25 +6,28 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import android.widget.FrameLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.RecyclerView
-import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
+import com.example.weatherforecastapp.databinding.PreviewNewWeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.squareup.picasso.Picasso
 
-class PreviewNewWeatherFragment : Fragment() {
+class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
 
-    private var _binding: WeatherFragmentBinding? = null
-    private val binding: WeatherFragmentBinding
-        get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
+    private var _binding: PreviewNewWeatherFragmentBinding? = null
+    private val binding: PreviewNewWeatherFragmentBinding
+        get() = _binding ?: throw RuntimeException("PreviewNewWeatherFragmentBinding = null")
 
     private val args by navArgs<WeatherFragmentArgs>()
 
@@ -42,12 +45,25 @@ class PreviewNewWeatherFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = WeatherFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = PreviewNewWeatherFragmentBinding.inflate(inflater, container, false)
+        val view = binding.root
+
+        dialog?.setOnShowListener { dialog ->
+            val d = dialog as? BottomSheetDialog
+            d?.let {
+                val bottomSheetInternal = d.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout?
+                val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetInternal!!)
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                bottomSheetBehavior.peekHeight = resources.displayMetrics.heightPixels // Устанавливаем высоту экрана
+            }
+        }
+        return view
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -84,7 +100,6 @@ class PreviewNewWeatherFragment : Fragment() {
             PrecipitationAdapter.ENABLE,
             PrecipitationAdapter.MAX_PULL_SIZE
         )
-
 
 
     }

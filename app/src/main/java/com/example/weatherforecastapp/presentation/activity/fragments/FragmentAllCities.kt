@@ -67,7 +67,9 @@ class FragmentAllCities : Fragment() {
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
         searchCityAdapter.onClick = {
-            viewModel.addCity(it)
+            //viewModel.addCity(it)
+            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+            findNavController().navigate(action)
         }
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {

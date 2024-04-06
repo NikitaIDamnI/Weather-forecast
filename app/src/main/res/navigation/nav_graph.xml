@@ -33,6 +33,9 @@
             app:launchSingleTop="false"
             app:popUpTo="@id/fragmentPagerWeather"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_fragmentAllCities_to_previewNewWeatherFragment"
+            app:destination="@id/previewNewWeatherFragment" />
     </fragment>
     <fragment
         android:id="@+id/weatherFragment"
@@ -44,4 +47,14 @@
             app:argType="integer"
             android:defaultValue="0" />
     </fragment>
+    <dialog
+        android:id="@+id/previewNewWeatherFragment"
+        android:name="com.example.weatherforecastapp.presentation.activity.fragments.PreviewNewWeatherFragment"
+        android:label="preview_new_weather_fragment"
+        tools:layout="@layout/preview_new_weather_fragment" >
+        <argument
+            android:name="id"
+            android:defaultValue="0"
+            app:argType="integer" />
+    </dialog>
 </navigation>
