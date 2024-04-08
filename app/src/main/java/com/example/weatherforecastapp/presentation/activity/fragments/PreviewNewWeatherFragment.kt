@@ -9,6 +9,7 @@ import android.widget.FrameLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.PreviewNewWeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
@@ -27,25 +28,29 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
         get() = _binding ?: throw RuntimeException("PreviewNewWeatherFragmentBinding = null")
 
 
-
-
     private val viewModel by lazy {
         ViewModelProvider(requireActivity())[ViewModelAllCities::class.java]
     }
 
+    override fun getTheme() = R.style.AppBottomSheetDialogTheme
 
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = PreviewNewWeatherFragmentBinding.inflate(inflater, container, false)
         val view = binding.root
 
         dialog?.setOnShowListener { dialog ->
             val d = dialog as? BottomSheetDialog
             d?.let {
-                val bottomSheetInternal = d.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout?
+                val bottomSheetInternal =
+                    d.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout?
                 val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetInternal!!)
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                bottomSheetBehavior.peekHeight = resources.displayMetrics.heightPixels // Устанавливаем высоту экрана
+                bottomSheetBehavior.peekHeight =
+                    resources.displayMetrics.heightPixels // Устанавливаем высоту экрана
             }
         }
         return view
@@ -81,6 +86,7 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
             })
 
         }
+
     }
 
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
@@ -98,7 +104,8 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         viewModel.city.observe(viewLifecycleOwner, Observer {
             with(binding) {
-                val listWeatherHour = viewModel.getWeatherHour24(it.location.localtime,it.forecastDays)
+                val listWeatherHour =
+                    viewModel.getWeatherHour24(it.location.localtime, it.forecastDays)
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
                 adapterForecastDays.submitList(it.forecastDays)

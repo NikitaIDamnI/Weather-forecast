@@ -101,11 +101,11 @@ class FragmentPagerWeather : Fragment() {
                 root.visibility = View.VISIBLE
                 cardToolbar.animate()
                     .alpha(1f)
-                    .setDuration(500)
+                    .setDuration(300)
                     .start()
                 load.animate()
                     .alpha(0f)
-                    .setDuration(500)
+                    .setDuration(300)
                     .start()
             }
         })

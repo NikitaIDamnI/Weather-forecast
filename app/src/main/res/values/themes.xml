@@ -4,9 +4,17 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="android:windowFullscreen">true</item>
+        <item name="bottomSheetStyle">@style/AppBottomSheetDialogTheme</item>
+    </style>
+    
+    <style name="Theme.WeatherForecastApp" parent="Base.Theme.WeatherForecastApp" />
 
+    <style name="AppBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/AppModalStyle</item>
+        <item name="android:windowIsFloating">false</item>
     </style>
 
-
-    <style name="Theme.WeatherForecastApp" parent="Base.Theme.WeatherForecastApp" />
+    <style name="AppModalStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bottom_sheet_background</item>
+    </style>
 </resources>
