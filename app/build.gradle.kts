@@ -41,10 +41,11 @@ android {
     }
 
 }
+
 dependencies {
+    implementation(libs.glide)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.dagger)
     implementation(libs.play.services.location)

@@ -28,7 +28,7 @@ class CurrentAdapter(
                 }else{
                     tvTime.text = formatTime(time)
                 }
-                val degree = temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
+                val degree = temp_c.toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvDegree.text = degree
                 Picasso.get().load(condition.icon).into(imWeather)
             }

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+
     <View
         android:id="@+id/line1"
         android:layout_width="match_parent"
@@ -12,6 +13,7 @@
         android:layout_marginTop="5dp"
         android:background="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -50,60 +52,65 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/ll_weather"
-        android:layout_width="0dp"
+
+    <ImageView
+        android:id="@+id/im_max_temp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_max_temp"
+        app:layout_constraintEnd_toStartOf="@+id/tv_max_temp"
+        app:layout_constraintTop_toTopOf="@+id/tv_max_temp"
+        app:srcCompat="@drawable/max_temp" />
+
+    <TextView
+        android:id="@+id/tv_max_temp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:layout_marginEnd="100dp"
+        android:fontFamily="@font/cambay"
+        android:gravity="center"
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
+        android:textColor="@color/colore_text"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/ll_day"
-        app:layout_constraintTop_toTopOf="@id/line1">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="15" />
 
-        <ImageView
-            android:id="@+id/im_max_temp"
-            android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/max_temp" />
+    <TextView
+        android:id="@+id/tv_low_temp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="5dp"
+        android:fontFamily="@font/cambay"
+        android:gravity="center"
+        android:shadowColor="@color/black"
+        android:shadowRadius="5"
+        android:textColor="@color/colore_text"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/im_min_temp"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="-7" />
 
-        <TextView
-            android:id="@+id/tv_max_temp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="@font/cambay"
-            android:gravity="center"
-            android:shadowColor="@color/black"
-            android:shadowRadius="5"
-            android:textColor="@color/colore_text"
-            android:textSize="20sp"
-            tools:text="15" />
-
-        <TextView
-            android:id="@+id/tv_low_temp"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="60dp"
-            android:fontFamily="@font/cambay"
-            android:gravity="center"
-            android:textColor="@color/colore_text"
-            android:textSize="20sp"
-            android:shadowColor="@color/black"
-            android:shadowRadius="5"
-            tools:text="-7" />
-
-        <ImageView
-            android:id="@+id/im_min_temp"
-            android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/min_temp" />
+    <ImageView
+        android:id="@+id/im_min_temp"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center"
+        android:layout_marginEnd="5dp"
+        android:layout_weight="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/min_temp" />
 
 
-    </LinearLayout>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
