@@ -94,7 +94,7 @@ class WeatherFragment : Fragment() {
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
             with(binding) {
-                val listWeatherHour = viewModel.getWeatherHour24(it)
+                val listWeatherHour = viewModel.getWeatherHour24(it,it[0].astro)
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
                 adapterForecastDays.submitList(it)

@@ -2,10 +2,14 @@ package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.data.gps.LocationRepositoryImpl
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
+import com.example.weatherforecastapp.domain.models.Astro
+import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.ForecastHour
@@ -36,7 +40,29 @@ class ViewModelWeather(
     }
 
 
-    fun getWeatherHour24(forecastDay: List<ForecastDay>): List<ForecastHour> {
+    fun getWeatherHour24(forecastDay: List<ForecastDay>, astro: Astro): List<ForecastHour> {
+        val sunriseHour = astro.sunrise.split(":")[0].toInt()
+        val sunsetHour = astro.sunset.split(":")[0].toInt()
+
+        val sunrise = ForecastHour(
+            time = astro.sunrise,
+            condition = Condition(
+                text = "Sunset",
+                icon = R.drawable.sunset_weather.toString()
+            )
+        )
+        val sunset = ForecastHour(
+            time = astro.sunset,
+            condition = Condition(
+                text = "Sunset",
+                icon = R.drawable.sunset_weather.toString()
+            )
+        )
+
+        Log.d("ViewModelWeather_Log", "sunrise: ${sunrise.time}")
+        Log.d("ViewModelWeather_Log", "sunset: ${sunset.time}")
+
+
         val startIndex = forecastDay[0].timeLocation.split(":")[0].toInt()
         val oldListTo24 = forecastDay[0].forecastHour
         val oldListNextDay = forecastDay[1].forecastHour
