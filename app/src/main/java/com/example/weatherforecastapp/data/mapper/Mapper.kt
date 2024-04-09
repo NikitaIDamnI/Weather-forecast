@@ -122,7 +122,7 @@ class Mapper {
         ForecastDay(
             nameCity = db.nameCity,
             timeLocation = db.timeLocation,
-            date = dto.date,
+            date = formatTime(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
             days = Day(
                 maxtempC = dto.day.maxtempC,
@@ -158,14 +158,14 @@ class Mapper {
 
     private fun mapperHourDtoToEntity(dto: HourDto) = ForecastHour(
         time = dto.time,
-        temp_c = dto.tempC,
+        temp_c = dto.tempC.toInt(),
         is_day = dto.isDay,
         condition = Condition(
             text = dto.condition.text,
             icon = HTTPS_TEG + dto.condition.icon,
             code = dto.condition.code
         ),
-        feelslike_c = dto.feelslikeC,
+        feelslike_c = dto.feelslikeC.toInt(),
     )
 
     fun mapperLocationDbToEntityLocation(locationDb: LocationDb?) = Location(
@@ -439,7 +439,7 @@ class Mapper {
         Current(
             id = EMPTY_ID,
             nameCity = dto.locationDto.name,
-            date = dto.locationDto.localtime,
+            date = formatTime(dto.locationDto.localtime_epoch),
             last_updated_epoch = dto.locationDto.localtime_epoch,
             last_updated = dto.locationDto.localtime,
             temp_c = dto.currentDto.temperatureCelsius,
@@ -458,8 +458,8 @@ class Mapper {
                 dailyWillItSnow = dto.forecast.days[0].day.dailyWillItSnow,
                 dailyChanceOfSnow = dto.forecast.days[0].day.dailyChanceOfSnow,
                 condition = Condition(
-                    text = dto.currentDto.conditionDto.text,
-                    icon = dto.currentDto.conditionDto.icon,
+                    text =  dto.currentDto.conditionDto.text,
+                    icon = HTTPS_TEG + dto.currentDto.conditionDto.icon,
                     code = dto.currentDto.conditionDto.code,
                 )
             ),
@@ -475,7 +475,7 @@ class Mapper {
             ),
             condition = Condition(
                 text = dto.currentDto.conditionDto.text,
-                icon = dto.currentDto.conditionDto.icon,
+                icon = HTTPS_TEG + dto.currentDto.conditionDto.icon,
                 code = dto.currentDto.conditionDto.code,
             ),
             weatherPrecipitation = getWeatherParameter(
@@ -496,7 +496,7 @@ class Mapper {
         ForecastDay(
             nameCity =  "",
             timeLocation = dto.date,
-            date = dto.date,
+            date = formatTime(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
             days = Day(
                 maxtempC = dto.day.maxtempC,
@@ -532,7 +532,7 @@ class Mapper {
 
 
     private fun formatTime(epochTime: Long): String {
-        val dateFormat = SimpleDateFormat("EEEE, d MMM yyyy", Locale.ENGLISH)
+        val dateFormat = SimpleDateFormat("EEEE, d MMM", Locale.ENGLISH)
         val date = Date(epochTime * 1000)
         return dateFormat.format(date)
     }

@@ -25,8 +25,9 @@ class ForecastDaysAdapter(
             with(forecastDays) {
                 if (position == 0) {
                     tvTime.text = "Сегодня"
+                }else{
+                    tvTime.text = date
                 }
-                tvTime.text = date
                 val maxTemp = days.maxtempC.toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvMaxTemp.text = maxTemp
                 val minTemp = days.mintempC.toString() + WeatherPrecipitation.VALUE_DEGREE
