@@ -144,8 +144,8 @@ class Mapper {
                 ),
             ),
             astro = Astro(
-                sunrise = dto.astro.sunrise,
-                sunset = dto.astro.sunset,
+                sunrise = convertTo24HourFormat(dto.astro.sunrise),
+                sunset = convertTo24HourFormat(dto.astro.sunset),
                 moonrise = dto.astro.moonrise,
                 moonset = dto.astro.moonset,
                 moonPhase = dto.astro.moonPhase,
@@ -518,8 +518,8 @@ class Mapper {
                 ),
             ),
             astro = Astro(
-                sunrise = dto.astro.sunrise,
-                sunset = dto.astro.sunset,
+                sunrise = convertTo24HourFormat(dto.astro.sunrise),
+                sunset = convertTo24HourFormat(dto.astro.sunset),
                 moonrise = dto.astro.moonrise,
                 moonset = dto.astro.moonset,
                 moonPhase = dto.astro.moonPhase,
@@ -542,7 +542,12 @@ class Mapper {
 
     }
 
-
+    private fun convertTo24HourFormat(time12Hour: String): String {
+        val inputFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val date = inputFormat.parse(time12Hour)
+        return outputFormat.format(date)
+    }
     companion object {
         const val HTTPS_TEG = "https:"
         const val EMPTY_ID = 0

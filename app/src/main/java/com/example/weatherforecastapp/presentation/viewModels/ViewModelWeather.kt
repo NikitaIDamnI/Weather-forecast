@@ -4,8 +4,10 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.data.gps.LocationRepositoryImpl
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
+import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.ForecastHour
@@ -36,16 +38,60 @@ class ViewModelWeather(
     }
 
 
-    fun getWeatherHour24(forecastDay: List<ForecastDay>): List<ForecastHour> {
+    fun getWeatherHour24(forecastDay: List<ForecastDay>,): List<ForecastHour> {
+        val astro = forecastDay[0].astro
+
+        val sunriseHour = astro.sunrise.split(":")[0].toInt()
+        val sunsetHour = astro.sunset.split(":")[0].toInt()
+
+        val sunrise = ForecastHour(
+            time = astro.sunrise,
+            condition = Condition(
+                text = "Sunset",
+                icon = R.drawable.sunset_weather.toString()
+            )
+        )
+        val sunset = ForecastHour(
+            time = astro.sunset,
+            condition = Condition(
+                text = "Sunset",
+                icon = R.drawable.sunset_weather.toString()
+            )
+        )
+
         val startIndex = forecastDay[0].timeLocation.split(":")[0].toInt()
         val oldListTo24 = forecastDay[0].forecastHour
         val oldListNextDay = forecastDay[1].forecastHour
-        val newListTo24 = oldListTo24.slice(startIndex until oldListTo24.size)
-        val newListNextDay = oldListNextDay.slice(0 until startIndex + 1)
-        return mutableListOf<ForecastHour>().apply {
+
+        // Создаем новый список для текущего дня
+        val newListTo24 = oldListTo24.subList(startIndex, oldListTo24.size).toMutableList()
+
+        // Создаем новый список для следующего дня
+        val newListNextDay = oldListNextDay.subList(0, startIndex + 1).toMutableList()
+
+        // Добавляем рассвет и закат в список текущего дня
+        if (sunriseHour >= startIndex) {
+            val index = sunriseHour - startIndex
+            newListTo24.add(index + 1, sunrise)
+        }
+        if (sunsetHour >= startIndex) {
+            val index = sunsetHour - startIndex
+            newListTo24.add(index + 1, sunset)
+        }
+
+        // Добавляем закат в список следующего дня, если он на следующие сутки
+        if (sunriseHour <= newListNextDay.size) {
+            val index = sunsetHour - newListNextDay.size
+            newListNextDay.add(sunriseHour+1, sunrise)
+        }
+
+        // Создаем итоговый список
+        val weatherHour24 = mutableListOf<ForecastHour>().apply {
             addAll(newListTo24)
             addAll(newListNextDay)
         }
+
+        return weatherHour24
     }
 
 

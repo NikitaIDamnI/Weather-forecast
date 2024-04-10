@@ -25,21 +25,32 @@ class CurrentAdapter(
             with(forecastHour) {
                 if (position == 0) {
                     tvTime.text = "Сейчас"
-                }else{
+                } else {
                     tvTime.text = formatTime(time)
                 }
-                val degree = temp_c.toString() + WeatherPrecipitation.VALUE_DEGREE
-                tvDegree.text = degree
-                Picasso.get().load(condition.icon).into(imWeather)
+                if (temp_c != ForecastHour.NOT_TEMP) {
+                    val degree = temp_c.toString() + WeatherPrecipitation.VALUE_DEGREE
+                    tvDegree.text = degree
+                    Picasso.get().load(condition.icon).into(imWeather)
+                } else {
+                    tvDegree.text = condition.text
+                    imWeather.setImageResource(condition.icon.toInt())
+                }
+
             }
 
         }
 
     }
 
-    private fun formatTime(time: String):String{
-        val format = time.split(" ")
-        return format[1]
+    private fun formatTime(time: String): String {
+        try {
+            val format = time.split(" ")
+            return format[1]
+        } catch (e: Exception) {
+            return time
+        }
+
     }
 
 

@@ -43,16 +43,16 @@ class RepositoryDataImpl(
        return mapper.mapperCityDtoToEntityCity(cityDto,context)
     }
 
-    override suspend fun addNewCity(searchCity: SearchCity) {
+    override suspend fun addNewCity(city: City) {
         var positionId = locationDao.getSumPosition()
         if (positionId == CURRENT_LOCATION_ID) {
             positionId = POSITION_ID_NEXT
         }
-        val positionLoc = "${searchCity.lat},${searchCity.lon}"
-        val datePosition = locationDao.checkCity(positionLoc) ?: NO_POSITION
+        val positionCity = city.location.position
+        val datePosition = locationDao.checkCity(positionCity) ?: NO_POSITION
         val time = System.currentTimeMillis()
-        val searchPosition = "${searchCity.lat},${searchCity.lon}"
-        val thisPosition = Position(searchCity.id, searchPosition, formatTimeFromEpoch(time))
+
+        val thisPosition = Position(positionId, positionCity, formatTimeFromEpoch(time))
 
         Log.d("Repository_Log", "thisPosition $thisPosition , datePosition | $datePosition")
         if (checkingForUpdates(thisPosition, datePosition)) {
@@ -145,8 +145,14 @@ class RepositoryDataImpl(
     }
 
 
-    override suspend fun getLocations(): List<Location> {
-        return locationDao.getAllLocations().map { mapper.mapperLocationDbToEntityLocation(it) }
+    override fun getLocations(): LiveData<List<Location>> {
+
+        return MediatorLiveData<List<Location>>().apply {
+            addSource(locationDao.getAllLocationsLiveData()) {
+                value = it.map { mapper.mapperLocationDbToEntityLocation(it) }
+            }
+        }
+
     }
 
 
