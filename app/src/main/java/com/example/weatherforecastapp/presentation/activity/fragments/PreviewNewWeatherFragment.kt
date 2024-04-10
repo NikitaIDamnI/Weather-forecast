@@ -71,18 +71,28 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
     private fun initCurrent() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
-            viewModel.city.observe(viewLifecycleOwner, Observer {
-                tvCity.text = it.location.name
-                tvData.text = it.current.date
-                val temp = it.current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
+            viewModel.city.observe(viewLifecycleOwner, Observer {city->
+                tvCity.text = city.location.name
+                tvData.text = city.current.date
+                val temp = city.current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvDegree.text = temp
-                tvCondition.text = it.current.condition.text
-                Picasso.get().load(it.current.condition.icon).into(imWeather)
-                val listPrecipitation = it.current.weatherPrecipitation
+                tvCondition.text = city.current.condition.text
+                Picasso.get().load(city.current.condition.icon).into(imWeather)
+                val listPrecipitation = city.current.weatherPrecipitation
                 Log.d("PreviewNewWeatherFragment_Log", "initCurrent: $listPrecipitation")
                 adapterPrecipitation.submitList(listPrecipitation)
                 setupPullAdapter(rvPrecipitation)
                 rvPrecipitation.adapter = adapterPrecipitation
+                tvAddCity.setOnClickListener {
+                    viewModel.addCity(city)
+                    dialog?.dismiss()
+                }
+                tvCancel.setOnClickListener {
+                    dialog?.dismiss()
+                }
+
+
+
             })
 
         }

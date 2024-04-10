@@ -61,7 +61,6 @@ class FragmentAllCities : Fragment() {
             val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
                 .setId(id)
             findNavController().navigate(action)
-
         }
     }
 
@@ -75,6 +74,11 @@ class FragmentAllCities : Fragment() {
             viewModel.city.observe(viewLifecycleOwner, Observer {
                 Log.d("FragmentAllCities_Log", "city: ${it.location.name}")
             })
+            searchCityAdapter.submitList(emptyList())
+            binding.searchView.setQuery("",false)
+            binding.searchView.clearFocus()
+            binding.searchView.isIconified = true
+
             val action =
                 FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
             findNavController().navigate(action)

@@ -52,9 +52,9 @@ class ViewModelAllCities(
             city.value = citySearch
         }
     }
-    fun addCity(searchCity: SearchCity) {
+    fun addCity(city: City) {
         viewModelScope.launch {
-            useCaseAddCity(searchCity)
+            useCaseAddCity(city)
         }
     }
 
