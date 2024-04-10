@@ -18,6 +18,8 @@ interface LocationDao {
 
 
     @Query("SELECT * FROM location")
+    fun getAllLocationsLiveData(): LiveData<List<LocationDb>>
+    @Query("SELECT * FROM location")
     suspend fun getAllLocations(): List<LocationDb>
 
     @Query("SELECT * FROM location WHERE position_id =:id")

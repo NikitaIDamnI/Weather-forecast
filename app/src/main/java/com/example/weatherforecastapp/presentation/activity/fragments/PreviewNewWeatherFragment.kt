@@ -105,7 +105,7 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
         viewModel.city.observe(viewLifecycleOwner, Observer {
             with(binding) {
                 val listWeatherHour =
-                    viewModel.getWeatherHour24(it.location.localtime, it.forecastDays)
+                    viewModel.getWeatherHour24(it.forecastDays, it.location.localtime)
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
                 adapterForecastDays.submitList(it.forecastDays)

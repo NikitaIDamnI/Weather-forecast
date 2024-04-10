@@ -145,8 +145,14 @@ class RepositoryDataImpl(
     }
 
 
-    override suspend fun getLocations(): List<Location> {
-        return locationDao.getAllLocations().map { mapper.mapperLocationDbToEntityLocation(it) }
+    override fun getLocations(): LiveData<List<Location>> {
+
+        return MediatorLiveData<List<Location>>().apply {
+            addSource(locationDao.getAllLocationsLiveData()) {
+                value = it.map { mapper.mapperLocationDbToEntityLocation(it) }
+            }
+        }
+
     }
 
 
