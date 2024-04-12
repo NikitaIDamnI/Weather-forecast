@@ -28,7 +28,6 @@ class FragmentAllCities : Fragment() {
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
 
-
     private val viewModel by lazy {
         ViewModelProvider(requireActivity())[ViewModelAllCities::class.java]
     }
@@ -58,7 +57,8 @@ class FragmentAllCities : Fragment() {
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
         adapterAllCities.onClick = { id, binding ->
-            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
+            val action=
+                FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
                 .setId(id)
             findNavController().navigate(action)
         }
@@ -69,13 +69,12 @@ class FragmentAllCities : Fragment() {
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
         searchCityAdapter.onClick = {
-            //viewModel.addCity(it)
             viewModel.previewCity(it)
             viewModel.city.observe(viewLifecycleOwner, Observer {
                 Log.d("FragmentAllCities_Log", "city: ${it.location.name}")
             })
             searchCityAdapter.submitList(emptyList())
-            binding.searchView.setQuery("",false)
+            binding.searchView.setQuery("", false)
             binding.searchView.clearFocus()
             binding.searchView.isIconified = true
 
@@ -121,7 +120,7 @@ class FragmentAllCities : Fragment() {
                 val position = viewHolder.adapterPosition
                 val item = adapterAllCities.currentList[position]
 
-                if (position != 0) {
+                if (position != USER_POSITION) {
                     viewModel.deleteCity(item)
                 } else {
                     adapterAllCities.notifyItemChanged(position)
@@ -132,15 +131,21 @@ class FragmentAllCities : Fragment() {
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder
             ): Int {
-                return if (viewHolder.adapterPosition == 0) 0 else super.getSwipeDirs(
-                    recyclerView,
-                    viewHolder
-                )
+                return if (viewHolder.adapterPosition == USER_POSITION) {
+                    DEFAULT_SWIPE_DIRECTION
+                } else {
+                    super.getSwipeDirs(recyclerView, viewHolder)
+                }
             }
         }
         val itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(rvShopList)
     }
 
+
+    companion object {
+        const val USER_POSITION = 0
+        const val DEFAULT_SWIPE_DIRECTION = 0
+    }
 
 }
