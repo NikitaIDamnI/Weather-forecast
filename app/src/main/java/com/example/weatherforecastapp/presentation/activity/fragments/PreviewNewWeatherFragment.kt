@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.PreviewNewWeatherFragmentBinding
@@ -31,6 +32,8 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
     private val viewModel by lazy {
         ViewModelProvider(requireActivity())[ViewModelAllCities::class.java]
     }
+    private val args by navArgs<PreviewNewWeatherFragmentArgs>()
+
 
     override fun getTheme() = R.style.AppBottomSheetDialogTheme
 
@@ -50,7 +53,7 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
                 val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetInternal!!)
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 bottomSheetBehavior.peekHeight =
-                    resources.displayMetrics.heightPixels // Устанавливаем высоту экрана
+                    resources.displayMetrics.heightPixels
             }
         }
         return view
@@ -71,10 +74,11 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
     private fun initCurrent() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
-            viewModel.city.observe(viewLifecycleOwner, Observer {city->
+            viewModel.city.observe(viewLifecycleOwner, Observer { city ->
                 tvCity.text = city.location.name
                 tvData.text = city.current.date
-                val temp = city.current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
+                val temp =
+                    city.current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvDegree.text = temp
                 tvCondition.text = city.current.condition.text
                 Picasso.get().load(city.current.condition.icon).into(imWeather)
@@ -83,20 +87,21 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
                 adapterPrecipitation.submitList(listPrecipitation)
                 setupPullAdapter(rvPrecipitation)
                 rvPrecipitation.adapter = adapterPrecipitation
-                tvAddCity.setOnClickListener {
-                    viewModel.addCity(city)
-                    dialog?.dismiss()
-                }
+
                 tvCancel.setOnClickListener {
                     dialog?.dismiss()
                 }
 
-
-
+                if (args.viewAddCity) {
+                    tvAddCity.setOnClickListener {
+                        viewModel.addCity(city)
+                        dialog?.dismiss()
+                    }
+                } else {
+                    tvAddCity.visibility = View.GONE
+                }
             })
-
         }
-
     }
 
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {

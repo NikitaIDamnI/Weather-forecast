@@ -23,7 +23,7 @@ class ForecastDaysAdapter(
         val forecastDays = getItem(position)
         with(holder.binding) {
             with(forecastDays) {
-                if (position == 0) {
+                if (position == USER_POSITION) {
                     tvTime.text = "Сегодня"
                 }else{
                     tvTime.text = date
@@ -41,10 +41,7 @@ class ForecastDaysAdapter(
 
     }
 
-    private fun formatTime(time: String): String {
-        val format = time.split(" ")
-        return format[1]
+    companion object {
+        const val USER_POSITION = 0
     }
-
-
 }

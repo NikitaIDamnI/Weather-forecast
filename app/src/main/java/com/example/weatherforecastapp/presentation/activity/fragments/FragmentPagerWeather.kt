@@ -59,7 +59,7 @@ class FragmentPagerWeather : Fragment() {
         viewModel.sizeCity.observe(viewLifecycleOwner) {
             val argsList = getListArgs(it)
             Log.d("FragmentPagerWeather_Log", "sizeCity: $it")
-            val pager = PagerAdapter(requireActivity(), args.id, argsList)
+            val pager = PagerAdapter(requireActivity(),argsList)
 
             with(binding) {
 
@@ -68,7 +68,7 @@ class FragmentPagerWeather : Fragment() {
 
                 TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
                     when (position) {
-                        0 -> {
+                        USER_POSITION -> {
                             tab.setIcon(R.drawable.ic_nav)
                             tab.view.isClickable = false
                         }
@@ -82,12 +82,12 @@ class FragmentPagerWeather : Fragment() {
                     .attach()
 
 
-                if (it == 0) {
+                if (it == EMPTY_LIST) {
                     viewPager.visibility = View.GONE
-
+                } else {
+                    viewPager.visibility = View.VISIBLE
                 }
 
-                viewPager.visibility = View.VISIBLE
             }
         }
 
@@ -98,15 +98,15 @@ class FragmentPagerWeather : Fragment() {
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                root.visibility = View.VISIBLE
                 cardToolbar.animate()
                     .alpha(1f)
-                    .setDuration(300)
+                    .setDuration(DURATION)
                     .start()
                 load.animate()
                     .alpha(0f)
-                    .setDuration(300)
+                    .setDuration(DURATION)
                     .start()
+
             }
         })
     }
@@ -114,7 +114,7 @@ class FragmentPagerWeather : Fragment() {
 
     private fun getListArgs(idCity: Int): List<Bundle> {
         val argsList = mutableListOf<Bundle>()
-        if (idCity != 0) {
+        return if (idCity != EMPTY_LIST) {
             for (id in START_CITY_ID..<idCity) {
                 val args = Bundle().apply {
                     putInt("id", id)
@@ -122,9 +122,9 @@ class FragmentPagerWeather : Fragment() {
                 argsList.add(args)
             }
             Log.d("FragmentPagerWeather", "argsList.size: ${argsList.size}")
-            return argsList
+            argsList
         } else {
-            return argsList
+            argsList
         }
 
     }
@@ -132,7 +132,9 @@ class FragmentPagerWeather : Fragment() {
 
     companion object {
         private const val START_CITY_ID = 0
-
+        private const val USER_POSITION = 0
+        private const val EMPTY_LIST = 0
+        private const val DURATION = 100L
 
     }
 }

@@ -53,8 +53,8 @@
         android:label="preview_new_weather_fragment"
         tools:layout="@layout/preview_new_weather_fragment" >
         <argument
-            android:name="id"
-            android:defaultValue="0"
-            app:argType="integer" />
+            android:name="viewAddCity"
+            app:argType="boolean"
+            android:defaultValue="true" />
     </dialog>
 </navigation>

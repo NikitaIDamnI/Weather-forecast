@@ -57,9 +57,9 @@ class FragmentAllCities : Fragment() {
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
         adapterAllCities.onClick = { id, binding ->
-            val action=
+            val action =
                 FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                .setId(id)
+                    .setId(id)
             findNavController().navigate(action)
         }
     }
@@ -80,6 +80,7 @@ class FragmentAllCities : Fragment() {
 
             val action =
                 FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                    .setViewAddCity(viewModel.checkCity("${it.lat},${it.lon}"))
             findNavController().navigate(action)
         }
 

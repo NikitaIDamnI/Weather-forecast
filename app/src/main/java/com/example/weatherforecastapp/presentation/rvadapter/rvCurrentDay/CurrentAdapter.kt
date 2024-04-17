@@ -23,7 +23,7 @@ class CurrentAdapter(
         val forecastHour = getItem(position)
         with(holder.binding) {
             with(forecastHour) {
-                if (position == 0) {
+                if (position == USER_POSITION) {
                     tvTime.text = "Сейчас"
                 } else {
                     tvTime.text = formatTime(time)
@@ -53,5 +53,8 @@ class CurrentAdapter(
 
     }
 
+    companion object {
+        const val USER_POSITION = 0
+    }
 
 }

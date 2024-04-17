@@ -63,13 +63,10 @@ class ViewModelWeather(
         val oldListTo24 = forecastDay[0].forecastHour
         val oldListNextDay = forecastDay[1].forecastHour
 
-        // Создаем новый список для текущего дня
         val newListTo24 = oldListTo24.subList(startIndex, oldListTo24.size).toMutableList()
 
-        // Создаем новый список для следующего дня
         val newListNextDay = oldListNextDay.subList(0, startIndex + 1).toMutableList()
 
-        // Добавляем рассвет и закат в список текущего дня
         if (sunriseHour >= startIndex) {
             val index = sunriseHour - startIndex
             newListTo24.add(index + 1, sunrise)
@@ -79,13 +76,11 @@ class ViewModelWeather(
             newListTo24.add(index + 1, sunset)
         }
 
-        // Добавляем закат в список следующего дня, если он на следующие сутки
-        if (sunriseHour <= newListNextDay.size) {
+        if (sunriseHour < newListNextDay.size) {
             val index = sunsetHour - newListNextDay.size
             newListNextDay.add(sunriseHour+1, sunrise)
         }
 
-        // Создаем итоговый список
         val weatherHour24 = mutableListOf<ForecastHour>().apply {
             addAll(newListTo24)
             addAll(newListNextDay)

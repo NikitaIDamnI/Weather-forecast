@@ -232,6 +232,11 @@ class RepositoryDataImpl(
 
     }
 
+    suspend fun checkCity(position: String): Boolean{
+        return locationDao.checkCity(position) == null
+
+    }
+
     companion object {
         const val CURRENT_LOCATION_ID = 0
         const val POSITION_ID_START = 0
