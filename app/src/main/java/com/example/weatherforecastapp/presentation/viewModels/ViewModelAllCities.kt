@@ -14,6 +14,7 @@ import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasDeleteCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseAddNewCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCityFromSearch
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
 import kotlinx.coroutines.launch
@@ -27,6 +28,8 @@ class ViewModelAllCities(
     private val useCaseSearchCity = UseCaseSearchCity(repository)
     private val useCaseAddCity = UseCaseAddNewCity(repository)
     private val useCasDeleteCity = UseCasDeleteCity(repository)
+    private val useCaseGetCityFromSearch = UseCaseGetCityFromSearch(repository)
+
 
     val city = MutableLiveData<City>()
 
@@ -48,7 +51,7 @@ class ViewModelAllCities(
 
     fun previewCity(searchCity: SearchCity) {
         viewModelScope.launch {
-            val citySearch = repository.getCityFromSearch(searchCity)
+            val citySearch = useCaseGetCityFromSearch(searchCity)
             city.value = citySearch
         }
     }
@@ -64,7 +67,6 @@ class ViewModelAllCities(
         viewModelScope.launch {
             useCasDeleteCity(location.positionId)
         }
-
     }
 
     fun getWeatherHour24(forecastDay: List<ForecastDay>, timeLocation: String): List<ForecastHour> {

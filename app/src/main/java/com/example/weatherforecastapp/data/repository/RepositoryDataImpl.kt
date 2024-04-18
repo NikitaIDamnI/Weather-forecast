@@ -12,6 +12,7 @@ import com.example.weatherforecastapp.data.mapper.Mapper
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDay
+import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
@@ -38,7 +39,7 @@ class RepositoryDataImpl(
         return true
     }
 
-    suspend fun getCityFromSearch(searchCity: SearchCity): City {
+    override suspend fun getCityFromSearch(searchCity: SearchCity): City {
         val cityDto = apiService.getCityDto(city = searchCity.name)
        return mapper.mapperCityDtoToEntityCity(cityDto,context)
     }
@@ -77,6 +78,14 @@ class RepositoryDataImpl(
                 positionId += POSITION_ID_NEXT
             }
         }
+    }
+
+    override fun getCurrentDay(id: Int): LiveData<Current> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getForecastDas(id: Int): LiveData<List<ForecastDay>> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun getUserLocation(): Location {
@@ -120,25 +129,13 @@ class RepositoryDataImpl(
         }
     }
 
-    override fun getCurrentDay(id: Int): LiveData<Current> {
-        val currentLiveDataDb = currentDao.getCurrent(id)
 
-        return MediatorLiveData<Current>().apply {
-            addSource(currentLiveDataDb) {
+
+    fun getForecastDas(): LiveData<List<ForecastDayCity>> {
+        return MediatorLiveData<List<ForecastDayCity>>().apply {
+            addSource(forecastDayDao.getForecastDay()) {
                 if (it != null) {
-                    value = mapper.mapperCurrentDbToEntityCurrent(it, context)
-                }
-            }
-        }
-    }
-
-    override fun getForecastDas(id: Int): LiveData<List<ForecastDay>> {
-        val forecastDayLiveDataDb = forecastDayDao.getForecastDay(id)
-
-        return MediatorLiveData<List<ForecastDay>>().apply {
-            addSource(forecastDayLiveDataDb) {
-                if (it != null) {
-                    value = mapper.mapperForecastDaysDbToEntityForecastDays(it)
+                    value = it.map {mapper.mapperForecastCityDbToEntityForecastCityDays(it) }
                 }
             }
         }
@@ -155,6 +152,15 @@ class RepositoryDataImpl(
             }
         }
 
+    }
+    fun getCurrentDays(): LiveData<List<Current>> {
+        return MediatorLiveData<List<Current>>().apply {
+            addSource(currentDao.getCurrents()) {
+                if (it != null) {
+                    value = it.map { mapper.mapperCurrentDbToEntityCurrent(it,context) }
+                }
+            }
+        }
     }
 
 

@@ -15,7 +15,6 @@ import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactoryWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
 
@@ -28,12 +27,8 @@ class WeatherFragment : Fragment() {
     private val args by navArgs<WeatherFragmentArgs>()
 
 
-    private val viewModelFactoryWeather by lazy {
-        ViewModelFactoryWeather(requireActivity().application, args.id)
-    }
-
     private val viewModel by lazy {
-        ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
+        ViewModelProvider(requireActivity())[ViewModelWeather::class.java]
     }
 
     override fun onCreateView(
@@ -55,18 +50,23 @@ class WeatherFragment : Fragment() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
             viewModel.current.observe(viewLifecycleOwner, Observer {
-                tvCity.text = it.nameCity
-                tvData.text = it.date
-                val temp = it.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
-                tvDegree.text = temp
-                tvCondition.text = it.condition.text
-                Picasso.get().load(it.condition.icon).into(imWeather)
-                val listPrecipitation = viewModel.getWeatherPrecipitation(it)
-                Log.d("WeatherFragment_Log", "initCurrent: $listPrecipitation")
-                adapterPrecipitation.submitList(listPrecipitation)
-                setupPullAdapter(rvPrecipitation)
-                rvPrecipitation.adapter = adapterPrecipitation
-                binding.imBackground.transitionName = "${args.id}"
+                var current = it[id]
+                if (it.size > args.id && it != null) {
+                    current = it[args.id]
+                }
+                        tvCity.text = current.nameCity
+                        tvData.text = current.date
+                        val temp =
+                            current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
+                        tvDegree.text = temp
+                        tvCondition.text = current.condition.text
+                        Picasso.get().load(current.condition.icon).into(imWeather)
+                        val listPrecipitation = viewModel.getWeatherPrecipitation(current)
+                        Log.d("WeatherFragment_Log", "initCurrent: ${it.size}")
+                        adapterPrecipitation.submitList(listPrecipitation)
+                        setupPullAdapter(rvPrecipitation)
+                        rvPrecipitation.adapter = adapterPrecipitation
+                        binding.imBackground.transitionName = "${id}"
             })
 
         }
@@ -84,10 +84,11 @@ class WeatherFragment : Fragment() {
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
             with(binding) {
-                val listWeatherHour = viewModel.getWeatherHour24(it)
+                val forecastDay = it[id]
+                val listWeatherHour = viewModel.getWeatherHour24(forecastDay)
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
-                adapterForecastDays.submitList(it)
+                adapterForecastDays.submitList(forecastDay.forecastDays)
                 rvForecastForDays.adapter = adapterForecastDays
             }
         })

@@ -17,6 +17,7 @@ import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.Day
 import com.example.weatherforecastapp.domain.models.ForecastDay
+import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
@@ -110,18 +111,23 @@ class Mapper {
         )
     }
 
-    fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb?): List<ForecastDay> {
+    private fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb?): List<ForecastDay> {
         return forecastDaysDb?.let {
             val type = object : TypeToken<List<ForecastDayDto>>() {}.type
             val dbModel = Gson().fromJson<List<ForecastDayDto>>(it.json, type)
-            dbModel.map { dto -> mapperForecastDaysJSONToEntityForecastDays(dto,forecastDaysDb) }
+            dbModel.map { dto -> mapperForecastDaysJSONToEntityForecastDays(dto) }
         } ?: emptyList()
     }
 
-    private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
+    fun mapperForecastCityDbToEntityForecastCityDays(forecastDaysDb: ForecastDaysDb) = ForecastDayCity(
+            nameCity = forecastDaysDb.nameCity,
+            timeLocation = forecastDaysDb.timeLocation,
+            forecastDays = mapperForecastDaysDbToEntityForecastDays(forecastDaysDb),
+    )
+
+
+    private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto) =
         ForecastDay(
-            nameCity = db.nameCity,
-            timeLocation = db.timeLocation,
             date = formatTime(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
             days = Day(
@@ -542,8 +548,6 @@ class Mapper {
 
     private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto) =
         ForecastDay(
-            nameCity =  "",
-            timeLocation = dto.date,
             date = formatTime(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
             days = Day(

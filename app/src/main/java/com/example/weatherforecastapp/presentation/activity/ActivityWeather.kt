@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.data.gps.PermissionsLauncher
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactoryWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 
 class ActivityWeather : AppCompatActivity() {
@@ -14,11 +13,9 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
-    private val viewModelFactoryWeather by lazy {
-        ViewModelFactoryWeather(application, 0)
-    }
+
     private val viewModelWeather by lazy {
-        ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
+        ViewModelProvider(this)[ViewModelWeather::class.java]
     }
 
 

@@ -9,7 +9,7 @@ import com.example.weatherforecastapp.data.gps.LocationRepositoryImpl
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
-import com.example.weatherforecastapp.domain.models.ForecastDay
+import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 
 class ViewModelWeather(
     application: Application,
-    val id: Int
 ) : AndroidViewModel(application) {
 
     private val repository = RepositoryDataImpl(application)
@@ -28,9 +27,10 @@ class ViewModelWeather(
     private val useCaseWeatherUpdate = UseCaseWeatherUpdate(repository)
 
 
-    var location = repository.getLocation(id)
-    var current = repository.getCurrentDay(id)
-    var forecastDay = repository.getForecastDas(id)
+
+    var location = repository.getLocations()
+    var current = repository.getCurrentDays()
+    var forecastDay = repository.getForecastDas()
     var sizeCity = repository.getSizePager()
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
@@ -38,8 +38,8 @@ class ViewModelWeather(
     }
 
 
-    fun getWeatherHour24(forecastDay: List<ForecastDay>,): List<ForecastHour> {
-        val astro = forecastDay[0].astro
+    fun getWeatherHour24(forecastDayCity:ForecastDayCity): List<ForecastHour> {
+        val astro = forecastDayCity.forecastDays[0].astro
 
         val sunriseHour = astro.sunrise.split(":")[0].toInt()
         val sunsetHour = astro.sunset.split(":")[0].toInt()
@@ -59,9 +59,9 @@ class ViewModelWeather(
             )
         )
 
-        val startIndex = forecastDay[0].timeLocation.split(":")[0].toInt()
-        val oldListTo24 = forecastDay[0].forecastHour
-        val oldListNextDay = forecastDay[1].forecastHour
+        val startIndex = forecastDayCity.timeLocation.split(":")[0].toInt()
+        val oldListTo24 = forecastDayCity.forecastDays[0].forecastHour
+        val oldListNextDay = forecastDayCity.forecastDays[1].forecastHour
 
         val newListTo24 = oldListTo24.subList(startIndex, oldListTo24.size).toMutableList()
 

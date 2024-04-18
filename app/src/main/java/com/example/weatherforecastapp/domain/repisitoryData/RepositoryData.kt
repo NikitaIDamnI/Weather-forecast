@@ -13,6 +13,7 @@ interface RepositoryData {
     suspend fun saveUserLocation(position: Position): Boolean
 
     suspend fun addNewCity(city: City)
+    suspend fun getCityFromSearch(searchCity: SearchCity): City
     suspend fun searchCity(city: String): List<SearchCity>
     suspend fun deleteCity(positionId: Int)
     fun getLocations(): LiveData<List<Location>>
