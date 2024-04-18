@@ -93,13 +93,14 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
                 }
 
                 if (args.viewAddCity) {
+                    tvAddCity.visibility = View.GONE
+                } else {
                     tvAddCity.setOnClickListener {
                         viewModel.addCity(city)
                         dialog?.dismiss()
                     }
-                } else {
-                    tvAddCity.visibility = View.GONE
                 }
+                Log.d("PreviewNewWeatherFragment_Log", "args.viewAddCity: ${args.viewAddCity}")
             })
         }
     }

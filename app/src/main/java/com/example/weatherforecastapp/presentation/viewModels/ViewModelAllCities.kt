@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -30,7 +29,6 @@ class ViewModelAllCities(
     private val useCasDeleteCity = UseCasDeleteCity(repository)
 
     val city = MutableLiveData<City>()
-    val viewAddNewCity = MutableLiveData<Boolean>()
 
 
     val listLocation = useCaseGetLocations()
@@ -44,21 +42,13 @@ class ViewModelAllCities(
         }
 
     }
-
-    fun checkCity(position: String): Boolean {
-        var result = true
-        viewModelScope.launch {
-            result = repository.checkCity(position)
-        }
-        return result
+    fun checkCity(listLocation: List<Location>, position: String): Boolean {
+        return listLocation.any { it.position == position }
     }
 
     fun previewCity(searchCity: SearchCity) {
         viewModelScope.launch {
             val citySearch = repository.getCityFromSearch(searchCity)
-            val position = "${searchCity.lat},${searchCity.lon}"
-            viewAddNewCity.value = repository.checkCity(position)
-            Log.d("ViewModelAllCities_Log", "previewCity: ${citySearch.location.name}")
             city.value = citySearch
         }
     }
@@ -114,7 +104,6 @@ class ViewModelAllCities(
         }
 
         if (sunriseHour <= newListNextDay.size) {
-            val index = sunsetHour - newListNextDay.size
             newListNextDay.add(sunriseHour + 1, sunrise)
         }
 

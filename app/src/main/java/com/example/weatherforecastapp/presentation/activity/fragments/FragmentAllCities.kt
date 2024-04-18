@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -68,20 +67,26 @@ class FragmentAllCities : Fragment() {
 
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
-        searchCityAdapter.onClick = {
-            viewModel.previewCity(it)
-            viewModel.city.observe(viewLifecycleOwner, Observer {
-                Log.d("FragmentAllCities_Log", "city: ${it.location.name}")
-            })
+        searchCityAdapter.onClick = { searchCity ->
+            viewModel.previewCity(searchCity)
             searchCityAdapter.submitList(emptyList())
+
             binding.searchView.setQuery("", false)
             binding.searchView.clearFocus()
             binding.searchView.isIconified = true
 
-            val action =
-                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
-                    .setViewAddCity(viewModel.checkCity("${it.lat},${it.lon}"))
-            findNavController().navigate(action)
+            viewModel.listLocation.observe(viewLifecycleOwner, Observer {
+                val position = "${searchCity.lat},${searchCity.lon}"
+               val viewAddCity = viewModel.checkCity(it,position)
+                if (it != null){
+                    val action =
+                        FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                            .setViewAddCity(viewAddCity)
+                    findNavController().navigate(action)
+                }
+
+            })
+
         }
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
