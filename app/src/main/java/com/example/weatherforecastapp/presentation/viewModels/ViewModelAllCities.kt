@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -32,7 +31,7 @@ class ViewModelAllCities(
     val city = MutableLiveData<City>()
 
 
-    val listLocation =  useCaseGetLocations()
+    val listLocation = useCaseGetLocations()
 
     val searchCityList = MutableLiveData<List<SearchCity>>()
 
@@ -40,24 +39,25 @@ class ViewModelAllCities(
     fun searchCity(city: String) {
         viewModelScope.launch {
             searchCityList.value = useCaseSearchCity(city)
-            //Log.d("ViewModelAllCities_Log", "searchCity: $city ")
         }
 
     }
+    fun checkCity(listLocation: List<Location>, position: String): Boolean {
+        return listLocation.any { it.position == position }
+    }
 
-    fun previewCity(searchCity: SearchCity){
+    fun previewCity(searchCity: SearchCity) {
         viewModelScope.launch {
             val citySearch = repository.getCityFromSearch(searchCity)
-            Log.d("ViewModelAllCities_Log", "previewCity: ${citySearch.location.name}")
             city.value = citySearch
         }
     }
+
     fun addCity(city: City) {
         viewModelScope.launch {
             useCaseAddCity(city)
         }
     }
-
 
 
     fun deleteCity(location: Location) {
@@ -66,7 +66,8 @@ class ViewModelAllCities(
         }
 
     }
-    fun getWeatherHour24(forecastDay: List<ForecastDay>,timeLocation: String): List<ForecastHour> {
+
+    fun getWeatherHour24(forecastDay: List<ForecastDay>, timeLocation: String): List<ForecastHour> {
         val astro = forecastDay[0].astro
         val sunriseHour = astro.sunrise.split(":")[0].toInt()
         val sunsetHour = astro.sunset.split(":")[0].toInt()
@@ -103,8 +104,7 @@ class ViewModelAllCities(
         }
 
         if (sunriseHour <= newListNextDay.size) {
-            val index = sunsetHour - newListNextDay.size
-            newListNextDay.add(sunriseHour+1, sunrise)
+            newListNextDay.add(sunriseHour + 1, sunrise)
         }
 
         val weatherHour24 = mutableListOf<ForecastHour>().apply {

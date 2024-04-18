@@ -123,8 +123,9 @@
 
                 <TextView
                     android:id="@+id/tv_condition"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
                     android:fontFamily="@font/cambay"
                     android:gravity="start"
                     android:shadowColor="@color/black"
@@ -132,11 +133,11 @@
                     android:textColor="@color/colore_text"
                     android:textSize="15sp"
                     android:textStyle="normal"
-                    app:layout_constraintEnd_toEndOf="@+id/tv_degree"
+                    app:layout_constraintEnd_toStartOf="@+id/progressBar3"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toEndOf="@+id/im_weather"
                     app:layout_constraintTop_toTopOf="@+id/im_weather"
-                    tools:text="Patchy rain nearby" />
+                    tools:text="Moderate or heavy rain with thunder" />
 
 
                 <ImageView

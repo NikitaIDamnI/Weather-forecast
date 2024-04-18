@@ -149,7 +149,9 @@ class RepositoryDataImpl(
 
         return MediatorLiveData<List<Location>>().apply {
             addSource(locationDao.getAllLocationsLiveData()) {
-                value = it.map { mapper.mapperLocationDbToEntityLocation(it) }
+                if (it != null) {
+                    value = it.map { mapper.mapperLocationDbToEntityLocation(it) }
+                }
             }
         }
 
@@ -230,6 +232,10 @@ class RepositoryDataImpl(
     private fun formatTimeByHour(time: String): String {
         return time.split(":")[0]
 
+    }
+
+    suspend fun checkCity(position: String): Boolean{
+        return locationDao.checkCity(position) == null
     }
 
     companion object {

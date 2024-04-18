@@ -22,10 +22,10 @@ class SearchCityAdapter(
     }
 
     override fun onBindViewHolder(holder: SearchCityAdapterViewHolder, position: Int) {
-        val  searchCity = getItem(position)
+        val searchCity = getItem(position)
         with(holder.binding) {
             with(searchCity) {
-                val city ="${searchCity.name} ${searchCity.country} ${searchCity.region}"
+                val city = "$name $country $region"
                 textView2.text = city
                 root.setOnClickListener {
                     onClick?.invoke(searchCity)
@@ -34,10 +34,5 @@ class SearchCityAdapter(
         }
 
     }
-
-    private fun formatTime(maxTemp: Int, minTemp: Int): String {
-        return "Макс.: ${maxTemp}º,Мин.: ${minTemp}º"
-    }
-
 
 }

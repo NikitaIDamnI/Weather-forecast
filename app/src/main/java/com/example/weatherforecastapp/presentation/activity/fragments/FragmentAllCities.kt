@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,7 +25,6 @@ class FragmentAllCities : Fragment() {
     private var _binding: FragmentAllCitiesBinding? = null
     private val binding: FragmentAllCitiesBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
-
 
 
     private val viewModel by lazy {
@@ -58,8 +56,9 @@ class FragmentAllCities : Fragment() {
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
         adapterAllCities.onClick = { id, binding ->
-            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                .setId(id)
+            val action =
+                FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
+                    .setId(id)
             findNavController().navigate(action)
         }
     }
@@ -68,20 +67,26 @@ class FragmentAllCities : Fragment() {
 
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
-        searchCityAdapter.onClick = {
-            //viewModel.addCity(it)
-            viewModel.previewCity(it)
-            viewModel.city.observe(viewLifecycleOwner, Observer {
-                Log.d("FragmentAllCities_Log", "city: ${it.location.name}")
-            })
+        searchCityAdapter.onClick = { searchCity ->
+            viewModel.previewCity(searchCity)
             searchCityAdapter.submitList(emptyList())
-            binding.searchView.setQuery("",false)
+
+            binding.searchView.setQuery("", false)
             binding.searchView.clearFocus()
             binding.searchView.isIconified = true
 
-            val action =
-                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
-            findNavController().navigate(action)
+            viewModel.listLocation.observe(viewLifecycleOwner, Observer {
+                val position = "${searchCity.lat},${searchCity.lon}"
+               val viewAddCity = viewModel.checkCity(it,position)
+                if (it != null){
+                    val action =
+                        FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                            .setViewAddCity(viewAddCity)
+                    findNavController().navigate(action)
+                }
+
+            })
+
         }
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -121,7 +126,7 @@ class FragmentAllCities : Fragment() {
                 val position = viewHolder.adapterPosition
                 val item = adapterAllCities.currentList[position]
 
-                if (position != 0) {
+                if (position != USER_POSITION) {
                     viewModel.deleteCity(item)
                 } else {
                     adapterAllCities.notifyItemChanged(position)
@@ -132,15 +137,21 @@ class FragmentAllCities : Fragment() {
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder
             ): Int {
-                return if (viewHolder.adapterPosition == 0) 0 else super.getSwipeDirs(
-                    recyclerView,
-                    viewHolder
-                )
+                return if (viewHolder.adapterPosition == USER_POSITION) {
+                    DEFAULT_SWIPE_DIRECTION
+                } else {
+                    super.getSwipeDirs(recyclerView, viewHolder)
+                }
             }
         }
         val itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(rvShopList)
     }
 
+
+    companion object {
+        const val USER_POSITION = 0
+        const val DEFAULT_SWIPE_DIRECTION = 0
+    }
 
 }

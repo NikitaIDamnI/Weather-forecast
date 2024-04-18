@@ -1,6 +1,5 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -35,11 +34,6 @@ class WeatherFragment : Fragment() {
 
     private val viewModel by lazy {
         ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
-    }
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
     }
 
     override fun onCreateView(
@@ -79,14 +73,10 @@ class WeatherFragment : Fragment() {
     }
 
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
-
         rvPrecipitation.recycledViewPool.setMaxRecycledViews(
             PrecipitationAdapter.ENABLE,
             PrecipitationAdapter.MAX_PULL_SIZE
         )
-
-
-
     }
 
     private fun initForecast() {

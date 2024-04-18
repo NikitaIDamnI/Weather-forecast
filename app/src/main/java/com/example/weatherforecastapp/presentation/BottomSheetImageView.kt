@@ -27,14 +27,14 @@ class BottomSheetImageView @JvmOverloads constructor(
         clipPath.reset()
         val width = measuredWidth.toFloat()
         val height = measuredHeight.toFloat()
-        clipPath.moveTo(0f + cornerRadius, 0f) // Начинаем с левого верхнего угла с учетом радиуса закругления
-        clipPath.lineTo(width - cornerRadius, 0f) // Линия в правый верхний угол без учета радиуса закругления
-        clipPath.quadTo(width, 0f, width, 0f + cornerRadius) // Дуга к правому верхнему углу
-        clipPath.lineTo(width, height) // Линия до правого нижнего угла (без закругления)
-        clipPath.lineTo(0f, height) // Линия до левого нижнего угла (без закругления)
-        clipPath.lineTo(0f, 0f + cornerRadius) // Линия в левый верхний угол с учетом радиуса закругления
-        clipPath.quadTo(0f, 0f, 0f + cornerRadius, 0f) // Дуга к левому верхнему углу
-        clipPath.close() // Замыкаем путь
+        clipPath.moveTo(0f + cornerRadius, 0f)
+        clipPath.lineTo(width - cornerRadius, 0f)
+        clipPath.quadTo(width, 0f, width, 0f + cornerRadius)
+        clipPath.lineTo(width, height)
+        clipPath.lineTo(0f, height)
+        clipPath.lineTo(0f, 0f + cornerRadius)
+        clipPath.quadTo(0f, 0f, 0f + cornerRadius, 0f)
+        clipPath.close()
     }
 
 }

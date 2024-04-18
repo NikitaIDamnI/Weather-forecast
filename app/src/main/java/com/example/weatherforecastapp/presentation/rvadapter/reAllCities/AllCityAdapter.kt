@@ -25,7 +25,7 @@ class AllCityAdapter(
         with(holder.binding) {
             with(city) {
 
-                if (city.positionId == 0) {
+                if (city.positionId == USER_POSITION) {
                     tvCity.text = "Текущее положение"
                 }else {
                     tvCity.text = name
@@ -52,4 +52,7 @@ class AllCityAdapter(
     }
 
 
+    companion object {
+        const val USER_POSITION = 0
+    }
 }

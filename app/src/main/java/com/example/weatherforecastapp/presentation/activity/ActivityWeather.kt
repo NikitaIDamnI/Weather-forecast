@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.data.gps.PermissionsLauncher
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactoryWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 
@@ -22,9 +21,7 @@ class ActivityWeather : AppCompatActivity() {
         ViewModelProvider(this, viewModelFactoryWeather)[ViewModelWeather::class.java]
     }
 
-    private val viewModelAllCities by lazy {
-        ViewModelProvider(this)[ViewModelAllCities::class.java]
-    }
+
     private val permission by lazy {
         PermissionsLauncher(this)
     }
@@ -33,13 +30,11 @@ class ActivityWeather : AppCompatActivity() {
         permission
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        initial()
-    }
-
-    private fun initial() {
         viewModelWeather.weatherUpdate()
-
     }
+
+
+
 
 
     override fun onResume() {
