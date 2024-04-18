@@ -30,9 +30,7 @@ class ViewModelAllCities(
     private val useCasDeleteCity = UseCasDeleteCity(repository)
     private val useCaseGetCityFromSearch = UseCaseGetCityFromSearch(repository)
 
-
     val city = MutableLiveData<City>()
-
 
     val listLocation = useCaseGetLocations()
 

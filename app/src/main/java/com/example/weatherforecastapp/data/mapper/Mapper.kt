@@ -470,7 +470,6 @@ class Mapper {
     )
 
     fun mapperCityDtoToEntityCity(dto: CityDto, context: Context) = City(
-        id = EMPTY_ID,
         location = mapperCityDtoToLocationEntity(dto),
         current = mapperCurrentDtoToEntityCurrent(dto,context),
         forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it)}

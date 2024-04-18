@@ -12,6 +12,10 @@ import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCurrents
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetForecastDaysCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSizePager
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import kotlinx.coroutines.launch
@@ -24,20 +28,23 @@ class ViewModelWeather(
     private val repository = RepositoryDataImpl(application)
     private val repositoryLocal = LocationRepositoryImpl(application)
     private val useCaseCheckLocation = UseCaseCheckLocation(repositoryLocal)
-    private val useCaseWeatherUpdate = UseCaseWeatherUpdate(repository)
+    private  val weatherUpdate  = UseCaseWeatherUpdate(repository)
+    private val getLocations = UseCaseGetLocations(repository)
+    private val getCurrentDays = UseCaseGetCurrents(repository)
+    private val getForecastDaysCity = UseCaseGetForecastDaysCity(repository)
+    private val getSizePager = UseCaseGetSizePager(repository)
 
 
+    var location = getLocations()
+    var current = getCurrentDays()
+    var forecastDay =getForecastDaysCity()
+    var sizeCity = getSizePager()
 
-    var location = repository.getLocations()
-    var current = repository.getCurrentDays()
-    var forecastDay = repository.getForecastDas()
-    var sizeCity = repository.getSizePager()
+
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
         return current.weatherPrecipitation
     }
-
-
     fun getWeatherHour24(forecastDayCity:ForecastDayCity): List<ForecastHour> {
         val astro = forecastDayCity.forecastDays[0].astro
 
@@ -88,15 +95,11 @@ class ViewModelWeather(
 
         return weatherHour24
     }
-
-
     fun weatherUpdate() {
         viewModelScope.launch {
-            useCaseWeatherUpdate.invoke()
+            weatherUpdate.invoke()
         }
     }
-
-
     fun checkLocation(context: Context) {
         useCaseCheckLocation.invoke(context)
     }
