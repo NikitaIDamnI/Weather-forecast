@@ -16,25 +16,22 @@ import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
 import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
-class LocationRepositoryImpl(
+class LocationRepositoryImpl @Inject constructor(
     private val context: Application,
+    private val saveUserLocation: UseCaseSaveUserLocation,
+    private val fLocationClient: FusedLocationProviderClient,
+    private val getUserLocation: UseCaseGetUserLocation,
 ) : LocationRepository {
-    private val repositoryImpl = RepositoryDataImpl(context)
-    private val saveUserLocation = UseCaseSaveUserLocation(repositoryImpl)
-    private var fLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    private var getUserLocation = UseCaseGetUserLocation(repositoryImpl)
-
-
-
     private fun getLocation() {
         val ct = CancellationTokenSource()
         if (ActivityCompat.checkSelfPermission(
@@ -103,8 +100,6 @@ class LocationRepositoryImpl(
             Format.formatTimeFromEpoch(time)
         )
     }
-
-
 
 
 }

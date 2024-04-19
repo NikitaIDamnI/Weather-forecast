@@ -25,11 +25,10 @@ import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import javax.inject.Inject
 
 
-class Mapper {
-
-
+class Mapper @Inject constructor(){
     fun mapperCityDtoToCurrentDb(cityDto: CityDto, positionId: Int) = CurrentDb(
         id = positionId,
         nameCity = cityDto.locationDto.name,

@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,14 +14,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.PreviewNewWeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
+import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.squareup.picasso.Picasso
+import javax.inject.Inject
 
 class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
 
@@ -29,13 +33,22 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
         get() = _binding ?: throw RuntimeException("PreviewNewWeatherFragmentBinding = null")
 
 
-    private val viewModel by lazy {
-        ViewModelProvider(requireActivity())[ViewModelAllCities::class.java]
-    }
+    private lateinit var viewModel: ViewModelAllCities
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
     private val args by navArgs<PreviewNewWeatherFragmentArgs>()
 
 
     override fun getTheme() = R.style.AppBottomSheetDialogTheme
+
+    private val component by lazy {
+        (requireActivity().application as WeatherApp).component
+    }
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,6 +79,7 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity(),viewModelFactory)[ViewModelAllCities ::class.java]
         initCurrent()
         initForecast()
     }

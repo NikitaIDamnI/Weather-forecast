@@ -4,9 +4,10 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import com.example.testapi.network.ApiFactory
 import com.example.testapi.network.ApiService
-import com.example.weatherforecastapp.data.database.AppDatabase
+import com.example.weatherforecastapp.data.database.dao.CurrentDao
+import com.example.weatherforecastapp.data.database.dao.ForecastDayDao
+import com.example.weatherforecastapp.data.database.dao.LocationDao
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
 import com.example.weatherforecastapp.domain.models.City
@@ -18,16 +19,16 @@ import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import javax.inject.Inject
 
-class RepositoryDataImpl(
-    private val context: Application
+class RepositoryDataImpl @Inject constructor(
+    private val context: Application,
+    private val apiService: ApiService,
+    private val mapper: Mapper,
+    private val currentDao: CurrentDao,
+    private val forecastDayDao : ForecastDayDao,
+    private val locationDao: LocationDao,
 ) : RepositoryData {
-    private val apiService: ApiService = ApiFactory.apiService
-    private val mapper = Mapper()
-    private val currentDao = AppDatabase.getInstance(context).currentDao()
-    private val forecastDayDao = AppDatabase.getInstance(context).forecastDayDao()
-    private val locationDao = AppDatabase.getInstance(context).locationDao()
-
 
     override suspend fun saveUserLocation(position: Position): Boolean {
         val datePosition = locationDao.checkPosition(CURRENT_LOCATION_ID) ?: NO_POSITION
@@ -40,7 +41,7 @@ class RepositoryDataImpl(
 
     override suspend fun getCityFromSearch(searchCity: SearchCity): City {
         val cityDto = apiService.getCityDto(city = searchCity.name)
-       return mapper.mapperCityDtoToEntityCity(cityDto,context)
+        return mapper.mapperCityDtoToEntityCity(cityDto, context)
     }
 
     override suspend fun addNewCity(city: City) {
@@ -114,8 +115,8 @@ class RepositoryDataImpl(
         return MediatorLiveData<List<ForecastDayCity>>().apply {
             addSource(forecastDayDao.getForecastDay()) {
                 if (it != null) {
-                    value = it.map {mapper.mapperForecastCityDbToEntityForecastCityDays(it) }
-                }else{
+                    value = it.map { mapper.mapperForecastCityDbToEntityForecastCityDays(it) }
+                } else {
                     emptyList<ForecastDayCity>()
                 }
             }
@@ -127,18 +128,19 @@ class RepositoryDataImpl(
             addSource(locationDao.getAllLocationsLiveData()) {
                 if (it != null) {
                     value = it.map { mapper.mapperLocationDbToEntityLocation(it) }
-                }else{
+                } else {
                     emptyList<Location>()
                 }
             }
         }
     }
+
     override fun getCurrentDays(): LiveData<List<Current>> {
         return MediatorLiveData<List<Current>>().apply {
             addSource(currentDao.getCurrents()) {
                 if (it != null) {
-                    value = it.map { mapper.mapperCurrentDbToEntityCurrent(it,context) }
-                }else{
+                    value = it.map { mapper.mapperCurrentDbToEntityCurrent(it, context) }
+                } else {
                     emptyList<Current>()
                 }
             }
