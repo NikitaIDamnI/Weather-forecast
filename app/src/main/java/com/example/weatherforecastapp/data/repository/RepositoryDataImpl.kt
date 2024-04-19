@@ -115,6 +115,8 @@ class RepositoryDataImpl(
             addSource(forecastDayDao.getForecastDay()) {
                 if (it != null) {
                     value = it.map {mapper.mapperForecastCityDbToEntityForecastCityDays(it) }
+                }else{
+                    emptyList<ForecastDayCity>()
                 }
             }
         }
@@ -125,6 +127,8 @@ class RepositoryDataImpl(
             addSource(locationDao.getAllLocationsLiveData()) {
                 if (it != null) {
                     value = it.map { mapper.mapperLocationDbToEntityLocation(it) }
+                }else{
+                    emptyList<Location>()
                 }
             }
         }
@@ -134,6 +138,8 @@ class RepositoryDataImpl(
             addSource(currentDao.getCurrents()) {
                 if (it != null) {
                     value = it.map { mapper.mapperCurrentDbToEntityCurrent(it,context) }
+                }else{
+                    emptyList<Current>()
                 }
             }
         }
@@ -199,8 +205,7 @@ class RepositoryDataImpl(
                     " dataHour $dataHour , ${thisHour != dataHour}"
         )
 
-        return (datePosition.position != thisPosition.position ||
-                thisHour != dataHour)
+        return (datePosition.position != thisPosition.position || thisHour != dataHour)
     }
 
 
