@@ -1,8 +1,9 @@
 package com.example.weatherforecastapp.domain.repisitoryData.UseCase
 
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
+import javax.inject.Inject
 
-class UseCaseWeatherUpdate(
+class UseCaseWeatherUpdate @Inject constructor(
     private val repositoryData: RepositoryData
 ) {
 

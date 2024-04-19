@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,11 +13,14 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
+import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
+import javax.inject.Inject
 
 class WeatherFragment : Fragment() {
 
@@ -27,8 +31,16 @@ class WeatherFragment : Fragment() {
     private val args by navArgs<WeatherFragmentArgs>()
 
 
-    private val viewModel by lazy {
-        ViewModelProvider(requireActivity())[ViewModelWeather::class.java]
+    private lateinit var viewModel: ViewModelWeather
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val component by lazy {
+        (requireActivity().application as WeatherApp).component
+    }
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
     }
 
     override fun onCreateView(
@@ -41,6 +53,7 @@ class WeatherFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         initCurrent()
         initForecast()
     }

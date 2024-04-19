@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
 import PagerAdapter
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,8 +14,11 @@ import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
+import com.example.weatherforecastapp.presentation.WeatherApp
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.google.android.material.tabs.TabLayoutMediator
+import javax.inject.Inject
 
 
 class FragmentPagerWeather : Fragment() {
@@ -25,10 +29,18 @@ class FragmentPagerWeather : Fragment() {
 
     private val args by navArgs<FragmentPagerWeatherArgs>()
 
+    private lateinit var viewModel: ViewModelWeather
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel by lazy {
-        ViewModelProvider(requireActivity())[ViewModelWeather::class.java]
+    private val component by lazy {
+        (requireActivity().application as WeatherApp).component
     }
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
+
 
 
     override fun onCreateView(
@@ -41,6 +53,8 @@ class FragmentPagerWeather : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
+
         initial()
     }
 

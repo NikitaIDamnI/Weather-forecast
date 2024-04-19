@@ -17,7 +17,6 @@ interface RepositoryData {
     suspend fun searchCity(city: String): List<SearchCity>
     suspend fun deleteCity(positionId: Int)
     fun getLocations(): LiveData<List<Location>>
-
     suspend fun getUserLocation(): Location
     suspend fun weatherUpdate()
     fun getCurrentDays(): LiveData<List<Current>>

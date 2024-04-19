@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,12 +13,15 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
+import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 class FragmentAllCities : Fragment() {
@@ -26,13 +30,20 @@ class FragmentAllCities : Fragment() {
     private val binding: FragmentAllCitiesBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
+    private lateinit var viewModel: ViewModelAllCities
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel by lazy {
-        ViewModelProvider(requireActivity())[ViewModelAllCities::class.java]
-    }
     lateinit var searchCityAdapter: SearchCityAdapter
     lateinit var adapterAllCities: AllCityAdapter
 
+    private val component by lazy {
+        (requireActivity().application as WeatherApp).component
+    }
+    override fun onAttach(context: Context) {
+        component.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +55,7 @@ class FragmentAllCities : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
         setupAllCitiesAdapter()
         setupSearchAdapter()
     }
@@ -76,9 +88,9 @@ class FragmentAllCities : Fragment() {
             binding.searchView.isIconified = true
 
             var view = false
-            viewModel.listLocation.observe(viewLifecycleOwner, Observer {listLocation->
+            viewModel.listLocation.observe(viewLifecycleOwner, Observer { listLocation ->
                 val position = "${searchCity.lat},${searchCity.lon}"
-               view =  viewModel.checkCity(listLocation,position)
+                view = viewModel.checkCity(listLocation, position)
 
             })
             val action =
