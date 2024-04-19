@@ -1,12 +1,13 @@
 package com.example.weatherforecastapp.domain.repisitoryData.UseCase
 
-import com.example.weatherforecastapp.domain.models.Location
+import androidx.lifecycle.LiveData
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 
-class UseCaseGetUserLocation(
+class UseCaseGetSizePager(
     private val repositoryData: RepositoryData
 ) {
-   suspend operator fun invoke(): Location{
-        return repositoryData.getUserLocation()
+    operator fun invoke(): LiveData<Int> {
+        return repositoryData.getSizePager()
     }
 }
+

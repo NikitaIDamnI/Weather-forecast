@@ -11,7 +11,7 @@ import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.mapper.Mapper
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
-import com.example.weatherforecastapp.domain.models.ForecastDay
+import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
@@ -38,7 +38,7 @@ class RepositoryDataImpl(
         return true
     }
 
-    suspend fun getCityFromSearch(searchCity: SearchCity): City {
+    override suspend fun getCityFromSearch(searchCity: SearchCity): City {
         val cityDto = apiService.getCityDto(city = searchCity.name)
        return mapper.mapperCityDtoToEntityCity(cityDto,context)
     }
@@ -79,6 +79,7 @@ class RepositoryDataImpl(
         }
     }
 
+
     override suspend fun getUserLocation(): Location {
         return mapper.mapperLocationDbToEntityLocation(locationDao.getUserLocation())
     }
@@ -99,7 +100,7 @@ class RepositoryDataImpl(
         updatePositionToDb(positionId)
     }
 
-    fun getSizePager(): LiveData<Int> {
+    override fun getSizePager(): LiveData<Int> {
         return MediatorLiveData<Int>().apply {
             addSource(locationDao.getSizePager()) {
                 if (value != it) {
@@ -109,52 +110,39 @@ class RepositoryDataImpl(
         }
     }
 
-    override fun getLocation(id: Int): LiveData<Location> {
-        val locationLiveDataDb = locationDao.getLocation(id)
-        return MediatorLiveData<Location>().apply {
-            addSource(locationLiveDataDb) {
-                if (value != null) {
-                    value = mapper.mapperLocationDbToEntityLocation(it)
-                }
-            }
-        }
-    }
-
-    override fun getCurrentDay(id: Int): LiveData<Current> {
-        val currentLiveDataDb = currentDao.getCurrent(id)
-
-        return MediatorLiveData<Current>().apply {
-            addSource(currentLiveDataDb) {
+    override fun getForecastDaysCity(): LiveData<List<ForecastDayCity>> {
+        return MediatorLiveData<List<ForecastDayCity>>().apply {
+            addSource(forecastDayDao.getForecastDay()) {
                 if (it != null) {
-                    value = mapper.mapperCurrentDbToEntityCurrent(it, context)
+                    value = it.map {mapper.mapperForecastCityDbToEntityForecastCityDays(it) }
+                }else{
+                    emptyList<ForecastDayCity>()
                 }
             }
         }
     }
-
-    override fun getForecastDas(id: Int): LiveData<List<ForecastDay>> {
-        val forecastDayLiveDataDb = forecastDayDao.getForecastDay(id)
-
-        return MediatorLiveData<List<ForecastDay>>().apply {
-            addSource(forecastDayLiveDataDb) {
-                if (it != null) {
-                    value = mapper.mapperForecastDaysDbToEntityForecastDays(it)
-                }
-            }
-        }
-    }
-
 
     override fun getLocations(): LiveData<List<Location>> {
-
         return MediatorLiveData<List<Location>>().apply {
             addSource(locationDao.getAllLocationsLiveData()) {
                 if (it != null) {
                     value = it.map { mapper.mapperLocationDbToEntityLocation(it) }
+                }else{
+                    emptyList<Location>()
                 }
             }
         }
-
+    }
+    override fun getCurrentDays(): LiveData<List<Current>> {
+        return MediatorLiveData<List<Current>>().apply {
+            addSource(currentDao.getCurrents()) {
+                if (it != null) {
+                    value = it.map { mapper.mapperCurrentDbToEntityCurrent(it,context) }
+                }else{
+                    emptyList<Current>()
+                }
+            }
+        }
     }
 
 
@@ -217,8 +205,7 @@ class RepositoryDataImpl(
                     " dataHour $dataHour , ${thisHour != dataHour}"
         )
 
-        return (datePosition.position != thisPosition.position ||
-                thisHour != dataHour)
+        return (datePosition.position != thisPosition.position || thisHour != dataHour)
     }
 
 
@@ -234,9 +221,6 @@ class RepositoryDataImpl(
 
     }
 
-    suspend fun checkCity(position: String): Boolean{
-        return locationDao.checkCity(position) == null
-    }
 
     companion object {
         const val CURRENT_LOCATION_ID = 0

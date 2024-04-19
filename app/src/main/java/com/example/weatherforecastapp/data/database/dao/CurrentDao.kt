@@ -14,8 +14,8 @@ interface CurrentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
    suspend fun insert(currentDb: CurrentDb)
 
-    @Query("SELECT * FROM current_day WHERE id= :id")
-     fun getCurrent(id: Int): LiveData<CurrentDb>
+    @Query("SELECT * FROM current_day ")
+     fun getCurrents(): LiveData<List<CurrentDb>>
 
 
 }

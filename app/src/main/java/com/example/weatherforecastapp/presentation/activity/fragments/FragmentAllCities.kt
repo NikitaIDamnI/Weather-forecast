@@ -75,17 +75,16 @@ class FragmentAllCities : Fragment() {
             binding.searchView.clearFocus()
             binding.searchView.isIconified = true
 
-            viewModel.listLocation.observe(viewLifecycleOwner, Observer {
+            var view = false
+            viewModel.listLocation.observe(viewLifecycleOwner, Observer {listLocation->
                 val position = "${searchCity.lat},${searchCity.lon}"
-               val viewAddCity = viewModel.checkCity(it,position)
-                if (it != null){
-                    val action =
-                        FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
-                            .setViewAddCity(viewAddCity)
-                    findNavController().navigate(action)
-                }
+               view =  viewModel.checkCity(listLocation,position)
 
             })
+            val action =
+                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                    .setViewAddCity(view)
+            findNavController().navigate(action)
 
         }
 

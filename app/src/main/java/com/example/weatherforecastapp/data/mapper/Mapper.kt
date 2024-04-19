@@ -7,6 +7,7 @@ import com.example.testapi.network.model.forecastdaysModels.ForecastDayDto
 import com.example.testapi.network.model.forecastdaysModels.HourDto
 import com.example.testapi.network.model.searchCityModels.SearchCityDto
 import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.data.Format
 import com.example.weatherforecastapp.data.database.models.CurrentDb
 import com.example.weatherforecastapp.data.database.models.ForecastDaysDb
 import com.example.weatherforecastapp.data.database.models.LocationDb
@@ -17,15 +18,13 @@ import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.Day
 import com.example.weatherforecastapp.domain.models.ForecastDay
+import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 
 class Mapper {
@@ -34,7 +33,7 @@ class Mapper {
     fun mapperCityDtoToCurrentDb(cityDto: CityDto, positionId: Int) = CurrentDb(
         id = positionId,
         nameCity = cityDto.locationDto.name,
-        date = formatTime(cityDto.currentDto.lastUpdatedEpoch),
+        date = Format.formatDate(cityDto.currentDto.lastUpdatedEpoch),
         last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
         last_updated = cityDto.currentDto.lastUpdated,
         temp_c = cityDto.currentDto.temperatureCelsius,
@@ -87,7 +86,7 @@ class Mapper {
         last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
         last_updated = timeUpdate,
         temp_c = cityDto.currentDto.temperatureCelsius,
-        localtime = formatTimeLocation(cityDto.locationDto.localtime),
+        localtime = Format.formatTimeLocation(cityDto.locationDto.localtime),
         region = cityDto.locationDto.region,
         country = cityDto.locationDto.country,
         position = position ?: "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
@@ -110,19 +109,24 @@ class Mapper {
         )
     }
 
-    fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb?): List<ForecastDay> {
+    private fun mapperForecastDaysDbToEntityForecastDays(forecastDaysDb: ForecastDaysDb?): List<ForecastDay> {
         return forecastDaysDb?.let {
             val type = object : TypeToken<List<ForecastDayDto>>() {}.type
             val dbModel = Gson().fromJson<List<ForecastDayDto>>(it.json, type)
-            dbModel.map { dto -> mapperForecastDaysJSONToEntityForecastDays(dto,forecastDaysDb) }
+            dbModel.map { dto -> mapperForecastDaysJSONToEntityForecastDays(dto) }
         } ?: emptyList()
     }
 
-    private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto, db: ForecastDaysDb) =
+    fun mapperForecastCityDbToEntityForecastCityDays(forecastDaysDb: ForecastDaysDb) = ForecastDayCity(
+            nameCity = forecastDaysDb.nameCity,
+            timeLocation = forecastDaysDb.timeLocation,
+            forecastDays = mapperForecastDaysDbToEntityForecastDays(forecastDaysDb),
+    )
+
+
+    private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto) =
         ForecastDay(
-            nameCity = db.nameCity,
-            timeLocation = db.timeLocation,
-            date = formatTime(dto.dateEpoch),
+            date = Format.formatDate(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
             days = Day(
                 maxtempC = dto.day.maxtempC,
@@ -144,8 +148,8 @@ class Mapper {
                 ),
             ),
             astro = Astro(
-                sunrise = convertTo24HourFormat(dto.astro.sunrise),
-                sunset = convertTo24HourFormat(dto.astro.sunset),
+                sunrise = Format.convertTo24HourFormat(dto.astro.sunrise),
+                sunset = Format.convertTo24HourFormat(dto.astro.sunset),
                 moonrise = dto.astro.moonrise,
                 moonset = dto.astro.moonset,
                 moonPhase = dto.astro.moonPhase,
@@ -373,54 +377,6 @@ class Mapper {
         }
     }
 
-    fun getWeatherHour24(forecastDay: List<ForecastDay>, timeLocation: String): List<ForecastHour> {
-        val astro = forecastDay[0].astro
-        val sunriseHour = astro.sunrise.split(":")[0].toInt()
-        val sunsetHour = astro.sunset.split(":")[0].toInt()
-
-        val sunrise = ForecastHour(
-            time = astro.sunrise,
-            condition = Condition(
-                text = "Sunrise",
-                icon = R.drawable.sunrise_weather.toString()
-            )
-        )
-        val sunset = ForecastHour(
-            time = astro.sunset,
-            condition = Condition(
-                text = "Sunset",
-                icon = R.drawable.sunset_weather.toString()
-            )
-        )
-
-        val startIndex = timeLocation.split(":")[0].toInt()
-        val oldListTo24 = forecastDay[0].forecastHour
-        val oldListNextDay = forecastDay[1].forecastHour
-
-        val newListTo24 = oldListTo24.subList(startIndex, oldListTo24.size).toMutableList()
-        val newListNextDay = oldListNextDay.subList(0, startIndex + 1).toMutableList()
-
-        if (sunriseHour >= startIndex) {
-            val index = sunriseHour - startIndex
-            newListTo24.add(index + 1, sunrise)
-        }
-        if (sunsetHour >= startIndex) {
-            val index = sunsetHour - startIndex
-            newListTo24.add(index + 1, sunset)
-        }
-
-        if (sunriseHour <= newListNextDay.size) {
-            val index = sunsetHour - newListNextDay.size
-            newListNextDay.add(sunriseHour + 1, sunrise)
-        }
-
-        val weatherHour24 = mutableListOf<ForecastHour>().apply {
-            addAll(newListTo24)
-            addAll(newListNextDay)
-        }
-
-        return weatherHour24
-    }
 
     fun getColorFeels(weather: WeatherPrecipitation, context: Context): Int {
         val temperature = weather.value
@@ -464,7 +420,6 @@ class Mapper {
     )
 
     fun mapperCityDtoToEntityCity(dto: CityDto, context: Context) = City(
-        id = EMPTY_ID,
         location = mapperCityDtoToLocationEntity(dto),
         current = mapperCurrentDtoToEntityCurrent(dto,context),
         forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it)}
@@ -474,7 +429,7 @@ class Mapper {
         positionId = EMPTY_ID,
         name = cityDto.locationDto.name,
         temp_c = cityDto.currentDto.temperatureCelsius,
-        localtime = formatTimeLocation(cityDto.locationDto.localtime),
+        localtime = Format.formatTimeLocation(cityDto.locationDto.localtime),
         position = "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.mintempC,
@@ -487,7 +442,7 @@ class Mapper {
         Current(
             id = EMPTY_ID,
             nameCity = dto.locationDto.name,
-            date = formatTime(dto.locationDto.localtime_epoch),
+            date = Format.formatDate(dto.locationDto.localtime_epoch),
             last_updated_epoch = dto.locationDto.localtime_epoch,
             last_updated = dto.locationDto.localtime,
             temp_c = dto.currentDto.temperatureCelsius,
@@ -542,9 +497,7 @@ class Mapper {
 
     private fun mapperForecastDaysDtoToEntityForecastDays(dto: ForecastDayDto) =
         ForecastDay(
-            nameCity =  "",
-            timeLocation = dto.date,
-            date = formatTime(dto.dateEpoch),
+            date = Format.formatDate(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
             days = Day(
                 maxtempC = dto.day.maxtempC,
@@ -566,8 +519,8 @@ class Mapper {
                 ),
             ),
             astro = Astro(
-                sunrise = convertTo24HourFormat(dto.astro.sunrise),
-                sunset = convertTo24HourFormat(dto.astro.sunset),
+                sunrise = Format.convertTo24HourFormat(dto.astro.sunrise),
+                sunset = Format.convertTo24HourFormat(dto.astro.sunset),
                 moonrise = dto.astro.moonrise,
                 moonset = dto.astro.moonset,
                 moonPhase = dto.astro.moonPhase,
@@ -579,23 +532,7 @@ class Mapper {
         )
 
 
-    private fun formatTime(epochTime: Long): String {
-        val dateFormat = SimpleDateFormat("EEEE, d MMM", Locale.ENGLISH)
-        val date = Date(epochTime * 1000)
-        return dateFormat.format(date)
-    }
 
-    private fun formatTimeLocation(localtime: String): String {
-        return localtime.split(" ")[1]
-
-    }
-
-    private fun convertTo24HourFormat(time12Hour: String): String {
-        val inputFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        val date = inputFormat.parse(time12Hour)
-        return outputFormat.format(date)
-    }
     companion object {
         const val HTTPS_TEG = "https:"
         const val EMPTY_ID = 0

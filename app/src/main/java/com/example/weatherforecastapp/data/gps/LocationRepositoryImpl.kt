@@ -10,6 +10,7 @@ import android.location.LocationManager
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.example.weatherforecastapp.data.Format
 import com.example.weatherforecastapp.data.database.models.Position
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
@@ -22,9 +23,6 @@ import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 
 class LocationRepositoryImpl(
@@ -102,17 +100,11 @@ class LocationRepositoryImpl(
         return Position(
             RepositoryDataImpl.CURRENT_LOCATION_ID,
             "$latitude,$longitude",
-            formatTimeFromEpoch(time)
+            Format.formatTimeFromEpoch(time)
         )
     }
 
-    private fun formatTimeFromEpoch(timeEpoch: Long): String {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = timeEpoch
 
-        val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        return dateFormat.format(calendar.time)
-    }
 
 
 }
