@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.content.Context
+import android.net.ConnectivityManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
@@ -89,6 +90,19 @@ class ViewModelWeather @Inject constructor(
     }
     fun checkLocation(context: Context) {
         useCaseCheckLocation.invoke(context)
+    }
+
+
+    internal object NetworkUtils {
+        fun isConnectedToNetwork(context: Context): Boolean {
+            // получаем ссылку на системный сервис
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetworkInfo = connectivityManager?.activeNetworkInfo
+
+            // определяем, доступно ли подключение к Интернету или нет
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected
+        }
     }
 
 

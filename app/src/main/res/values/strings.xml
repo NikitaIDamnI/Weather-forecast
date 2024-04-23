@@ -3,8 +3,11 @@
     <string name="weather">Погода</string>
     <string name="forecast_for_10_days">Forecast for 10 days</string>
     <string name="transition_name_back">transition_name_background</string>
+    <string name="not_internet">Нет подключения к интернету</string>
+
 
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="the_latest_update">Обновлено </string>
 </resources>
