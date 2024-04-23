@@ -4,8 +4,68 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:backgroundTint="@color/black"
     tools:context=".presentation.activity.fragments.FragmentPagerWeather">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_not_internet"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:backgroundTint="#77787676"
+        android:visibility="gone"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="3dp"
+                android:contentDescription="TODO"
+                android:src="@drawable/ic_wi_fi"
+                app:layout_constraintBottom_toTopOf="@+id/tv_the_last_update"
+                app:layout_constraintEnd_toStartOf="@+id/tv_not_internet"
+                app:layout_constraintTop_toTopOf="@+id/tv_not_internet" />
+
+            <TextView
+                android:id="@+id/tv_the_last_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/cambay"
+                android:shadowColor="@color/black"
+                android:shadowRadius="5"
+                android:text="@string/the_latest_update"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="@+id/tv_not_internet"
+                app:layout_constraintStart_toStartOf="@+id/tv_not_internet"
+                app:layout_constraintTop_toBottomOf="@+id/tv_not_internet" />
+
+            <TextView
+                android:id="@+id/tv_not_internet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/cambay"
+                android:shadowColor="@color/black"
+                android:shadowRadius="5"
+                android:text="@string/not_internet"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
     <ImageView
         android:id="@+id/im_background"
@@ -23,19 +83,21 @@
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0">
+
+    </androidx.viewpager2.widget.ViewPager2>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="50dp"
         android:background="#00FFFFFF"
         android:backgroundTint="#00FFFFFF"
         android:visibility="visible"
@@ -53,7 +115,7 @@
                 android:id="@+id/b_menu"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -68,8 +130,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tabIconTint="@color/color_tab"
-                app:tabRippleColor="@null"
-                app:tabIndicatorHeight="0dp" />
+                app:tabIndicatorHeight="0dp"
+                app:tabRippleColor="@null" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
@@ -94,7 +156,7 @@
             android:shadowRadius="5"
             android:text="Идет загрузка данных"
             android:textColor="@color/white"
-            android:textSize="15dp" />
+            android:textSize="15sp" />
 
         <ProgressBar
             android:id="@+id/progressBar2"

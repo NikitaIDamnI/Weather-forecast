@@ -26,14 +26,17 @@ class RepositoryDataImpl @Inject constructor(
     private val apiService: ApiService,
     private val mapper: Mapper,
     private val currentDao: CurrentDao,
-    private val forecastDayDao : ForecastDayDao,
+    private val forecastDayDao: ForecastDayDao,
     private val locationDao: LocationDao,
 ) : RepositoryData {
 
     override suspend fun saveUserLocation(position: Position): Boolean {
         val datePosition = locationDao.checkPosition(CURRENT_LOCATION_ID) ?: NO_POSITION
+        try {
+            writingAPItoDatabase(datePosition, position, POSITION_ID_START)
+        } catch (e: Exception) {
 
-        writingAPItoDatabase(datePosition, position, POSITION_ID_START)
+        }
 
         Log.d("Repository_Log", "saveUserLocation ")
         return true
@@ -65,18 +68,21 @@ class RepositoryDataImpl @Inject constructor(
         val dataListLocation = locationDao.getAllLocations()
         val time = System.currentTimeMillis()
         var positionId = POSITION_ID_START
-        if (dataListLocation.isNotEmpty()) {
-            for (location in dataListLocation) {
-                val thisPosition =
-                    Position(location.positionId, location.position, formatTimeFromEpoch(time))
-                val datePosition = Position(
-                    location.positionId,
-                    location.position,
-                    timeFormat = location.last_updated
-                )
-                writingAPItoDatabase(datePosition, thisPosition, positionId)
-                positionId += POSITION_ID_NEXT
+        try {
+            if (dataListLocation.isNotEmpty()) {
+                for (location in dataListLocation) {
+                    val thisPosition =
+                        Position(location.positionId, location.position, formatTimeFromEpoch(time))
+                    val datePosition = Position(
+                        location.positionId,
+                        location.position,
+                        timeFormat = location.last_updated
+                    )
+                    writingAPItoDatabase(datePosition, thisPosition, positionId)
+                    positionId += POSITION_ID_NEXT
+                }
             }
+        } catch (e: Exception) {
         }
     }
 
