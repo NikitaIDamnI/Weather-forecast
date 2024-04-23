@@ -26,7 +26,7 @@ class RepositoryDataImpl @Inject constructor(
     private val apiService: ApiService,
     private val mapper: Mapper,
     private val currentDao: CurrentDao,
-    private val forecastDayDao : ForecastDayDao,
+    private val forecastDayDao: ForecastDayDao,
     private val locationDao: LocationDao,
 ) : RepositoryData {
 
@@ -34,7 +34,8 @@ class RepositoryDataImpl @Inject constructor(
         val datePosition = locationDao.checkPosition(CURRENT_LOCATION_ID) ?: NO_POSITION
         try {
             writingAPItoDatabase(datePosition, position, POSITION_ID_START)
-        }catch (e:Exception){
+        } catch (e: Exception) {
+
         }
 
         Log.d("Repository_Log", "saveUserLocation ")
@@ -84,8 +85,6 @@ class RepositoryDataImpl @Inject constructor(
         } catch (e: Exception) {
         }
     }
-
-
 
 
     override suspend fun getUserLocation(): Location {
