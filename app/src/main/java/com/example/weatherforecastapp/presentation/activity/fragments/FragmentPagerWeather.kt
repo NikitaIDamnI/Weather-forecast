@@ -63,6 +63,7 @@ class FragmentPagerWeather : Fragment() {
         internetConnectionChecker.startListening()
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
+
         initial()
     }
 
@@ -108,13 +109,13 @@ class FragmentPagerWeather : Fragment() {
                 }
 
                 if (internetConnectionChecker.firstCondition) {
-                    onInternetAvailable()
+                    onInternetAvailable(it)
                 } else {
                     onInternetUnavailable(it)
                 }
 
                 internetConnectionChecker.onInternetAvailable = {
-                    onInternetAvailable()
+                    onInternetAvailable(it)
                 }
                 internetConnectionChecker.onInternetUnavailable = {
                     onInternetUnavailable(it)
@@ -142,8 +143,14 @@ class FragmentPagerWeather : Fragment() {
 
     }
 
-    private fun onInternetAvailable() {
+    private fun onInternetAvailable(sizeList: Int) {
+        if (sizeList == EMPTY_LIST){
+            Log.d("FragmentPagerWeather_Log", "updateUserLocation: true")
+            viewModel.updateUserLocation()
+            binding.cvNotInternet.visibility = View.GONE
+        }
         binding.cvNotInternet.visibility = View.GONE
+        binding.progressBar2.visibility = View.VISIBLE
         Log.d("FragmentPagerWeather_Log", "internet: true")
     }
 

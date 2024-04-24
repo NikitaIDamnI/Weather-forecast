@@ -1,7 +1,7 @@
 package com.example.weatherforecastapp.domain.repisitoryData
 
 import androidx.lifecycle.LiveData
-import com.example.weatherforecastapp.data.database.models.Position
+import com.example.weatherforecastapp.data.database.models.PositionDb
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
@@ -10,7 +10,7 @@ import com.example.weatherforecastapp.domain.models.SearchCity
 
 interface RepositoryData {
 
-    suspend fun saveUserLocation(position: Position): Boolean
+    suspend fun saveUserPosition(positionDb: PositionDb): Boolean
 
     suspend fun addNewCity(city: City)
     suspend fun getCityFromSearch(searchCity: SearchCity): City

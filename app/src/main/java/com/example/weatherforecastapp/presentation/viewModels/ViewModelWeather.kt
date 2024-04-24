@@ -1,10 +1,10 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.content.Context
-import android.net.ConnectivityManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
@@ -27,6 +27,7 @@ class ViewModelWeather @Inject constructor(
     private val getCurrentDays: UseCaseGetCurrents,
     private val getForecastDaysCity: UseCaseGetForecastDaysCity,
     private val getSizePager: UseCaseGetSizePager,
+    private val repositoryDataImpl: RepositoryDataImpl
 ) : ViewModel() {
 
     var location = getLocations()
@@ -92,16 +93,10 @@ class ViewModelWeather @Inject constructor(
         useCaseCheckLocation.invoke(context)
     }
 
-
-    internal object NetworkUtils {
-        fun isConnectedToNetwork(context: Context): Boolean {
-            // получаем ссылку на системный сервис
-            val connectivityManager =
-                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val activeNetworkInfo = connectivityManager?.activeNetworkInfo
-
-            // определяем, доступно ли подключение к Интернету или нет
-            return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    fun updateUserLocation(){
+        viewModelScope.launch {
+            val userPosition = repositoryDataImpl.getUserPosition()
+            repositoryDataImpl.updateUserPosition(userPosition)
         }
     }
 
