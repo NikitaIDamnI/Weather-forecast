@@ -18,7 +18,7 @@ class InternetConnectionChecker(
 
     val  firstCondition = isInternetAvailable()
 
-    var firstUpdate = false
+    var firstUpdate = true
 
     fun startListening() {
         val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
@@ -32,9 +32,9 @@ class InternetConnectionChecker(
     inner class ConnectivityReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (isInternetAvailable()) {
-                if (!firstUpdate) {
+                if (firstUpdate) {
                     update?.invoke()
-                    firstUpdate = true
+                    firstUpdate = false
                 }
                 onInternetAvailable?.invoke()
             } else{
@@ -43,7 +43,7 @@ class InternetConnectionChecker(
         }
     }
 
-    private fun isInternetAvailable(): Boolean {
+     fun isInternetAvailable(): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

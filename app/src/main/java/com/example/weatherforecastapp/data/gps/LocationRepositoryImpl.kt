@@ -11,7 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.example.weatherforecastapp.data.Format
-import com.example.weatherforecastapp.data.database.models.Position
+import com.example.weatherforecastapp.data.database.models.PositionDb
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
@@ -88,13 +88,13 @@ class LocationRepositoryImpl @Inject constructor(
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
-    private fun dataRounding(location: Task<Location>): Position {
+    private fun dataRounding(location: Task<Location>): PositionDb {
         val latitude = "%.2f".format(location.result.latitude).toDouble()
         val longitude = "%.2f".format(location.result.longitude).toDouble()
         val time = System.currentTimeMillis()
         Log.d("My_Log", "$latitude,$longitude")
 
-        return Position(
+        return PositionDb(
             RepositoryDataImpl.CURRENT_LOCATION_ID,
             "$latitude,$longitude",
             Format.formatTimeFromEpoch(time)

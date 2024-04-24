@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.weatherforecastapp.data.database.models.LocationDb
-import com.example.weatherforecastapp.data.database.models.Position
+import com.example.weatherforecastapp.data.database.models.PositionDb
 
 @Dao
 interface LocationDao {
@@ -28,10 +28,10 @@ interface LocationDao {
     @Query("SELECT * FROM location WHERE position_id = 0")
     fun getUserLocation(): LocationDb
     @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE position_id = :id")
-    suspend fun checkPosition(id: Int): Position?
+    suspend fun checkPosition(id: Int): PositionDb?
 
     @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE  position= :position")
-    suspend fun checkCity(position: String): Position?
+    suspend fun checkCity(position: String): PositionDb?
 
     @Query("DELETE FROM location WHERE position_id =:id")
     suspend fun deleteLocation(id: Int)

@@ -7,20 +7,21 @@ import androidx.room.RoomDatabase
 import com.example.weatherforecastapp.data.database.dao.CurrentDao
 import com.example.weatherforecastapp.data.database.dao.ForecastDayDao
 import com.example.weatherforecastapp.data.database.dao.LocationDao
+import com.example.weatherforecastapp.data.database.dao.PositionDao
 import com.example.weatherforecastapp.data.database.models.CurrentDb
 import com.example.weatherforecastapp.data.database.models.ForecastDaysDb
 import com.example.weatherforecastapp.data.database.models.LocationDb
+import com.example.weatherforecastapp.data.database.models.PositionDb
 
 @Database(
     entities = [
         LocationDb::class,
         CurrentDb::class,
         ForecastDaysDb::class,
-    ], version = 11, exportSchema = false
+        PositionDb::class
+    ], version = 12, exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-
-
 
 
     companion object {
@@ -42,5 +43,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun locationDao(): LocationDao
     abstract fun forecastDayDao(): ForecastDayDao
     abstract fun currentDao(): CurrentDao
+    abstract fun positionDao(): PositionDao
 
 }

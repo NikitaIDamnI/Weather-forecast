@@ -8,6 +8,7 @@ import com.example.weatherforecastapp.data.database.AppDatabase
 import com.example.weatherforecastapp.data.database.dao.CurrentDao
 import com.example.weatherforecastapp.data.database.dao.ForecastDayDao
 import com.example.weatherforecastapp.data.database.dao.LocationDao
+import com.example.weatherforecastapp.data.database.dao.PositionDao
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 import dagger.Binds
@@ -39,6 +40,11 @@ interface ModuleData {
         @Provides
         fun provideLocationDao(application: Application): LocationDao {
             return AppDatabase.getInstance(application).locationDao()
+        }
+        @ApplicationScope
+        @Provides
+        fun providePositionDao(application: Application): PositionDao {
+            return AppDatabase.getInstance(application).positionDao()
         }
     }
 }
