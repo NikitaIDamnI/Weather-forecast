@@ -16,7 +16,6 @@ class InternetConnectionChecker(
     var onInternetAvailable: (() -> Unit)? = null
     var onInternetUnavailable: (() -> Unit)? = null
 
-    val  firstCondition = isInternetAvailable()
 
     var firstUpdate = true
 
@@ -31,13 +30,19 @@ class InternetConnectionChecker(
 
     inner class ConnectivityReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            checkInternet()
+        }
+
+        private fun checkInternet() {
             if (isInternetAvailable()) {
                 if (firstUpdate) {
                     update?.invoke()
+                    onInternetAvailable?.invoke()
                     firstUpdate = false
+                } else {
+                    onInternetAvailable?.invoke()
                 }
-                onInternetAvailable?.invoke()
-            } else{
+            } else {
                 onInternetUnavailable?.invoke()
             }
         }

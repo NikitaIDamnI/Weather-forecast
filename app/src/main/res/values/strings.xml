@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">WeatherForecastApp</string>
     <string name="weather">Погода</string>
-    <string name="forecast_for_10_days">Forecast for 10 days</string>
+    <string name="forecast_for_10_days">Прогноз на 10 дней</string>
     <string name="transition_name_back">transition_name_background</string>
     <string name="not_internet">Нет подключения к интернету</string>
+    <string name="load_date">Идет загрузка данных</string>
+
+
 
 
 
