@@ -1,62 +1,72 @@
 package com.example.weatherforecastapp.presentation
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 
-class InternetConnectionChecker(
-    private val context: Context
-) {
+class InternetConnectionChecker(context: Context) {
 
-    private val connectivityReceiver = ConnectivityReceiver()
     var update: (() -> Unit)? = null
     var onInternetAvailable: (() -> Unit)? = null
     var onInternetUnavailable: (() -> Unit)? = null
 
+    private var isFirstCheck = true
+    var isInternetAvailable = false
 
-    var firstUpdate = true
+    private val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            super.onAvailable(network)
+            checkInternet(true)
+        }
+
+        override fun onLost(network: Network) {
+            super.onLost(network)
+            checkInternet(false)
+        }
+
+        override fun onCapabilitiesChanged(
+            network: Network,
+            networkCapabilities: NetworkCapabilities
+        ) {
+            super.onCapabilitiesChanged(network, networkCapabilities)
+            checkInternet(networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
+        }
+    }
 
     fun startListening() {
-        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        context.registerReceiver(connectivityReceiver, filter)
+        val networkRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
     fun stopListening() {
-        context.unregisterReceiver(connectivityReceiver)
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 
-    inner class ConnectivityReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            checkInternet()
-        }
-
-        private fun checkInternet() {
-            if (isInternetAvailable()) {
-                if (firstUpdate) {
+    private fun checkInternet(isConnected: Boolean) {
+        if (isConnected != isInternetAvailable || isFirstCheck) {
+            isFirstCheck = false
+            isInternetAvailable = isConnected
+            Log.d("InternetConnectionChecker", "checkInternet: $isInternetAvailable")
+            handler.post {
+                if (isInternetAvailable) {
                     update?.invoke()
                     onInternetAvailable?.invoke()
-                    firstUpdate = false
                 } else {
-                    onInternetAvailable?.invoke()
+                    onInternetUnavailable?.invoke()
                 }
-            } else {
-                onInternetUnavailable?.invoke()
             }
         }
-    }
-
-     fun isInternetAvailable(): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        val network = connectivityManager.activeNetwork ?: return false
-        val networkCapabilities =
-            connectivityManager.getNetworkCapabilities(network) ?: return false
-
-        return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
     }
 }

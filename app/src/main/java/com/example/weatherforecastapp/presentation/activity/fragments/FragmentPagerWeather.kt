@@ -46,6 +46,7 @@ class FragmentPagerWeather : Fragment() {
 
     override fun onAttach(context: Context) {
         component.inject(this)
+        internetConnectionChecker.startListening()
         super.onAttach(context)
     }
 
@@ -60,7 +61,6 @@ class FragmentPagerWeather : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        internetConnectionChecker.startListening()
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         initial()
@@ -113,7 +113,7 @@ class FragmentPagerWeather : Fragment() {
     }
 
     private fun checkInternet(it: Int) {
-        val checkInternet = internetConnectionChecker.isInternetAvailable()
+        val checkInternet = internetConnectionChecker.isInternetAvailable
         if (checkInternet) {
             onInternetAvailable(it)
         } else {
@@ -189,8 +189,8 @@ class FragmentPagerWeather : Fragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
         internetConnectionChecker.stopListening()
+        super.onDestroyView()
     }
 
 
