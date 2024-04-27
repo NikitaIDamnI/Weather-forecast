@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.presentation
 
+import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -8,18 +9,21 @@ import android.net.NetworkRequest
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import javax.inject.Inject
 
-class InternetConnectionChecker(context: Context) {
+class InternetConnectionChecker @Inject constructor(
+    application: Application
+) {
 
     var update: (() -> Unit)? = null
     var onInternetAvailable: (() -> Unit)? = null
     var onInternetUnavailable: (() -> Unit)? = null
 
-    private var isFirstCheck = true
+     var isFirstCheck = true
     var isInternetAvailable = false
 
     private val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private val handler = Handler(Looper.getMainLooper())
 

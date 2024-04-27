@@ -40,8 +40,6 @@ class FragmentAllCities : Fragment() {
     lateinit var searchCityAdapter: SearchCityAdapter
     lateinit var adapterAllCities: AllCityAdapter
 
-    private lateinit var internetConnectionChecker: InternetConnectionChecker
-
 
     private val component by lazy {
         (requireActivity().application as WeatherApp).component
@@ -49,8 +47,7 @@ class FragmentAllCities : Fragment() {
 
     override fun onAttach(context: Context) {
         component.inject(this)
-        internetConnectionChecker = InternetConnectionChecker(requireContext())
-        internetConnectionChecker.startListening()
+
         super.onAttach(context)
     }
 
@@ -66,106 +63,90 @@ class FragmentAllCities : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
+        checkInternet()
         setupAllCitiesAdapter()
         setupSearchAdapter()
-        checkInternet()
     }
 
     private fun checkInternet() {
-        internetConnectionChecker.onInternetUnavailable = {
-            viewModel.listLocation.observe(viewLifecycleOwner, Observer {
-                val text =
-                    "${resources.getString(R.string.the_latest_update)} ${it.get(0).localtime}"
-                binding.tvLastUpdate.text = text
+        viewModel.internetCondition.observe(viewLifecycleOwner, Observer {internet->
+            if (internet) {
+                binding.cvNotInternet.visibility = View.GONE
+                binding.cardSearchView.visibility = View.VISIBLE
+            } else {
+                viewModel.listLocation.observe(viewLifecycleOwner, Observer {
+                    val text =
+                        "${resources.getString(R.string.the_latest_update)} ${it.get(0).localtime}"
+                    binding.tvLastUpdate.text = text
+                })
                 binding.cvNotInternet.visibility = View.VISIBLE
                 binding.cardSearchView.visibility = View.GONE
-
-            })
-            setupAllCitiesAdapter()
-        }
-        internetConnectionChecker.onInternetAvailable = {
-            binding.cvNotInternet.visibility = View.GONE
-            binding.cardSearchView.visibility = View.VISIBLE
-            setupAllCitiesAdapter()
-        }
+            }
+        })
     }
 
     private fun setupAllCitiesAdapter() = with(binding) {
-        adapterAllCities = AllCityAdapter(
-            requireActivity().applicationContext,
-            internetConnectionChecker.isInternetAvailable
-        )
-
-
+        adapterAllCities = AllCityAdapter(requireActivity().applicationContext)
         viewModel.listLocation.observe(viewLifecycleOwner, Observer {
             adapterAllCities.submitList(it)
-            rvAllCity.adapter = adapterAllCities
         })
-
+        rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
-        adapterAllCities.onClick =
-            { id, binding ->
-                val action =
-                    FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                        .setId(id)
-                findNavController().navigate(action)
-            }
+        adapterAllCities.onClick = { id, binding ->
+            val action =
+                FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
+                    .setId(id)
+            findNavController().navigate(action)
+        }
     }
 
     private fun setupSearchAdapter() {
-        if (!internetConnectionChecker.isInternetAvailable){
-            viewModel.listLocation.observe(viewLifecycleOwner, Observer {
-                val text =
-                    "${resources.getString(R.string.the_latest_update)} ${it.get(0).localtime}"
-                binding.tvLastUpdate.text = text
-                binding.cvNotInternet.visibility = View.VISIBLE
-                binding.cardSearchView.visibility = View.GONE
-            })
-        }
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
-        searchCityAdapter.onClick = { searchCity ->
-            viewModel.previewCity(searchCity)
-            searchCityAdapter.submitList(emptyList())
+        searchCityAdapter.onClick =
+            { searchCity ->
+                viewModel.previewCity(searchCity)
+                searchCityAdapter.submitList(emptyList())
 
-            binding.searchView.setQuery("", false)
-            binding.searchView.clearFocus()
-            binding.searchView.isIconified = true
+                binding.searchView.setQuery("", false)
+                binding.searchView.clearFocus()
+                binding.searchView.isIconified = true
 
-            var view = false
-            viewModel.listLocation.observe(viewLifecycleOwner, Observer { listLocation ->
-                val position = "${searchCity.lat},${searchCity.lon}"
-                view = viewModel.checkCity(listLocation, position)
+                var view = false
+                viewModel.listLocation.observe(viewLifecycleOwner, Observer { listLocation ->
+                    val position = "${searchCity.lat},${searchCity.lon}"
+                    view = viewModel.checkCity(listLocation, position)
+
+                })
+                val action =
+                    FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                        .setViewAddCity(view)
+                findNavController().navigate(action)
+
+            }
+
+        binding.searchView.setOnQueryTextListener(
+            object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        if (!query.isNullOrEmpty()) {
+                            viewModel.searchCity(query)
+                            viewModel.searchCityList.observe(viewLifecycleOwner, Observer {
+                                searchCityAdapter.submitList(it)
+                            })
+                        }
+                    }
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    if (newText.isNullOrEmpty()) {
+                        searchCityAdapter.submitList(emptyList())
+                    }
+                    return true
+                }
 
             })
-            val action =
-                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
-                    .setViewAddCity(view)
-            findNavController().navigate(action)
-
-        }
-
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                CoroutineScope(Dispatchers.Main).launch {
-                    if (!query.isNullOrEmpty()) {
-                        viewModel.searchCity(query)
-                        viewModel.searchCityList.observe(viewLifecycleOwner, Observer {
-                            searchCityAdapter.submitList(it)
-                        })
-                    }
-                }
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText.isNullOrEmpty()) {
-                    searchCityAdapter.submitList(emptyList())
-                }
-                return true
-            }
-
-        })
     }
 
     private fun setupSwipeListener(rvShopList: RecyclerView) {
@@ -204,10 +185,7 @@ class FragmentAllCities : Fragment() {
         itemTouchHelper.attachToRecyclerView(rvShopList)
     }
 
-    override fun onDestroyView() {
-        internetConnectionChecker.stopListening()
-        super.onDestroyView()
-    }
+
 
     companion object {
         const val USER_POSITION = 0

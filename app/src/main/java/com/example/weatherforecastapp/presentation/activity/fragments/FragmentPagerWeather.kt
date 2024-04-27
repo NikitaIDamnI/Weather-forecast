@@ -17,8 +17,8 @@ import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.activity.ActivityWeather
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.google.android.material.tabs.TabLayoutMediator
 import javax.inject.Inject
 
@@ -31,11 +31,8 @@ class FragmentPagerWeather : Fragment() {
 
     private val args by navArgs<FragmentPagerWeatherArgs>()
 
-    private val internetConnectionChecker by lazy {
-        (requireActivity() as? ActivityWeather)?.internetConnectionChecker
-            ?: throw IllegalStateException("Activity must be ActivityWeather")
-    }
-    private lateinit var viewModel: ViewModelWeather
+
+    private lateinit var viewModel: ViewModelAllCities
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -46,7 +43,6 @@ class FragmentPagerWeather : Fragment() {
 
     override fun onAttach(context: Context) {
         component.inject(this)
-        internetConnectionChecker.startListening()
         super.onAttach(context)
     }
 
@@ -62,7 +58,7 @@ class FragmentPagerWeather : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
-            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
+            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
         initial()
     }
 
@@ -112,19 +108,17 @@ class FragmentPagerWeather : Fragment() {
 
     }
 
-    private fun checkInternet(it: Int) {
-        val checkInternet = internetConnectionChecker.isInternetAvailable
-        if (checkInternet) {
-            onInternetAvailable(it)
-        } else {
-            onInternetUnavailable(it)
-        }
-        internetConnectionChecker.onInternetAvailable = {
-            onInternetAvailable(it)
-        }
-        internetConnectionChecker.onInternetUnavailable = {
-            onInternetUnavailable(it)
-        }
+    private fun checkInternet(size: Int) {
+        viewModel.internetCondition.observe(viewLifecycleOwner, Observer {
+            Log.d("FragmentPagerWeather_Log", "internetCondition: $it")
+
+            if (it) {
+                onInternetAvailable(size)
+            } else {
+                onInternetUnavailable(size)
+            }
+        })
+
     }
 
     private fun onInternetUnavailable(sizeList: Int) {
@@ -134,7 +128,7 @@ class FragmentPagerWeather : Fragment() {
             binding.textView3.text = resources.getString(R.string.not_internet)
         }else {
             binding.cvNotInternet.visibility = View.VISIBLE
-            viewModel.location.observe(viewLifecycleOwner, Observer {
+            viewModel.listLocation.observe(viewLifecycleOwner, Observer {
                 val lastUpdate =
                     "${resources.getString(R.string.the_latest_update)} ${it[0].localtime}"
                 binding.tvTheLastUpdate.text = lastUpdate
@@ -147,10 +141,7 @@ class FragmentPagerWeather : Fragment() {
         binding.cvNotInternet.visibility = View.GONE
         binding.progressBar2.visibility = View.VISIBLE
         binding.textView3.text = resources.getString(R.string.load_date)
-        if (sizeList == EMPTY_LIST){
-            Log.d("FragmentPagerWeather_Log", "updateUserLocation: true")
-            internetConnectionChecker.update = { viewModel.updateUserLocation() }
-        }
+
         Log.d("FragmentPagerWeather_Log", "internet: true")
     }
 
@@ -188,10 +179,7 @@ class FragmentPagerWeather : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        internetConnectionChecker.stopListening()
-        super.onDestroyView()
-    }
+
 
 
     companion object {

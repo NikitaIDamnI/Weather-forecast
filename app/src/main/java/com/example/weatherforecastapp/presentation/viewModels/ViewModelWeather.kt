@@ -1,10 +1,7 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
-import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
@@ -13,27 +10,18 @@ import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCurrents
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetForecastDaysCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSizePager
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
-import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 class ViewModelWeather @Inject constructor(
-    private val useCaseCheckLocation: UseCaseCheckLocation,
-    private val weatherUpdate: UseCaseWeatherUpdate,
     private val getLocations: UseCaseGetLocations,
     private val getCurrentDays: UseCaseGetCurrents,
     private val getForecastDaysCity: UseCaseGetForecastDaysCity,
-    private val getSizePager: UseCaseGetSizePager,
-    private val repositoryDataImpl: RepositoryDataImpl
 ) : ViewModel() {
 
     var location = getLocations()
     var current = getCurrentDays()
     var forecastDay = getForecastDaysCity()
-    var sizeCity = getSizePager()
 
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
         return current.weatherPrecipitation
@@ -84,21 +72,9 @@ class ViewModelWeather @Inject constructor(
 
         return weatherHour24
     }
-    fun weatherUpdate() {
-        viewModelScope.launch {
-            weatherUpdate.invoke()
-        }
-    }
-    fun checkLocation(context: Context) {
-        useCaseCheckLocation.invoke(context)
-    }
 
-    fun updateUserLocation(){
-        viewModelScope.launch {
-            val userPosition = repositoryDataImpl.getUserPosition()
-            repositoryDataImpl.updateUserPosition(userPosition)
-        }
-    }
+
+
 
 
 }
