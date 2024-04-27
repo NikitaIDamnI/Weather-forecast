@@ -48,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:textColor="@color/colore_text"
+            android:textColor="@color/not_internet"
             android:textSize="20sp"
             android:textStyle="bold"
             android:shadowColor="@color/black"
@@ -63,7 +63,7 @@
             android:layout_height="wrap_content"
             android:shadowColor="@color/black"
             android:shadowRadius="5"
-            android:textColor="@color/colore_text"
+            android:textColor="@color/not_internet"
             android:textStyle="bold"
             android:visibility="visible"
             app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
@@ -71,28 +71,15 @@
             tools:text="18:39" />
 
         <TextView
-            android:id="@+id/tv_condition"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:shadowColor="@color/black"
-            android:shadowRadius="5"
-            android:textColor="@color/colore_text"
-            android:textStyle="bold"
-            android:visibility="visible"
-            app:layout_constraintStart_toStartOf="@+id/vert_end_guideline"
-            app:layout_constraintTop_toBottomOf="@id/tv_time"
-            tools:text="Ясно" />
-
-        <TextView
             android:id="@+id/tv_degree"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:textColor="@color/colore_text"
-            android:textSize="50sp"
-            android:textStyle="normal"
             android:shadowColor="@color/black"
             android:shadowRadius="5"
+            android:textColor="@color/not_internet"
+            android:textSize="50sp"
+            android:textStyle="normal"
             app:layout_constraintEnd_toStartOf="@+id/vert_start_guideline"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="-10°" />
@@ -102,7 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:textColor="@color/colore_text"
+            android:textColor="@color/not_internet"
             android:textStyle="bold"
             android:shadowColor="@color/black"
             android:shadowRadius="5"
@@ -110,7 +97,16 @@
             app:layout_constraintEnd_toEndOf="@+id/vert_start_guideline"
             tools:text="Макс.: -3º,Мин.: -9º" />
 
-
+        <ImageView
+            android:id="@+id/im_not_internet"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginBottom="5dp"
+            android:backgroundTintMode="add"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_wi_fi_item"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:layout_editor_absoluteX="8dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
