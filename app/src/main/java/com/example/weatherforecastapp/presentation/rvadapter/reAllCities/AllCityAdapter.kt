@@ -1,20 +1,15 @@
 package com.example.weatherforecastapp.presentation.rvadapter.reAllCities
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
-import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.ItemFragmetCityBinding
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
-import com.squareup.picasso.Picasso
 
 class AllCityAdapter(
     private val context: Context,
-    private val internet: Boolean
 ) : ListAdapter<Location, AllCityAdapterViewHolder>(AllCityAdapterDiffUtil()) {
 
     var onClick: ((id: Int, binding: ItemFragmetCityBinding) -> Unit)? = null
@@ -46,18 +41,6 @@ class AllCityAdapter(
                     onClick?.invoke(position, holder.binding)
                 }
                 subCondition?.invoke(holder.binding)
-
-                if(internet){
-                    val icon = R.drawable.ic_wi_fi
-                    Picasso.get().load(icon).into(imNotInternet)
-                    imNotInternet.visibility = View.GONE
-                    tvCondition.visibility = View.VISIBLE
-                }else{
-                    imNotInternet.visibility = View.VISIBLE
-                    tvCondition.visibility = View.GONE
-                }
-
-                Log.d("AllCityAdapter", "internet: $internet ")
 
             }
 

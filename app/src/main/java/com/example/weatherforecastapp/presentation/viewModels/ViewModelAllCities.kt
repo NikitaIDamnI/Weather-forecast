@@ -1,9 +1,11 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.ForecastDay
@@ -14,23 +16,38 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasDelete
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseAddNewCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCityFromSearch
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSizePager
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
+import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
+import com.example.weatherforecastapp.presentation.InternetConnectionChecker
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ViewModelAllCities @Inject constructor(
+    private val repositoryDataImpl: RepositoryDataImpl,
     private val useCaseGetLocations: UseCaseGetLocations,
     private val useCaseSearchCity: UseCaseSearchCity,
     private val useCaseAddCity: UseCaseAddNewCity,
     private val useCasDeleteCity: UseCasDeleteCity,
     private val useCaseGetCityFromSearch: UseCaseGetCityFromSearch,
-    ) : ViewModel() {
+    private val getSizePager: UseCaseGetSizePager,
+    private val internetConnectionChecker: InternetConnectionChecker,
+    private val useCaseCheckLocation: UseCaseCheckLocation,
+    private val weatherUpdate: UseCaseWeatherUpdate,
+) : ViewModel() {
 
 
     val city = MutableLiveData<City>()
     val listLocation = useCaseGetLocations()
     val searchCityList = MutableLiveData<List<SearchCity>>()
+    var sizeCity = getSizePager()
+    val internetCondition =
+        MutableLiveData<Boolean>(internetConnectionChecker.isInternetAvailable)
 
+    init {
+        internet()
+    }
 
     fun searchCity(city: String) {
         viewModelScope.launch {
@@ -38,25 +55,40 @@ class ViewModelAllCities @Inject constructor(
         }
 
     }
+
     fun checkCity(listLocation: List<Location>, position: String): Boolean {
         return listLocation.any { it.position == position }
     }
+
     fun previewCity(searchCity: SearchCity) {
         viewModelScope.launch {
             val citySearch = useCaseGetCityFromSearch(searchCity)
             city.value = citySearch
         }
     }
+
     fun addCity(city: City) {
         viewModelScope.launch {
             useCaseAddCity(city)
         }
     }
+
     fun deleteCity(location: Location) {
         viewModelScope.launch {
             useCasDeleteCity(location.positionId)
         }
     }
+
+    fun weatherUpdate() {
+        viewModelScope.launch {
+            weatherUpdate.invoke()
+        }
+    }
+
+    fun checkLocation(context: Context) {
+        useCaseCheckLocation.invoke(context)
+    }
+
     fun getWeatherHour24(forecastDay: List<ForecastDay>, timeLocation: String): List<ForecastHour> {
         val astro = forecastDay[0].astro
         val sunriseHour = astro.sunrise.split(":")[0].toInt()
@@ -103,5 +135,31 @@ class ViewModelAllCities @Inject constructor(
         }
 
         return weatherHour24
+    }
+
+    fun startCheckInternet() {
+        internetConnectionChecker.startListening()
+    }
+
+    fun stopCheckInternet() {
+        internetConnectionChecker.stopListening()
+    }
+
+    private fun internet() {
+        internetConnectionChecker.onInternetAvailable = {
+            internetCondition.value = true
+        }
+        internetConnectionChecker.onInternetUnavailable = {
+            internetCondition.value = false
+        }
+
+    }
+
+
+    fun updateUserLocation() {
+        viewModelScope.launch {
+            val userPosition = repositoryDataImpl.getUserPosition()
+            repositoryDataImpl.updateUserPosition(userPosition)
+        }
     }
 }
