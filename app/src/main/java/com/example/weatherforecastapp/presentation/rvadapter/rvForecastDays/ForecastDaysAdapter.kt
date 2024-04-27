@@ -28,9 +28,9 @@ class ForecastDaysAdapter(
                 }else{
                     tvTime.text = date
                 }
-                val maxTemp = days.maxtempC.toString() + WeatherPrecipitation.VALUE_DEGREE
+                val maxTemp = days.maxtempC.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvMaxTemp.text = maxTemp
-                val minTemp = days.mintempC.toString() + WeatherPrecipitation.VALUE_DEGREE
+                val minTemp = days.mintempC.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
                 tvLowTemp.text = minTemp
                 Picasso.get().load(days.condition.icon).into(imWeather)
 
