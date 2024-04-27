@@ -40,12 +40,13 @@ class ActivityWeather : AppCompatActivity() {
         viewModel.startCheckInternet()
         setContentView(binding.root)
         viewModel.internetCondition.observe(this) {internet->
-            if (internet)
-            viewModel.sizeCity.observe(this) {
-                if (it == EMPTY_LIST){
-                    viewModel.updateUserLocation()
-                }else{
-                    viewModel.weatherUpdate()
+            if (internet) {
+                viewModel.sizeCity.observe(this) {
+                    if (it == EMPTY_LIST) {
+                        viewModel.updateUserLocation()
+                    } else {
+                        viewModel.weatherUpdate()
+                    }
                 }
             }
         }

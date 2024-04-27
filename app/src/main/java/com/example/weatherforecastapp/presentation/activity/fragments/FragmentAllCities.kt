@@ -67,6 +67,7 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkInternet() {
+
         viewModel.internetCondition.observe(viewLifecycleOwner) { internet ->
             if (internet) {
                 binding.cvNotInternet.visibility = View.GONE
@@ -84,18 +85,29 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun setupAllCitiesAdapter() = with(binding) {
-        adapterAllCities = AllCityAdapter(requireActivity().applicationContext)
-        viewModel.listLocation.observe(viewLifecycleOwner) {
-            adapterAllCities.submitList(it)
-        }
-        rvAllCity.adapter = adapterAllCities
-        setupSwipeListener(rvAllCity)
-        adapterAllCities.onClick = { id, binding ->
+        adapterAllCities = AllCityAdapter(requireActivity().applicationContext, true)
+        adapterAllCities.onClick = { position ->
             val action =
                 FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                    .setId(id)
+                    .setId(position)
             findNavController().navigate(action)
         }
+
+        viewModel.internetCondition.observe(viewLifecycleOwner) { internet ->
+            adapterAllCities = AllCityAdapter(requireActivity().applicationContext, internet)
+            viewModel.listLocation.observe(viewLifecycleOwner) {
+                adapterAllCities.submitList(it)
+            }
+            adapterAllCities.onClick = { position ->
+                val action =
+                    FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
+                        .setId(position)
+                findNavController().navigate(action)
+            }
+            rvAllCity.adapter = adapterAllCities
+        }
+        setupSwipeListener(rvAllCity)
+
     }
 
     private fun setupSearchAdapter() {
@@ -135,6 +147,7 @@ class FragmentAllCities : Fragment() {
                     }
                     return false
                 }
+
                 override fun onQueryTextChange(newText: String?): Boolean {
                     if (newText.isNullOrEmpty()) {
                         searchCityAdapter.submitList(emptyList())

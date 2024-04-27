@@ -1,8 +1,9 @@
 package com.example.weatherforecastapp.presentation.rvadapter.reAllCities
 
 import androidx.recyclerview.widget.RecyclerView
-import com.example.weatherforecastapp.databinding.ItemFragmetCityBinding
+import androidx.viewbinding.ViewBinding
 
-class AllCityAdapterViewHolder(val binding: ItemFragmetCityBinding):
-    RecyclerView.ViewHolder(binding.root) {
-}
+class AllCityAdapterViewHolder(val binding: ViewBinding, ) : RecyclerView.ViewHolder(binding.root)
+
+
+
