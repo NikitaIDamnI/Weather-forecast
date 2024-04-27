@@ -39,6 +39,16 @@ class ActivityWeather : AppCompatActivity() {
         viewModel = ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
         viewModel.startCheckInternet()
         setContentView(binding.root)
+        viewModel.internetCondition.observe(this) {internet->
+            if (internet)
+            viewModel.sizeCity.observe(this) {
+                if (it == 0){
+                    viewModel.updateUserLocation()
+                }else{
+                    viewModel.weatherUpdate()
+                }
+            }
+        }
     }
 
 

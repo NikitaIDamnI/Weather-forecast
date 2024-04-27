@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -47,7 +46,7 @@ class ViewModelAllCities @Inject constructor(
         MutableLiveData<Boolean>(internetConnectionChecker.isInternetAvailable)
 
     init {
-        internet(sizeCity.value ?: -1)
+        internet()
     }
 
     fun searchCity(city: String) {
@@ -146,7 +145,7 @@ class ViewModelAllCities @Inject constructor(
         internetConnectionChecker.stopListening()
     }
 
-    private fun internet(size: Int) {
+    private fun internet() {
         internetConnectionChecker.onInternetAvailable = {
             internetCondition.value = true
         }
@@ -154,24 +153,6 @@ class ViewModelAllCities @Inject constructor(
             internetCondition.value = false
         }
 
-        internetConnectionChecker.update = {
-
-            when (size) {
-                0 -> {
-                    Log.d("FragmentPagerWeather_Log", "updateUserLocation: true")
-                    updateUserLocation()
-                }
-
-                -1 -> {
-                    Log.d("FragmentPagerWeather_Log", "Not Update: true")
-                }
-
-                else -> {
-                    Log.d("FragmentPagerWeather_Log", "weatherUpdate: true")
-                    weatherUpdate()
-                }
-            }
-        }
     }
 
 
