@@ -9,5 +9,6 @@
 
     <color name="colore_text">#FBFAFA</color>
     <color name="transparent">#00FFFFFF</color>
+    <color name="not_internet">#BFFFFFFF</color>
 
 </resources>

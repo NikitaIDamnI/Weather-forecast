@@ -7,14 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
-import com.example.weatherforecastapp.presentation.InternetConnectionChecker
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
@@ -69,27 +67,27 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkInternet() {
-        viewModel.internetCondition.observe(viewLifecycleOwner, Observer {internet->
+        viewModel.internetCondition.observe(viewLifecycleOwner) { internet ->
             if (internet) {
                 binding.cvNotInternet.visibility = View.GONE
                 binding.cardSearchView.visibility = View.VISIBLE
             } else {
-                viewModel.listLocation.observe(viewLifecycleOwner, Observer {
+                viewModel.listLocation.observe(viewLifecycleOwner) {
                     val text =
                         "${resources.getString(R.string.the_latest_update)} ${it.get(0).localtime}"
                     binding.tvLastUpdate.text = text
-                })
+                }
                 binding.cvNotInternet.visibility = View.VISIBLE
                 binding.cardSearchView.visibility = View.GONE
             }
-        })
+        }
     }
 
     private fun setupAllCitiesAdapter() = with(binding) {
         adapterAllCities = AllCityAdapter(requireActivity().applicationContext)
-        viewModel.listLocation.observe(viewLifecycleOwner, Observer {
+        viewModel.listLocation.observe(viewLifecycleOwner) {
             adapterAllCities.submitList(it)
-        })
+        }
         rvAllCity.adapter = adapterAllCities
         setupSwipeListener(rvAllCity)
         adapterAllCities.onClick = { id, binding ->
@@ -108,21 +106,20 @@ class FragmentAllCities : Fragment() {
                 viewModel.previewCity(searchCity)
                 searchCityAdapter.submitList(emptyList())
 
-                binding.searchView.setQuery("", false)
+                binding.searchView.setQuery(EMPTY_QUERY, false)
                 binding.searchView.clearFocus()
                 binding.searchView.isIconified = true
 
                 var view = false
-                viewModel.listLocation.observe(viewLifecycleOwner, Observer { listLocation ->
+                viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
                     val position = "${searchCity.lat},${searchCity.lon}"
                     view = viewModel.checkCity(listLocation, position)
 
-                })
+                }
                 val action =
                     FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
                         .setViewAddCity(view)
                 findNavController().navigate(action)
-
             }
 
         binding.searchView.setOnQueryTextListener(
@@ -131,21 +128,19 @@ class FragmentAllCities : Fragment() {
                     CoroutineScope(Dispatchers.Main).launch {
                         if (!query.isNullOrEmpty()) {
                             viewModel.searchCity(query)
-                            viewModel.searchCityList.observe(viewLifecycleOwner, Observer {
+                            viewModel.searchCityList.observe(viewLifecycleOwner) {
                                 searchCityAdapter.submitList(it)
-                            })
+                            }
                         }
                     }
                     return false
                 }
-
                 override fun onQueryTextChange(newText: String?): Boolean {
                     if (newText.isNullOrEmpty()) {
                         searchCityAdapter.submitList(emptyList())
                     }
                     return true
                 }
-
             })
     }
 
@@ -185,11 +180,10 @@ class FragmentAllCities : Fragment() {
         itemTouchHelper.attachToRecyclerView(rvShopList)
     }
 
-
-
     companion object {
         const val USER_POSITION = 0
         const val DEFAULT_SWIPE_DIRECTION = 0
+        const val EMPTY_QUERY = ""
     }
 
 }
