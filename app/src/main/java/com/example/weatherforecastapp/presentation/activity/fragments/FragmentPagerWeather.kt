@@ -110,7 +110,6 @@ class FragmentPagerWeather : Fragment() {
     private fun checkInternet(size: Int) {
         viewModel.internetCondition.observe(viewLifecycleOwner, Observer {
             Log.d("FragmentPagerWeather_Log", "internetCondition: $it")
-
             if (it) {
                 onInternetAvailable()
             } else {

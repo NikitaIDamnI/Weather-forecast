@@ -1,9 +1,6 @@
 package com.example.weatherforecastapp.presentation.activity
 
-import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
@@ -21,7 +18,7 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
-    private val weatherReceiver = WeatherReceiver()
+    private lateinit var weatherReceiver : WeatherReceiver
 
     private lateinit var viewModelWeather: ViewModelWeather
     private lateinit var viewModelAllCities: ViewModelAllCities
@@ -40,19 +37,19 @@ class ActivityWeather : AppCompatActivity() {
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         component.inject(this)
         permission.checkPermissions(PermissionsLauncher.PERMISSION_LOCATION)
         super.onCreate(savedInstanceState)
-        startReceiver()
+        weatherReceiver = WeatherReceiver(this)
+        weatherReceiver.startReceiver()
+
         initReceiver()
         viewModelAllCities =
             ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
         viewModelWeather =
             ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
 
-        viewModelAllCities.startCheckInternet()
         setContentView(binding.root)
         viewModelAllCities.internetCondition.observe(this) { internet ->
             if (internet) {
@@ -67,18 +64,14 @@ class ActivityWeather : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun startReceiver() {
-        val intentFilter = IntentFilter().apply {
-            addAction(WeatherReceiver.ACTION_LOCATION)
-        }
-        registerReceiver(weatherReceiver, intentFilter, RECEIVER_EXPORTED)
-    }
 
     private fun initReceiver() {
-        weatherReceiver.checkLocationReceiver = {
+        weatherReceiver.checkLocationCondition = {
             viewModelWeather.checkLocationCondition(it)
             viewModelAllCities.checkLocationCondition(it)
+        }
+        weatherReceiver.checkInternetCondition = {
+            viewModelAllCities.checkInternetCondition(it)
         }
     }
 
@@ -92,8 +85,7 @@ class ActivityWeather : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModelAllCities.stopCheckInternet()
-        unregisterReceiver(weatherReceiver)
+        weatherReceiver.stopReceiver()
     }
 
     companion object {

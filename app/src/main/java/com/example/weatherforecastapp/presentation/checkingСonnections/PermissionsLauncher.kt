@@ -15,6 +15,7 @@ class PermissionsLauncher(
 
 
     fun checkPermissions(permission: String) {
+
         if (!isPermissionGranted(permission)) {
             permissionListener()
             pLauncher.launch(permission)
