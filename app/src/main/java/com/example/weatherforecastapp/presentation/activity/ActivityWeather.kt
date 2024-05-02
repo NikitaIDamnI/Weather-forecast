@@ -3,8 +3,8 @@ package com.example.weatherforecastapp.presentation.activity
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.example.weatherforecastapp.data.gps.PermissionsLauncher
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
+import com.example.weatherforecastapp.presentation.PermissionsLauncher
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
@@ -34,7 +34,7 @@ class ActivityWeather : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         component.inject(this)
-        permission
+        permission.checkPermissions(PermissionsLauncher.PERMISSION_LOCATION)
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
         viewModel.startCheckInternet()
@@ -55,6 +55,8 @@ class ActivityWeather : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        permission.isPermissionGranted(PermissionsLauncher.PERMISSION_LOCATION)
+
         viewModel.checkLocation(this)
     }
 
