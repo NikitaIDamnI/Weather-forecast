@@ -1,11 +1,15 @@
 package com.example.weatherforecastapp.presentation.activity
 
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
-import com.example.weatherforecastapp.presentation.PermissionsLauncher
 import com.example.weatherforecastapp.presentation.WeatherApp
+import com.example.weatherforecastapp.presentation.checkingСonnections.PermissionsLauncher
+import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import javax.inject.Inject
@@ -16,6 +20,7 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
+    private val weatherReceiver = WeatherReceiver()
 
     private lateinit var viewModel: ViewModelAllCities
 
@@ -32,10 +37,12 @@ class ActivityWeather : AppCompatActivity() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         component.inject(this)
         permission.checkPermissions(PermissionsLauncher.PERMISSION_LOCATION)
         super.onCreate(savedInstanceState)
+        startReceiver()
         viewModel = ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
         viewModel.startCheckInternet()
         setContentView(binding.root)
@@ -52,6 +59,13 @@ class ActivityWeather : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun startReceiver(){
+        val intentFilter = IntentFilter().apply {
+            addAction(WeatherReceiver.ACTION_LOCATION)
+        }
+        registerReceiver(weatherReceiver, intentFilter, RECEIVER_EXPORTED)
+    }
 
     override fun onResume() {
         super.onResume()
@@ -64,7 +78,7 @@ class ActivityWeather : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         viewModel.stopCheckInternet()
-
+        unregisterReceiver(weatherReceiver)
     }
 
     companion object{

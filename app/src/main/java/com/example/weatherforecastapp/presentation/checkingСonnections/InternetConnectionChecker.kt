@@ -1,4 +1,4 @@
-package com.example.weatherforecastapp.presentation
+package com.example.weatherforecastapp.presentation.checkingСonnections
 
 import android.app.Application
 import android.content.Context
@@ -19,7 +19,7 @@ class InternetConnectionChecker @Inject constructor(
     var onInternetAvailable: (() -> Unit)? = null
     var onInternetUnavailable: (() -> Unit)? = null
 
-     var isFirstCheck = true
+     private var isFirstCheck = true
     var isInternetAvailable = false
 
     private val connectivityManager =

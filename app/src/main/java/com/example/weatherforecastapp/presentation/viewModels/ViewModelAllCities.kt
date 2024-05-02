@@ -20,7 +20,7 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSi
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
-import com.example.weatherforecastapp.presentation.InternetConnectionChecker
+import com.example.weatherforecastapp.presentation.checkingСonnections.InternetConnectionChecker
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

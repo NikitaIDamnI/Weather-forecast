@@ -1,4 +1,4 @@
-package com.example.weatherforecastapp.presentation
+package com.example.weatherforecastapp.presentation.checkingСonnections
 
 import android.Manifest
 import android.content.pm.PackageManager

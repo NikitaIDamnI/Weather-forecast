@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
-import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.example.weatherforecastapp.data.Format
@@ -16,6 +15,7 @@ import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
 import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
+import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -70,22 +70,20 @@ class LocationRepositoryImpl @Inject constructor(
             Log.d("LocationRepositoryImpl", "isLocationEnabled:$isLocationEnabled ")
             getLocation()
         } else {
-            DialogManager.locationSettingsDialog(context, object : DialogManager.Listener {
-                override fun onClickPositive() {
-                    context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                }
-
-                override fun onClickNegative() {
-
-                }
-            })
         }
     }
 
 
+
+
     private fun isLocationEnabled(): Boolean {
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        val locationEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        Intent(WeatherReceiver.ACTION_LOCATION).apply {
+            putExtra(WeatherReceiver.LOCATION_CONDITION,locationEnabled)
+            context.sendBroadcast(this)
+        }
+        return locationEnabled
     }
 
     private fun dataRounding(location: Task<Location>): PositionDb {
