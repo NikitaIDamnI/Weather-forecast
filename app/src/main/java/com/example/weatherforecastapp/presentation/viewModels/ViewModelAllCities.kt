@@ -44,6 +44,8 @@ class ViewModelAllCities @Inject constructor(
     var sizeCity = getSizePager()
     val internetCondition =
         MutableLiveData<Boolean>(internetConnectionChecker.isInternetAvailable)
+    val locationCondition =
+        MutableLiveData<Boolean>(true)
 
     init {
         internet()
@@ -85,6 +87,9 @@ class ViewModelAllCities @Inject constructor(
         }
     }
 
+    fun checkLocationCondition(condition: Boolean){
+        locationCondition.value = condition
+    }
     fun checkLocation(context: Context) {
         useCaseCheckLocation.invoke(context)
     }

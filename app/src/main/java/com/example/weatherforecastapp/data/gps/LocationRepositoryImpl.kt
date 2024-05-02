@@ -69,7 +69,6 @@ class LocationRepositoryImpl @Inject constructor(
         if (isLocationEnabled) {
             Log.d("LocationRepositoryImpl", "isLocationEnabled:$isLocationEnabled ")
             getLocation()
-        } else {
         }
     }
 

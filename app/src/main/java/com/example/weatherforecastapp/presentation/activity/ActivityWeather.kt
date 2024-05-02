@@ -12,6 +12,7 @@ import com.example.weatherforecastapp.presentation.checkingСonnections.Permissi
 import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import javax.inject.Inject
 
 class ActivityWeather : AppCompatActivity() {
@@ -22,7 +23,9 @@ class ActivityWeather : AppCompatActivity() {
 
     private val weatherReceiver = WeatherReceiver()
 
-    private lateinit var viewModel: ViewModelAllCities
+    private lateinit var viewModelWeather: ViewModelWeather
+    private lateinit var viewModelAllCities: ViewModelAllCities
+
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -43,16 +46,21 @@ class ActivityWeather : AppCompatActivity() {
         permission.checkPermissions(PermissionsLauncher.PERMISSION_LOCATION)
         super.onCreate(savedInstanceState)
         startReceiver()
-        viewModel = ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
-        viewModel.startCheckInternet()
+        initReceiver()
+        viewModelAllCities =
+            ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
+        viewModelWeather =
+            ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
+
+        viewModelAllCities.startCheckInternet()
         setContentView(binding.root)
-        viewModel.internetCondition.observe(this) {internet->
+        viewModelAllCities.internetCondition.observe(this) { internet ->
             if (internet) {
-                viewModel.sizeCity.observe(this) {
+                viewModelAllCities.sizeCity.observe(this) {
                     if (it == EMPTY_LIST) {
-                        viewModel.updateUserLocation()
+                        viewModelAllCities.updateUserLocation()
                     } else {
-                        viewModel.weatherUpdate()
+                        viewModelAllCities.weatherUpdate()
                     }
                 }
             }
@@ -60,28 +68,35 @@ class ActivityWeather : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun startReceiver(){
+    private fun startReceiver() {
         val intentFilter = IntentFilter().apply {
             addAction(WeatherReceiver.ACTION_LOCATION)
         }
         registerReceiver(weatherReceiver, intentFilter, RECEIVER_EXPORTED)
     }
 
+    private fun initReceiver() {
+        weatherReceiver.checkLocationReceiver = {
+            viewModelWeather.checkLocationCondition(it)
+            viewModelAllCities.checkLocationCondition(it)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         permission.isPermissionGranted(PermissionsLauncher.PERMISSION_LOCATION)
 
-        viewModel.checkLocation(this)
+        viewModelAllCities.checkLocation(this)
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.stopCheckInternet()
+        viewModelAllCities.stopCheckInternet()
         unregisterReceiver(weatherReceiver)
     }
 
-    companion object{
+    companion object {
         const val EMPTY_LIST = 0
     }
 

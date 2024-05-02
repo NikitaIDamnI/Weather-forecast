@@ -3,24 +3,19 @@ package com.example.weatherforecastapp.presentation.checkingСonnections
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 
 
 class WeatherReceiver : BroadcastReceiver() {
+    var checkLocationReceiver: ((Boolean) -> Unit)? = null
     override fun onReceive(context: Context?, intent: Intent?) {
         val action = intent?.action
+
         when (action) {
             ACTION_LOCATION -> {
                 // Проверяем доступность GPS
-                val isGpsEnabled = intent.getBooleanExtra(LOCATION_CONDITION,true)
+                val isGpsEnabled = intent.getBooleanExtra(LOCATION_CONDITION, true)
+                checkLocationReceiver?.invoke(isGpsEnabled)
 
-                if (isGpsEnabled) {
-                    // GPS включен
-                    Log.d("WeatherReceiver", "GPS is enabled")
-                } else {
-                    // GPS выключен
-                    Log.d("WeatherReceiver", "GPS is disabled")
-                }
             }
         }
     }

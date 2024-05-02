@@ -16,7 +16,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
-import com.example.weatherforecastapp.presentation.activity.ActivityWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.google.android.material.tabs.TabLayoutMediator
@@ -113,7 +112,7 @@ class FragmentPagerWeather : Fragment() {
             Log.d("FragmentPagerWeather_Log", "internetCondition: $it")
 
             if (it) {
-                onInternetAvailable(size)
+                onInternetAvailable()
             } else {
                 onInternetUnavailable(size)
             }
@@ -137,7 +136,7 @@ class FragmentPagerWeather : Fragment() {
 
     }
 
-    private fun onInternetAvailable(sizeList: Int) {
+    private fun onInternetAvailable() {
         binding.cvNotInternet.visibility = View.GONE
         binding.progressBar2.visibility = View.VISIBLE
         binding.textView3.text = resources.getString(R.string.load_date)
