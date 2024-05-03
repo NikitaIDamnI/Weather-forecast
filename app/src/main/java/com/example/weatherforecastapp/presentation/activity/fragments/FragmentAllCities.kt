@@ -16,6 +16,7 @@ import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
+import com.example.weatherforecastapp.presentation.setSettingsClickableSpan
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
@@ -62,6 +63,7 @@ class FragmentAllCities : Fragment() {
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
         checkInternet()
+        checkLocationPermission()
         setupAllCitiesAdapter()
         setupSearchAdapter()
     }
@@ -80,6 +82,18 @@ class FragmentAllCities : Fragment() {
                 }
                 binding.cvNotInternet.visibility = View.VISIBLE
                 binding.cardSearchView.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun checkLocationPermission(){
+        viewModel.locationConditionPermission.observe(viewLifecycleOwner){permission->
+            if(permission == false){
+                val text = resources.getString(R.string.not_permission_location)
+                binding.tvNotLocation.setSettingsClickableSpan(text)
+                binding.cvNotLocation.visibility = View.VISIBLE
+            }else{
+                binding.cvNotLocation.visibility = View.GONE
             }
         }
     }

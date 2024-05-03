@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.domain.models.Condition
@@ -23,6 +24,13 @@ class ViewModelWeather @Inject constructor(
     var current = getCurrentDays()
     var forecastDay = getForecastDaysCity()
 
+    val locationCondition =
+        MutableLiveData<Boolean>(true)
+
+    fun checkLocationCondition(condition: Boolean){
+        locationCondition.value = condition
+    }
+
     fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
         return current.weatherPrecipitation
     }
@@ -35,8 +43,8 @@ class ViewModelWeather @Inject constructor(
         val sunrise = ForecastHour(
             time = astro.sunrise,
             condition = Condition(
-                text = "Sunset",
-                icon = R.drawable.sunset_weather.toString()
+                text = "Sunrise",
+                icon = R.drawable.sunrise_weather.toString()
             )
         )
         val sunset = ForecastHour(

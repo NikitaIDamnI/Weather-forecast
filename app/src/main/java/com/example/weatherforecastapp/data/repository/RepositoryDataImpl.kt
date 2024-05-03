@@ -84,23 +84,23 @@ class RepositoryDataImpl @Inject constructor(
     override suspend fun weatherUpdate() {
         val dataListLocation = locationDao.getAllLocations()
         val time = System.currentTimeMillis()
-        var positionId = POSITION_ID_START
+       // var positionId = POSITION_ID_NEXT
         try {
             if (dataListLocation.isNotEmpty()) {
                 for (location in dataListLocation) {
                     val thisPositionDb =
                         PositionDb(
-                            location.positionId,
+                            location.id,
                             location.position,
                             formatTimeFromEpoch(time)
                         )
                     val datePositionDb = PositionDb(
-                        location.positionId,
+                        location.id,
                         location.position,
                         timeFormat = location.last_updated
                     )
-                    writingAPItoDatabase(datePositionDb, thisPositionDb, positionId)
-                    positionId += POSITION_ID_NEXT
+                    writingAPItoDatabase(datePositionDb, thisPositionDb, location.positionId)
+                  //  positionId += POSITION_ID_NEXT
                 }
             }
         } catch (e: Exception) {

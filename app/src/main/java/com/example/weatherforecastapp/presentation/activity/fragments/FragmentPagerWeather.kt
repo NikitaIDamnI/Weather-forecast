@@ -16,7 +16,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
-import com.example.weatherforecastapp.presentation.activity.ActivityWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.google.android.material.tabs.TabLayoutMediator
@@ -59,6 +58,7 @@ class FragmentPagerWeather : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
+        migrationIfNotLocation()
         initial()
     }
 
@@ -71,6 +71,7 @@ class FragmentPagerWeather : Fragment() {
         }
 
         viewModel.sizeCity.observe(viewLifecycleOwner) {
+
             val argsList = getListArgs(it)
             Log.d("FragmentPagerWeather_Log", "sizeCity: $it")
             val pager = PagerAdapter(requireActivity(), argsList)
@@ -111,9 +112,8 @@ class FragmentPagerWeather : Fragment() {
     private fun checkInternet(size: Int) {
         viewModel.internetCondition.observe(viewLifecycleOwner, Observer {
             Log.d("FragmentPagerWeather_Log", "internetCondition: $it")
-
             if (it) {
-                onInternetAvailable(size)
+                onInternetAvailable()
             } else {
                 onInternetUnavailable(size)
             }
@@ -126,7 +126,7 @@ class FragmentPagerWeather : Fragment() {
         if (sizeList == EMPTY_LIST) {
             binding.progressBar2.visibility = View.GONE
             binding.textView3.text = resources.getString(R.string.not_internet)
-        }else {
+        } else {
             binding.cvNotInternet.visibility = View.VISIBLE
             viewModel.listLocation.observe(viewLifecycleOwner, Observer {
                 val lastUpdate =
@@ -137,7 +137,7 @@ class FragmentPagerWeather : Fragment() {
 
     }
 
-    private fun onInternetAvailable(sizeList: Int) {
+    private fun onInternetAvailable() {
         binding.cvNotInternet.visibility = View.GONE
         binding.progressBar2.visibility = View.VISIBLE
         binding.textView3.text = resources.getString(R.string.load_date)
@@ -180,6 +180,23 @@ class FragmentPagerWeather : Fragment() {
     }
 
 
+    private fun migrationIfNotLocation() {
+        viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
+            if (size == 0) {
+                viewModel.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+                    Log.d("FragmentPagerWeather_Log", "migrationIfNotLocation: ")
+                    if(locationCondition == false){
+                        val action =
+                            FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
+                        findNavController().navigate(action)
+
+                    }
+                }
+            }
+
+        }
+
+    }
 
 
     companion object {

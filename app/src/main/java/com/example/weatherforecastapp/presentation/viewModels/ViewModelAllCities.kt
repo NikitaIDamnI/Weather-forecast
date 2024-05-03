@@ -20,7 +20,6 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSi
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
-import com.example.weatherforecastapp.presentation.InternetConnectionChecker
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,7 +31,6 @@ class ViewModelAllCities @Inject constructor(
     private val useCasDeleteCity: UseCasDeleteCity,
     private val useCaseGetCityFromSearch: UseCaseGetCityFromSearch,
     private val getSizePager: UseCaseGetSizePager,
-    private val internetConnectionChecker: InternetConnectionChecker,
     private val useCaseCheckLocation: UseCaseCheckLocation,
     private val weatherUpdate: UseCaseWeatherUpdate,
 ) : ViewModel() {
@@ -43,11 +41,12 @@ class ViewModelAllCities @Inject constructor(
     val searchCityList = MutableLiveData<List<SearchCity>>()
     var sizeCity = getSizePager()
     val internetCondition =
-        MutableLiveData<Boolean>(internetConnectionChecker.isInternetAvailable)
+        MutableLiveData<Boolean>(false)
+    val locationCondition =
+        MutableLiveData<Boolean>(true)
+    val locationConditionPermission =
+        MutableLiveData<Boolean>(false)
 
-    init {
-        internet()
-    }
 
     fun searchCity(city: String) {
         viewModelScope.launch {
@@ -83,6 +82,17 @@ class ViewModelAllCities @Inject constructor(
         viewModelScope.launch {
             weatherUpdate.invoke()
         }
+    }
+
+    fun checkLocationCondition(condition: Boolean) {
+        locationCondition.value = condition
+    }
+    fun checkLocationConditionPermission(condition: Boolean) {
+        locationConditionPermission.value = condition
+    }
+
+    fun checkInternetCondition(condition: Boolean) {
+        internetCondition.value = condition
     }
 
     fun checkLocation(context: Context) {
@@ -135,24 +145,6 @@ class ViewModelAllCities @Inject constructor(
         }
 
         return weatherHour24
-    }
-
-    fun startCheckInternet() {
-        internetConnectionChecker.startListening()
-    }
-
-    fun stopCheckInternet() {
-        internetConnectionChecker.stopListening()
-    }
-
-    private fun internet() {
-        internetConnectionChecker.onInternetAvailable = {
-            internetCondition.value = true
-        }
-        internetConnectionChecker.onInternetUnavailable = {
-            internetCondition.value = false
-        }
-
     }
 
 

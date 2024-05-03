@@ -58,10 +58,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="5dp"
+                android:contentDescription="TODO"
                 android:src="@drawable/ic_wi_fi"
                 app:layout_constraintEnd_toStartOf="@+id/tv_not_internet_0"
-                app:layout_constraintTop_toTopOf="parent"
-                android:contentDescription="TODO" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tv_last_update"
@@ -125,7 +125,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -142,7 +142,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.14" />
+        app:layout_constraintGuide_begin="125dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/vert_start_guideline"
@@ -160,10 +160,53 @@
 
         app:layout_constraintGuide_end="10dp" />
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_not_location"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/vert_end_guideline"
+        app:layout_constraintStart_toStartOf="@id/vert_start_guideline"
+        app:layout_constraintTop_toBottomOf="@id/g_horizontal">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black">
+
+            <TextView
+                android:id="@+id/tv_not_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="5dp"
+                android:text="@string/not_permission_location"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/im_not_location"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/im_not_location"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:contentDescription="TODO"
+                android:src="@drawable/ic_not_location_2"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_all_city"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="20dp"
         android:visibility="visible"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -171,7 +214,7 @@
         app:layout_constraintEnd_toStartOf="@+id/vert_end_guideline"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/vert_start_guideline"
-        app:layout_constraintTop_toBottomOf="@+id/g_horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/cv_not_location"
         app:layout_constraintVertical_bias="0.874"
         tools:listitem="@layout/item_fragmet_city">
 
