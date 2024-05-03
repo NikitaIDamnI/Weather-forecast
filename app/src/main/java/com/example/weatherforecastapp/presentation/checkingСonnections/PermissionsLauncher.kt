@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.checkingСonnections
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -15,8 +16,8 @@ class PermissionsLauncher(
 
 
     fun checkPermissions(permission: String) {
-
         if (!isPermissionGranted(permission)) {
+
             permissionListener()
             pLauncher.launch(permission)
         }
@@ -28,15 +29,25 @@ class PermissionsLauncher(
             ActivityResultContracts.RequestPermission()
         ) {
             Toast.makeText(context, "Permission is $it", Toast.LENGTH_LONG).show()
+            if (it == false) {
+                Intent(WeatherReceiver.ACTION_LOCATION).apply {
+                    putExtra(WeatherReceiver.CONDITION, it)
+                    context.sendBroadcast(this)
+                }
+            }
         }
     }
 
-     fun isPermissionGranted(permission: String): Boolean {
-         val permissionCondition = ContextCompat.checkSelfPermission(
-             context,
-             permission
-         ) == PackageManager.PERMISSION_GRANTED
-       return permissionCondition
+    fun isPermissionGranted(permission: String): Boolean {
+        val permissionCondition = ContextCompat.checkSelfPermission(
+            context,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+        Intent(WeatherReceiver.ACTION_LOCATION_PERMISSION).apply {
+            putExtra(WeatherReceiver.CONDITION, permissionCondition)
+            context.sendBroadcast(this)
+        }
+        return permissionCondition
     }
 
     companion object {

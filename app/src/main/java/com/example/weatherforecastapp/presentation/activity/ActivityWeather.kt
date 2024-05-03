@@ -73,6 +73,9 @@ class ActivityWeather : AppCompatActivity() {
         weatherReceiver.checkInternetCondition = {
             viewModelAllCities.checkInternetCondition(it)
         }
+        weatherReceiver.checkLocationPermissionCondition = {
+            viewModelAllCities.checkLocationConditionPermission(it)
+        }
     }
 
     override fun onResume() {

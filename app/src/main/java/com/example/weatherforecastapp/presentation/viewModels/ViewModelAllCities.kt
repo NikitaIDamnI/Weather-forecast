@@ -41,9 +41,11 @@ class ViewModelAllCities @Inject constructor(
     val searchCityList = MutableLiveData<List<SearchCity>>()
     var sizeCity = getSizePager()
     val internetCondition =
-        MutableLiveData<Boolean>(true)
+        MutableLiveData<Boolean>(false)
     val locationCondition =
         MutableLiveData<Boolean>(true)
+    val locationConditionPermission =
+        MutableLiveData<Boolean>(false)
 
 
     fun searchCity(city: String) {
@@ -82,12 +84,17 @@ class ViewModelAllCities @Inject constructor(
         }
     }
 
-    fun checkLocationCondition(condition: Boolean){
+    fun checkLocationCondition(condition: Boolean) {
         locationCondition.value = condition
     }
-    fun checkInternetCondition(condition: Boolean){
+    fun checkLocationConditionPermission(condition: Boolean) {
+        locationConditionPermission.value = condition
+    }
+
+    fun checkInternetCondition(condition: Boolean) {
         internetCondition.value = condition
     }
+
     fun checkLocation(context: Context) {
         useCaseCheckLocation.invoke(context)
     }
@@ -139,8 +146,6 @@ class ViewModelAllCities @Inject constructor(
 
         return weatherHour24
     }
-
-
 
 
     fun updateUserLocation() {

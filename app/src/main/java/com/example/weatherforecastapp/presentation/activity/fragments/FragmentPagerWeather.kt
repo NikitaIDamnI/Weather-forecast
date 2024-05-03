@@ -58,6 +58,7 @@ class FragmentPagerWeather : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
+        migrationIfNotLocation()
         initial()
     }
 
@@ -70,6 +71,7 @@ class FragmentPagerWeather : Fragment() {
         }
 
         viewModel.sizeCity.observe(viewLifecycleOwner) {
+
             val argsList = getListArgs(it)
             Log.d("FragmentPagerWeather_Log", "sizeCity: $it")
             val pager = PagerAdapter(requireActivity(), argsList)
@@ -124,7 +126,7 @@ class FragmentPagerWeather : Fragment() {
         if (sizeList == EMPTY_LIST) {
             binding.progressBar2.visibility = View.GONE
             binding.textView3.text = resources.getString(R.string.not_internet)
-        }else {
+        } else {
             binding.cvNotInternet.visibility = View.VISIBLE
             viewModel.listLocation.observe(viewLifecycleOwner, Observer {
                 val lastUpdate =
@@ -178,6 +180,23 @@ class FragmentPagerWeather : Fragment() {
     }
 
 
+    private fun migrationIfNotLocation() {
+        viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
+            if (size == 0) {
+                viewModel.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+                    Log.d("FragmentPagerWeather_Log", "migrationIfNotLocation: ")
+                    if(locationCondition == false){
+                        val action =
+                            FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
+                        findNavController().navigate(action)
+
+                    }
+                }
+            }
+
+        }
+
+    }
 
 
     companion object {

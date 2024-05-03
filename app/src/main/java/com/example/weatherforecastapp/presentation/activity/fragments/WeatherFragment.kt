@@ -101,8 +101,9 @@ class WeatherFragment : Fragment() {
                     binding.imNotLocation.visibility = View.GONE
                 }else{
                     binding.imNotLocation.visibility = View.VISIBLE
-
                 }
+            }else{
+
             }
         }
 

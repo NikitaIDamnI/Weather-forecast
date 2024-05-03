@@ -79,7 +79,7 @@ class LocationRepositoryImpl @Inject constructor(
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val locationEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         Intent(WeatherReceiver.ACTION_LOCATION).apply {
-            putExtra(WeatherReceiver.LOCATION_CONDITION,locationEnabled)
+            putExtra(WeatherReceiver.CONDITION,locationEnabled)
             context.sendBroadcast(this)
         }
         return locationEnabled

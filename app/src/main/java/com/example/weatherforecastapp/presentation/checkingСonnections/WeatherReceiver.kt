@@ -28,11 +28,13 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
 
     var checkLocationCondition: ((Boolean) -> Unit)? = null
     var checkInternetCondition: ((Boolean) -> Unit)? = null
+    var checkLocationPermissionCondition: ((Boolean) -> Unit)? = null
 
 
     fun startReceiver() {
         val intentFilter = IntentFilter().apply {
             addAction(ACTION_LOCATION)
+            addAction(ACTION_LOCATION_PERMISSION)
         }
         val networkRequest = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -47,12 +49,16 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
         when (action) {
             ACTION_LOCATION -> {
                 // Проверяем доступность GPS
-                val isGpsEnabled = intent.getBooleanExtra(LOCATION_CONDITION, true)
+                val isGpsEnabled = intent.getBooleanExtra(CONDITION, true)
                 checkLocationCondition?.invoke(isGpsEnabled)
+            }
+
+            ACTION_LOCATION_PERMISSION -> {
+                val isLocationPermission = intent.getBooleanExtra(CONDITION,true)
+                checkLocationPermissionCondition?.invoke(isLocationPermission)
             }
         }
     }
-
 
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -87,7 +93,8 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
             }
         }
     }
-    fun stopReceiver(){
+
+    fun stopReceiver() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
         context.unregisterReceiver(this)
     }
@@ -95,7 +102,8 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
 
     companion object {
         const val ACTION_LOCATION = "action_location"
-        const val LOCATION_CONDITION = "condition"
+        const val ACTION_LOCATION_PERMISSION = "action_location_permission"
+        const val CONDITION = "condition"
     }
 
 }
