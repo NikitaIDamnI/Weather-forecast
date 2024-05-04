@@ -40,12 +40,6 @@ class ViewModelAllCities @Inject constructor(
     val listLocation = useCaseGetLocations()
     val searchCityList = MutableLiveData<List<SearchCity>>()
     var sizeCity = getSizePager()
-    val internetCondition =
-        MutableLiveData<Boolean>(false)
-    val locationCondition =
-        MutableLiveData<Boolean>(true)
-    val locationConditionPermission =
-        MutableLiveData<Boolean>(false)
 
 
     fun searchCity(city: String) {
@@ -84,16 +78,7 @@ class ViewModelAllCities @Inject constructor(
         }
     }
 
-    fun checkLocationCondition(condition: Boolean) {
-        locationCondition.value = condition
-    }
-    fun checkLocationConditionPermission(condition: Boolean) {
-        locationConditionPermission.value = condition
-    }
 
-    fun checkInternetCondition(condition: Boolean) {
-        internetCondition.value = condition
-    }
 
     fun checkLocation(context: Context) {
         useCaseCheckLocation.invoke(context)

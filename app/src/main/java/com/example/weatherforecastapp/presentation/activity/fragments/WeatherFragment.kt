@@ -14,11 +14,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.WeatherApp
-import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
 import javax.inject.Inject
@@ -31,8 +31,7 @@ class WeatherFragment : Fragment() {
 
     private val args by navArgs<WeatherFragmentArgs>()
 
-    private var weatherReceiver: WeatherReceiver? = null
-
+    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
     private lateinit var viewModel: ViewModelWeather
 
     @Inject
@@ -59,6 +58,8 @@ class WeatherFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
+        viewModelNetworkStatus =
+            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelNetworkStatus::class.java]
         initCurrent()
         initLocationCheck()
         initForecast()
@@ -95,7 +96,7 @@ class WeatherFragment : Fragment() {
     }
 
     private fun initLocationCheck() {
-        viewModel.locationCondition.observe(viewLifecycleOwner){locationCondition->
+        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner){locationCondition->
             if (args.id == USER_LOCATION){
                 if (locationCondition){
                     binding.imNotLocation.visibility = View.GONE

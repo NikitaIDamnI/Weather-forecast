@@ -26,9 +26,9 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
     private val handler = Handler(Looper.getMainLooper())
 
 
-    var checkLocationCondition: ((Boolean) -> Unit)? = null
-    var checkInternetCondition: ((Boolean) -> Unit)? = null
-    var checkLocationPermissionCondition: ((Boolean) -> Unit)? = null
+    var checkLocationStatus: ((Boolean) -> Unit)? = null
+    var checkInternetStatus: ((Boolean) -> Unit)? = null
+    var checkLocationPermissionStatus: ((Boolean) -> Unit)? = null
 
 
     fun startReceiver() {
@@ -48,14 +48,13 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
 
         when (action) {
             ACTION_LOCATION -> {
-                // Проверяем доступность GPS
                 val isGpsEnabled = intent.getBooleanExtra(CONDITION, true)
-                checkLocationCondition?.invoke(isGpsEnabled)
+                checkLocationStatus?.invoke(isGpsEnabled)
             }
 
             ACTION_LOCATION_PERMISSION -> {
                 val isLocationPermission = intent.getBooleanExtra(CONDITION,true)
-                checkLocationPermissionCondition?.invoke(isLocationPermission)
+                checkLocationPermissionStatus?.invoke(isLocationPermission)
             }
         }
     }
@@ -88,7 +87,7 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
             isInternetAvailable = isConnected
             Log.d("InternetConnectionChecker", "checkInternet: $isInternetAvailable")
             handler.post {
-                checkInternetCondition?.invoke(isInternetAvailable)
+                checkInternetStatus?.invoke(isInternetAvailable)
 
             }
         }

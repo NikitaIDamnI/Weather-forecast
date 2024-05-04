@@ -9,6 +9,7 @@ import com.example.weatherforecastapp.presentation.checkingСonnections.Permissi
 import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import javax.inject.Inject
 
@@ -22,6 +23,7 @@ class ActivityWeather : AppCompatActivity() {
 
     private lateinit var viewModelWeather: ViewModelWeather
     private lateinit var viewModelAllCities: ViewModelAllCities
+    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
 
 
     @Inject
@@ -49,9 +51,12 @@ class ActivityWeather : AppCompatActivity() {
             ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
         viewModelWeather =
             ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
+        viewModelNetworkStatus =
+            ViewModelProvider(this, viewModelFactory)[ViewModelNetworkStatus::class.java]
+
 
         setContentView(binding.root)
-        viewModelAllCities.internetCondition.observe(this) { internet ->
+        viewModelNetworkStatus.networkStatus.internetCondition.observe(this) { internet ->
             if (internet) {
                 viewModelAllCities.sizeCity.observe(this) {
                     if (it == EMPTY_LIST) {
@@ -62,19 +67,19 @@ class ActivityWeather : AppCompatActivity() {
                 }
             }
         }
+
     }
 
 
     private fun initReceiver() {
-        weatherReceiver.checkLocationCondition = {
-            viewModelWeather.checkLocationCondition(it)
-            viewModelAllCities.checkLocationCondition(it)
+        weatherReceiver.checkLocationStatus = {
+            viewModelNetworkStatus.checkLocationCondition(it)
         }
-        weatherReceiver.checkInternetCondition = {
-            viewModelAllCities.checkInternetCondition(it)
+        weatherReceiver.checkInternetStatus = {
+            viewModelNetworkStatus.checkInternetCondition(it)
         }
-        weatherReceiver.checkLocationPermissionCondition = {
-            viewModelAllCities.checkLocationConditionPermission(it)
+        weatherReceiver.checkLocationPermissionStatus = {
+            viewModelNetworkStatus.checkLocationStatusPermission(it)
         }
     }
 
