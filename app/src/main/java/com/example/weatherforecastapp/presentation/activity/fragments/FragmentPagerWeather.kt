@@ -18,6 +18,7 @@ import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.google.android.material.tabs.TabLayoutMediator
 import javax.inject.Inject
 
@@ -32,6 +33,8 @@ class FragmentPagerWeather : Fragment() {
 
 
     private lateinit var viewModel: ViewModelAllCities
+    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
+
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -58,6 +61,8 @@ class FragmentPagerWeather : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
+        viewModelNetworkStatus =
+            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelNetworkStatus::class.java]
         migrationIfNotLocation()
         initial()
     }
@@ -110,7 +115,7 @@ class FragmentPagerWeather : Fragment() {
     }
 
     private fun checkInternet(size: Int) {
-        viewModel.internetCondition.observe(viewLifecycleOwner, Observer {
+        viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner, Observer {
             Log.d("FragmentPagerWeather_Log", "internetCondition: $it")
             if (it) {
                 onInternetAvailable()
@@ -183,7 +188,7 @@ class FragmentPagerWeather : Fragment() {
     private fun migrationIfNotLocation() {
         viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
             if (size == 0) {
-                viewModel.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+                viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
                     Log.d("FragmentPagerWeather_Log", "migrationIfNotLocation: ")
                     if(locationCondition == false){
                         val action =

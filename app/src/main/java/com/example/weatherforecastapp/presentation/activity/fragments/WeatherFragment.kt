@@ -12,13 +12,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
+import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.WeatherApp
-import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.squareup.picasso.Picasso
 import javax.inject.Inject
@@ -31,8 +32,7 @@ class WeatherFragment : Fragment() {
 
     private val args by navArgs<WeatherFragmentArgs>()
 
-    private var weatherReceiver: WeatherReceiver? = null
-
+    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
     private lateinit var viewModel: ViewModelWeather
 
     @Inject
@@ -59,56 +59,63 @@ class WeatherFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
+        viewModelNetworkStatus =
+            ViewModelProvider(
+                requireActivity(),
+                viewModelFactory
+            )[ViewModelNetworkStatus::class.java]
         initCurrent()
         initLocationCheck()
         initForecast()
     }
 
 
-
-
-
     private fun initCurrent() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
             viewModel.current.observe(viewLifecycleOwner, Observer {
-                var current = it[id]
-                if (checkData(it.size)) {
-                    current = it[args.id]
+                if (it != emptyList<Current>()) {
+                    var current = it[id]
+                    if (checkData(it.size)) {
+                        current = it[args.id]
+                    }
+                    tvCity.text = current.nameCity
+                    tvData.text = current.date
+                    val temp =
+                        current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
+                    tvDegree.text = temp
+                    tvCondition.text = current.condition.text
+                    Picasso.get().load(current.condition.icon).into(imWeather)
+                    val listPrecipitation = viewModel.getWeatherPrecipitation(current)
+                    Log.d("WeatherFragment_Log", "initCurrent: ${it.size}")
+                    adapterPrecipitation.submitList(listPrecipitation)
+                    setupPullAdapter(rvPrecipitation)
+                    rvPrecipitation.adapter = adapterPrecipitation
+                    binding.imBackground.transitionName = "${id}"
                 }
-                tvCity.text = current.nameCity
-                tvData.text = current.date
-                val temp =
-                    current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
-                tvDegree.text = temp
-                tvCondition.text = current.condition.text
-                Picasso.get().load(current.condition.icon).into(imWeather)
-                val listPrecipitation = viewModel.getWeatherPrecipitation(current)
-                Log.d("WeatherFragment_Log", "initCurrent: ${it.size}")
-                adapterPrecipitation.submitList(listPrecipitation)
-                setupPullAdapter(rvPrecipitation)
-                rvPrecipitation.adapter = adapterPrecipitation
-                binding.imBackground.transitionName = "${id}"
             })
 
+
         }
+
     }
 
     private fun initLocationCheck() {
-        viewModel.locationCondition.observe(viewLifecycleOwner){locationCondition->
-            if (args.id == USER_LOCATION){
-                if (locationCondition){
+        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+            if (args.id == USER_LOCATION) {
+                if (locationCondition) {
                     binding.imNotLocation.visibility = View.GONE
-                }else{
+                } else {
                     binding.imNotLocation.visibility = View.VISIBLE
                 }
-            }else{
+            } else {
 
             }
         }
 
 
     }
+
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
         rvPrecipitation.recycledViewPool.setMaxRecycledViews(
             PrecipitationAdapter.ENABLE,

@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,12 +41,6 @@ class ViewModelAllCities @Inject constructor(
     val listLocation = useCaseGetLocations()
     val searchCityList = MutableLiveData<List<SearchCity>>()
     var sizeCity = getSizePager()
-    val internetCondition =
-        MutableLiveData<Boolean>(false)
-    val locationCondition =
-        MutableLiveData<Boolean>(true)
-    val locationConditionPermission =
-        MutableLiveData<Boolean>(false)
 
 
     fun searchCity(city: String) {
@@ -55,8 +50,22 @@ class ViewModelAllCities @Inject constructor(
 
     }
 
-    fun checkCity(listLocation: List<Location>, position: String): Boolean {
-        return listLocation.any { it.position == position }
+    fun checkCity(listLocation: List<Location>, searchCity: SearchCity): Boolean {
+        if (listLocation == emptyList<Location>()) {
+            return false
+        } else{
+            val position = "${searchCity.lat},${searchCity.lon}"
+
+            Log.d("ViewModelAllCities_Log", "searchCity: $searchCity ")
+            Log.d("ViewModelAllCities_Log", "listLocation: ${listLocation[0]} ")
+            val checkCity =
+                listLocation[0].name == searchCity.name && listLocation[0].country == searchCity.country && listLocation[0].region == searchCity.region
+            Log.d("ViewModelAllCities_Log", "checkCity: $checkCity ")
+
+            return listLocation.any {
+                it.position == position
+            }
+        }
     }
 
     fun previewCity(searchCity: SearchCity) {
@@ -84,16 +93,6 @@ class ViewModelAllCities @Inject constructor(
         }
     }
 
-    fun checkLocationCondition(condition: Boolean) {
-        locationCondition.value = condition
-    }
-    fun checkLocationConditionPermission(condition: Boolean) {
-        locationConditionPermission.value = condition
-    }
-
-    fun checkInternetCondition(condition: Boolean) {
-        internetCondition.value = condition
-    }
 
     fun checkLocation(context: Context) {
         useCaseCheckLocation.invoke(context)

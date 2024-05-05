@@ -1,7 +1,10 @@
 package com.example.weatherforecastapp.presentation.activity.fragments
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +22,7 @@ import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.Search
 import com.example.weatherforecastapp.presentation.setSettingsClickableSpan
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +36,8 @@ class FragmentAllCities : Fragment() {
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
     private lateinit var viewModel: ViewModelAllCities
+    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
+
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -62,6 +68,8 @@ class FragmentAllCities : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
+        viewModelNetworkStatus =
+            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelNetworkStatus::class.java]
         checkInternet()
         checkLocationPermission()
         setupAllCitiesAdapter()
@@ -70,7 +78,7 @@ class FragmentAllCities : Fragment() {
 
     private fun checkInternet() {
 
-        viewModel.internetCondition.observe(viewLifecycleOwner) { internet ->
+        viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner) { internet ->
             if (internet) {
                 binding.cvNotInternet.visibility = View.GONE
                 binding.cardSearchView.visibility = View.VISIBLE
@@ -86,13 +94,20 @@ class FragmentAllCities : Fragment() {
         }
     }
 
-    private fun checkLocationPermission(){
-        viewModel.locationConditionPermission.observe(viewLifecycleOwner){permission->
-            if(permission == false){
+    private fun checkLocationPermission() {
+        viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(viewLifecycleOwner) { permission ->
+            if (permission == false) {
                 val text = resources.getString(R.string.not_permission_location)
-                binding.tvNotLocation.setSettingsClickableSpan(text)
+                binding.tvNotLocation.setSettingsClickableSpan(text) {
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", context?.packageName, null),
+                        ),
+                    )
+                }
                 binding.cvNotLocation.visibility = View.VISIBLE
-            }else{
+            } else {
                 binding.cvNotLocation.visibility = View.GONE
             }
         }
@@ -107,7 +122,7 @@ class FragmentAllCities : Fragment() {
             findNavController().navigate(action)
         }
 
-        viewModel.internetCondition.observe(viewLifecycleOwner) { internet ->
+        viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner) { internet ->
             adapterAllCities = AllCityAdapter(requireActivity().applicationContext, internet)
             viewModel.listLocation.observe(viewLifecycleOwner) {
                 adapterAllCities.submitList(it)
@@ -138,9 +153,7 @@ class FragmentAllCities : Fragment() {
 
                 var view = false
                 viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
-                    val position = "${searchCity.lat},${searchCity.lon}"
-                    view = viewModel.checkCity(listLocation, position)
-
+                    view = viewModel.checkCity(listLocation, searchCity)
                 }
                 val action =
                     FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
@@ -185,7 +198,7 @@ class FragmentAllCities : Fragment() {
                 val position = viewHolder.adapterPosition
                 val item = adapterAllCities.currentList[position]
 
-                if (position != USER_POSITION) {
+                if (item.positionId != USER_POSITION) {
                     viewModel.deleteCity(item)
                 } else {
                     adapterAllCities.notifyItemChanged(position)
@@ -196,11 +209,14 @@ class FragmentAllCities : Fragment() {
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder
             ): Int {
-                return if (viewHolder.adapterPosition == USER_POSITION) {
+                val item = adapterAllCities.currentList[viewHolder.adapterPosition]
+
+                return if (item.positionId == USER_POSITION) {
                     DEFAULT_SWIPE_DIRECTION
                 } else {
                     super.getSwipeDirs(recyclerView, viewHolder)
                 }
+
             }
         }
         val itemTouchHelper = ItemTouchHelper(callback)
