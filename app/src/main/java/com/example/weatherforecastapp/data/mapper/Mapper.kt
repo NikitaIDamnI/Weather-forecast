@@ -28,7 +28,7 @@ import com.google.gson.reflect.TypeToken
 import javax.inject.Inject
 
 
-class Mapper @Inject constructor(){
+class Mapper @Inject constructor() {
     fun mapperCityDtoToCurrentDb(cityDto: CityDto, positionId: Int) = CurrentDb(
         id = positionId,
         nameCity = cityDto.locationDto.name,
@@ -88,7 +88,7 @@ class Mapper @Inject constructor(){
         localtime = Format.formatTimeLocation(cityDto.locationDto.localtime),
         region = cityDto.locationDto.region,
         country = cityDto.locationDto.country,
-        position = position ?: "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
+        position =  "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",//position ?:
         tz_id = cityDto.locationDto.tz_id,
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.mintempC,
@@ -116,11 +116,12 @@ class Mapper @Inject constructor(){
         } ?: emptyList()
     }
 
-    fun mapperForecastCityDbToEntityForecastCityDays(forecastDaysDb: ForecastDaysDb) = ForecastDayCity(
+    fun mapperForecastCityDbToEntityForecastCityDays(forecastDaysDb: ForecastDaysDb) =
+        ForecastDayCity(
             nameCity = forecastDaysDb.nameCity,
             timeLocation = forecastDaysDb.timeLocation,
             forecastDays = mapperForecastDaysDbToEntityForecastDays(forecastDaysDb),
-    )
+        )
 
 
     private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto) =
@@ -174,6 +175,8 @@ class Mapper @Inject constructor(){
     fun mapperLocationDbToEntityLocation(locationDb: LocationDb?) = Location(
         positionId = locationDb?.positionId ?: 0,
         name = locationDb?.name ?: "",
+        region = locationDb?.region ?: "",
+        country = locationDb?.country ?: "",
         temp_c = locationDb?.temp_c ?: 0.0,
         localtime = locationDb?.localtime ?: "",
         day_maxtempC = locationDb?.day_maxtempC ?: 0.0,
@@ -182,7 +185,6 @@ class Mapper @Inject constructor(){
         condition_icon = locationDb?.condition_icon ?: "",
         condition_code = locationDb?.condition_code ?: 0,
         position = locationDb?.position ?: ""
-
     )
 
     fun mapperCurrentDbToEntityCurrent(db: CurrentDb, context: Context) =
@@ -420,13 +422,15 @@ class Mapper @Inject constructor(){
 
     fun mapperCityDtoToEntityCity(dto: CityDto, context: Context) = City(
         location = mapperCityDtoToLocationEntity(dto),
-        current = mapperCurrentDtoToEntityCurrent(dto,context),
-        forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it)}
+        current = mapperCurrentDtoToEntityCurrent(dto, context),
+        forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it) }
     )
 
     private fun mapperCityDtoToLocationEntity(cityDto: CityDto) = Location(
         positionId = EMPTY_ID,
         name = cityDto.locationDto.name,
+        region = cityDto.locationDto.region,
+        country = cityDto.locationDto.country,
         temp_c = cityDto.currentDto.temperatureCelsius,
         localtime = Format.formatTimeLocation(cityDto.locationDto.localtime),
         position = "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
@@ -460,7 +464,7 @@ class Mapper @Inject constructor(){
                 dailyWillItSnow = dto.forecast.days[0].day.dailyWillItSnow,
                 dailyChanceOfSnow = dto.forecast.days[0].day.dailyChanceOfSnow,
                 condition = Condition(
-                    text =  dto.currentDto.conditionDto.text,
+                    text = dto.currentDto.conditionDto.text,
                     icon = HTTPS_TEG + dto.currentDto.conditionDto.icon,
                     code = dto.currentDto.conditionDto.code,
                 )
@@ -529,7 +533,6 @@ class Mapper @Inject constructor(){
             ),
             forecastHour = dto.hour.map { mapperHourDtoToEntity(it) },
         )
-
 
 
     companion object {

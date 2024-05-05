@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
+import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
@@ -59,57 +60,62 @@ class WeatherFragment : Fragment() {
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         viewModelNetworkStatus =
-            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelNetworkStatus::class.java]
+            ViewModelProvider(
+                requireActivity(),
+                viewModelFactory
+            )[ViewModelNetworkStatus::class.java]
         initCurrent()
         initLocationCheck()
         initForecast()
     }
 
 
-
-
-
     private fun initCurrent() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
             viewModel.current.observe(viewLifecycleOwner, Observer {
-                var current = it[id]
-                if (checkData(it.size)) {
-                    current = it[args.id]
+                if (it != emptyList<Current>()) {
+                    var current = it[id]
+                    if (checkData(it.size)) {
+                        current = it[args.id]
+                    }
+                    tvCity.text = current.nameCity
+                    tvData.text = current.date
+                    val temp =
+                        current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
+                    tvDegree.text = temp
+                    tvCondition.text = current.condition.text
+                    Picasso.get().load(current.condition.icon).into(imWeather)
+                    val listPrecipitation = viewModel.getWeatherPrecipitation(current)
+                    Log.d("WeatherFragment_Log", "initCurrent: ${it.size}")
+                    adapterPrecipitation.submitList(listPrecipitation)
+                    setupPullAdapter(rvPrecipitation)
+                    rvPrecipitation.adapter = adapterPrecipitation
+                    binding.imBackground.transitionName = "${id}"
                 }
-                tvCity.text = current.nameCity
-                tvData.text = current.date
-                val temp =
-                    current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
-                tvDegree.text = temp
-                tvCondition.text = current.condition.text
-                Picasso.get().load(current.condition.icon).into(imWeather)
-                val listPrecipitation = viewModel.getWeatherPrecipitation(current)
-                Log.d("WeatherFragment_Log", "initCurrent: ${it.size}")
-                adapterPrecipitation.submitList(listPrecipitation)
-                setupPullAdapter(rvPrecipitation)
-                rvPrecipitation.adapter = adapterPrecipitation
-                binding.imBackground.transitionName = "${id}"
             })
 
+
         }
+
     }
 
     private fun initLocationCheck() {
-        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner){locationCondition->
-            if (args.id == USER_LOCATION){
-                if (locationCondition){
+        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+            if (args.id == USER_LOCATION) {
+                if (locationCondition) {
                     binding.imNotLocation.visibility = View.GONE
-                }else{
+                } else {
                     binding.imNotLocation.visibility = View.VISIBLE
                 }
-            }else{
+            } else {
 
             }
         }
 
 
     }
+
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
         rvPrecipitation.recycledViewPool.setMaxRecycledViews(
             PrecipitationAdapter.ENABLE,

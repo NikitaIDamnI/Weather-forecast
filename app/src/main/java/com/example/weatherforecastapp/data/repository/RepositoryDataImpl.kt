@@ -71,8 +71,9 @@ class RepositoryDataImpl @Inject constructor(
             positionsId = POSITION_ID_NEXT
         }
         if (positionUser == null){
-            positionsId += POSITION_ID_NEXT
+            positionsId = locationDao.getSumPosition() + POSITION_ID_NEXT
         }
+
         val positionCity = city.location.position
         val datePosition = locationDao.checkCity(positionCity) ?: NO_POSITION
         val time = System.currentTimeMillis()

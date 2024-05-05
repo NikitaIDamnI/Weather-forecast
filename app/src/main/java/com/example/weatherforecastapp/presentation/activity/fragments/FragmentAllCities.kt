@@ -153,9 +153,7 @@ class FragmentAllCities : Fragment() {
 
                 var view = false
                 viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
-                    val position = "${searchCity.lat},${searchCity.lon}"
-                    view = viewModel.checkCity(listLocation, position)
-
+                    view = viewModel.checkCity(listLocation, searchCity)
                 }
                 val action =
                     FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
