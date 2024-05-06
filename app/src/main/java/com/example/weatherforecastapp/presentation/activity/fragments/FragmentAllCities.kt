@@ -69,7 +69,10 @@ class FragmentAllCities : Fragment() {
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
         viewModelNetworkStatus =
-            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelNetworkStatus::class.java]
+            ViewModelProvider(
+                requireActivity(),
+                viewModelFactory
+            )[ViewModelNetworkStatus::class.java]
         checkInternet()
         checkLocationPermission()
         setupAllCitiesAdapter()
@@ -106,6 +109,22 @@ class FragmentAllCities : Fragment() {
                         ),
                     )
                 }
+                binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
+                binding.cvNotLocation.visibility = View.VISIBLE
+            } else {
+                checkingEnabledLocation()
+            }
+        }
+    }
+
+    private fun checkingEnabledLocation() {
+        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+            if (locationCondition == false) {
+                val text = resources.getString(R.string.not_location)
+                binding.tvNotLocation.setSettingsClickableSpan(text) {
+                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+                binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
                 binding.cvNotLocation.visibility = View.VISIBLE
             } else {
                 binding.cvNotLocation.visibility = View.GONE
