@@ -43,6 +43,8 @@ class ActivityWeather : AppCompatActivity() {
         component.inject(this)
         permission.checkPermissions(PermissionsLauncher.PERMISSION_LOCATION)
         super.onCreate(savedInstanceState)
+        setContentView(binding.root)
+
         weatherReceiver = WeatherReceiver(this)
         weatherReceiver.startReceiver()
 
@@ -55,7 +57,7 @@ class ActivityWeather : AppCompatActivity() {
             ViewModelProvider(this, viewModelFactory)[ViewModelNetworkStatus::class.java]
 
 
-        setContentView(binding.root)
+
         viewModelNetworkStatus.networkStatus.internetCondition.observe(this) { internet ->
             if (internet) {
                 viewModelAllCities.sizeCity.observe(this) {
@@ -67,6 +69,8 @@ class ActivityWeather : AppCompatActivity() {
                 }
             }
         }
+
+
 
     }
 

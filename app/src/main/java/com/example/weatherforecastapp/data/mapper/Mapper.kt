@@ -88,7 +88,7 @@ class Mapper @Inject constructor() {
         localtime = Format.formatTimeLocation(cityDto.locationDto.localtime),
         region = cityDto.locationDto.region,
         country = cityDto.locationDto.country,
-        position =  "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",//position ?:
+        position = position ?: "${cityDto.locationDto.lat},${cityDto.locationDto.lon}",
         tz_id = cityDto.locationDto.tz_id,
         day_maxtempC = cityDto.forecast.days[0].day.maxtempC,
         day_mintempC = cityDto.forecast.days[0].day.mintempC,
