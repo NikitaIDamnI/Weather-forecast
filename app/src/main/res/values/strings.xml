@@ -12,5 +12,7 @@
     <string name="the_latest_update">Последнее обновление </string>
     <string name="not_permission_location">There is no permission to get your location, to do this, go to settings, permissions section</string>
     <string name="not_location">It is impossible to get location data, make sure in the settings that the location is enabled</string>
+    <string name="not_permission_location_short">Not location permission...</string>
+    <string name="not_location_short">Location usage is disabled...</string>
 
 </resources>
