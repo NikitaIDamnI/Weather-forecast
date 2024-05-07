@@ -47,6 +47,7 @@ class RepositoryDataImpl @Inject constructor(
     }
 
     suspend fun updateUserPosition(position: PositionDb) {
+        Log.d("RepositoryDataImpl_Log", "updateUserPosition: $position ")
         writingAPItoDatabase(
             datePositionDb = NO_POSITION,
             thisPositionDb = position,
@@ -54,8 +55,8 @@ class RepositoryDataImpl @Inject constructor(
         )
     }
 
-    suspend fun getUserPosition(): PositionDb {
-        return positionDao.getPosition(CURRENT_LOCATION_ID) ?: NO_POSITION
+    suspend fun getUserPosition(): PositionDb? {
+        return positionDao.getPosition(CURRENT_LOCATION_ID)
     }
 
 
@@ -74,11 +75,12 @@ class RepositoryDataImpl @Inject constructor(
         val thisPositionDb = PositionDb(positionsId, positionCity, formatTimeFromEpoch(time))
 
         Log.d("Repository_Log", "thisPosition $thisPositionDb , datePosition | $datePosition")
-
             writingAPItoDatabase(datePosition, thisPositionDb, positionsId)
-
     }
 
+    suspend fun deletePosition(positionId:Int) {
+        positionDao.deletePositions(positionId)
+    }
     private suspend fun getPositionId(): Int {
       //  val positionUser = positionDao.getPosition(CURRENT_LOCATION_ID)
         var sumPositions = locationDao.getSumPosition()
