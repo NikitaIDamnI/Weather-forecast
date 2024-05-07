@@ -38,7 +38,6 @@ class FragmentAllCities : Fragment() {
     private lateinit var viewModel: ViewModelAllCities
     private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
 
-
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
@@ -52,7 +51,6 @@ class FragmentAllCities : Fragment() {
 
     override fun onAttach(context: Context) {
         component.inject(this)
-
         super.onAttach(context)
     }
 
@@ -69,7 +67,10 @@ class FragmentAllCities : Fragment() {
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
         viewModelNetworkStatus =
-            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelNetworkStatus::class.java]
+            ViewModelProvider(
+                requireActivity(),
+                viewModelFactory
+            )[ViewModelNetworkStatus::class.java]
         checkInternet()
         checkLocationPermission()
         setupAllCitiesAdapter()
@@ -84,9 +85,11 @@ class FragmentAllCities : Fragment() {
                 binding.cardSearchView.visibility = View.VISIBLE
             } else {
                 viewModel.listLocation.observe(viewLifecycleOwner) {
-                    val text =
-                        "${resources.getString(R.string.the_latest_update)} ${it.get(0).localtime}"
-                    binding.tvLastUpdate.text = text
+                    if(it.isNotEmpty()) {
+                        val text =
+                            "${resources.getString(R.string.the_latest_update)} ${it[0].localtime}"
+                        binding.tvLastUpdate.text = text
+                    }
                 }
                 binding.cvNotInternet.visibility = View.VISIBLE
                 binding.cardSearchView.visibility = View.GONE
@@ -95,23 +98,80 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkLocationPermission() {
-        viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(viewLifecycleOwner) { permission ->
-            if (permission == false) {
-                val text = resources.getString(R.string.not_permission_location)
-                binding.tvNotLocation.setSettingsClickableSpan(text) {
-                    startActivity(
-                        Intent(
-                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.fromParts("package", context?.packageName, null),
-                        ),
-                    )
+        viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(viewLifecycleOwner) { locationPermission ->
+            if (locationPermission == false) {
+                binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
+
+                viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
+                    if (shortNotifications) {
+                        val textShort = resources.getString(R.string.not_permission_location_short)
+                        val textFull = resources.getString(R.string.not_permission_location_full)
+                        openNotificationNotLocation(textShort,textFull){
+                            startActivity(
+                                Intent(
+                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    Uri.fromParts("package", context?.packageName, null),
+                                ),
+                            )
+                        }
+                    } else {
+                        val textShort = resources.getString(R.string.not_permission_location_short)
+                        closeNotificationNotLocation(textShort)
+                    }
+
                 }
-                binding.cvNotLocation.visibility = View.VISIBLE
+            } else {
+                checkingEnabledLocation()
+            }
+        }
+
+    }
+
+    private fun checkingEnabledLocation() {
+        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+            if (locationCondition == false) {
+                binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
+
+                viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
+                    if (shortNotifications) {
+                        val textShort = resources.getString(R.string.not_location_short)
+                        val textFull = resources.getString(R.string.not_location_full)
+                        openNotificationNotLocation(textShort,textFull){
+                            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                        }
+                    } else {
+                        val textShort = resources.getString(R.string.not_location_short)
+                        closeNotificationNotLocation(textShort)
+                    }
+                }
             } else {
                 binding.cvNotLocation.visibility = View.GONE
             }
         }
     }
+
+    private fun openNotificationNotLocation(
+        textShort: String,
+        textFull: String,
+        fuz: () -> Unit
+    ) {
+        binding.cvNotLocation.visibility = View.VISIBLE
+        binding.tvNotLocation.text = textShort
+        binding.tvNotLocation.setOnClickListener {
+            binding.tvNotLocation.setSettingsClickableSpan(textFull) {
+                fuz.invoke()
+            }
+            viewModel.openNotification()
+        }
+    }
+    private fun closeNotificationNotLocation(textShort:String) {
+        binding.tvNotLocation.setOnClickListener {
+            binding.tvNotLocation.text = textShort
+            viewModel.closeNotification()
+        }
+
+    }
+
 
     private fun setupAllCitiesAdapter() = with(binding) {
         adapterAllCities = AllCityAdapter(requireActivity().applicationContext, true)

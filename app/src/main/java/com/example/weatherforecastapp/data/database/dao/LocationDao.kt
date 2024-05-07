@@ -19,6 +19,7 @@ interface LocationDao {
 
     @Query("SELECT * FROM location")
     fun getAllLocationsLiveData(): LiveData<List<LocationDb>>
+
     @Query("SELECT * FROM location")
     suspend fun getAllLocations(): List<LocationDb>
 
@@ -27,6 +28,7 @@ interface LocationDao {
 
     @Query("SELECT * FROM location WHERE position_id = 0")
     fun getUserLocation(): LocationDb
+
     @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE position_id = :id")
     suspend fun checkPosition(id: Int): PositionDb?
 
@@ -39,8 +41,13 @@ interface LocationDao {
     @Query("SELECT COUNT(*) FROM location")
     suspend fun getSumPosition(): Int
 
+
+    @Query("SELECT position_id FROM location ORDER BY position_id DESC LIMIT 1")
+    suspend fun getLastPositionId(): Int
+
+
     @Query("SELECT COUNT(*) FROM location")
-     fun getSizePager(): LiveData<Int>
+    fun getSizePager(): LiveData<Int>
 
     @Query("UPDATE location SET position_id = :newPositionId WHERE position_id =:oldPositionId")
     suspend fun updatePosition(oldPositionId: Int, newPositionId: Int)
