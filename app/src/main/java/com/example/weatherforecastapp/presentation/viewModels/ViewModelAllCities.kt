@@ -42,6 +42,7 @@ class ViewModelAllCities @Inject constructor(
     val searchCityList = MutableLiveData<List<SearchCity>>()
     var sizeCity = getSizePager()
 
+    val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
 
     fun searchCity(city: String) {
         viewModelScope.launch {
@@ -144,6 +145,13 @@ class ViewModelAllCities @Inject constructor(
         }
 
         return weatherHour24
+    }
+
+    fun openNotification(){
+        shortNotifications.value = false
+    }
+    fun closeNotification(){
+        shortNotifications.value = true
     }
 
 
