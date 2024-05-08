@@ -102,18 +102,14 @@ class WeatherFragment : Fragment() {
 
     private fun initLocationCheck() {
         viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            if (args.id == USER_LOCATION) {
-                if (locationCondition) {
-                    binding.imNotLocation.visibility = View.GONE
-                } else {
+            if (locationCondition) {
+                binding.imNotLocation.visibility = View.GONE
+            } else {
+                if (args.id == USER_LOCATION_ID) {
                     binding.imNotLocation.visibility = View.VISIBLE
                 }
-            } else {
-
             }
         }
-
-
     }
 
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
@@ -145,7 +141,7 @@ class WeatherFragment : Fragment() {
     }
 
     companion object {
-        const val USER_LOCATION = 0
+        const val USER_LOCATION_ID = 0
     }
 
 }

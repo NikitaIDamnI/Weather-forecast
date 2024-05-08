@@ -82,6 +82,7 @@ class ViewModelAllCities @Inject constructor(
     fun addCity(city: City) {
         viewModelScope.launch {
             useCaseAddCity(city)
+            searchCityList.value = mutableListOf()
         }
     }
 
