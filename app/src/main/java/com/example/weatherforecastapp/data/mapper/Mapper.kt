@@ -174,6 +174,7 @@ class Mapper @Inject constructor() {
 
     fun mapperLocationDbToEntityLocation(locationDb: LocationDb?) = Location(
         positionId = locationDb?.positionId ?: 0,
+        locationId = locationDb?.id ?: 0,
         name = locationDb?.name ?: "",
         region = locationDb?.region ?: "",
         country = locationDb?.country ?: "",
@@ -420,14 +421,15 @@ class Mapper @Inject constructor() {
         lon = searchCityDto.lon,
     )
 
-    fun mapperCityDtoToEntityCity(dto: CityDto, context: Context) = City(
-        location = mapperCityDtoToLocationEntity(dto),
+    fun mapperCityDtoToEntityCity(dto: CityDto, context: Context,locationId: Int) = City(
+        location = mapperCityDtoToLocationEntity(dto,locationId),
         current = mapperCurrentDtoToEntityCurrent(dto, context),
         forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it) }
     )
 
-    private fun mapperCityDtoToLocationEntity(cityDto: CityDto) = Location(
+    private fun mapperCityDtoToLocationEntity(cityDto: CityDto,locationId : Int) = Location(
         positionId = EMPTY_ID,
+        locationId = locationId,
         name = cityDto.locationDto.name,
         region = cityDto.locationDto.region,
         country = cityDto.locationDto.country,

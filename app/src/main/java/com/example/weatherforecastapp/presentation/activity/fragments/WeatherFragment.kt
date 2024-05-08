@@ -65,8 +65,9 @@ class WeatherFragment : Fragment() {
                 viewModelFactory
             )[ViewModelNetworkStatus::class.java]
         initCurrent()
-        initLocationCheck()
         initForecast()
+        initLocationCheck()
+
     }
 
 
@@ -102,18 +103,18 @@ class WeatherFragment : Fragment() {
 
     private fun initLocationCheck() {
         viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            if (args.id == USER_LOCATION) {
-                if (locationCondition) {
-                    binding.imNotLocation.visibility = View.GONE
-                } else {
-                    binding.imNotLocation.visibility = View.VISIBLE
-                }
+            if (locationCondition == true) {
+                binding.imNotLocation.visibility = View.GONE
             } else {
-
+                viewModel.location.observe(viewLifecycleOwner) {listLocation->
+                    if(listLocation.isNotEmpty()) {
+                        if (listLocation[args.id].locationId == USER_LOCATION_ID) {
+                            binding.imNotLocation.visibility = View.VISIBLE
+                        }
+                    }
+                }
             }
         }
-
-
     }
 
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
@@ -145,7 +146,7 @@ class WeatherFragment : Fragment() {
     }
 
     companion object {
-        const val USER_LOCATION = 0
+        const val USER_LOCATION_ID = 0
     }
 
 }

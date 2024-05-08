@@ -36,6 +36,9 @@ class ViewModelAllCities @Inject constructor(
     private val weatherUpdate: UseCaseWeatherUpdate,
 ) : ViewModel() {
 
+    private var firstWeatherUpdate = true
+    private var firstUserUpdate = true
+
 
     val city = MutableLiveData<City>()
     val listLocation = useCaseGetLocations()
@@ -79,18 +82,25 @@ class ViewModelAllCities @Inject constructor(
     fun addCity(city: City) {
         viewModelScope.launch {
             useCaseAddCity(city)
+            searchCityList.value = mutableListOf()
         }
     }
 
     fun deleteCity(location: Location) {
         viewModelScope.launch {
             useCasDeleteCity(location.positionId)
+            if (location.positionId == USER_POSITION){
+                repositoryDataImpl.deletePosition(USER_POSITION)
+            }
         }
     }
 
     fun weatherUpdate() {
-        viewModelScope.launch {
-            weatherUpdate.invoke()
+        if(firstWeatherUpdate) {
+            viewModelScope.launch {
+                weatherUpdate.invoke()
+            }
+            firstWeatherUpdate = false
         }
     }
 
@@ -156,9 +166,17 @@ class ViewModelAllCities @Inject constructor(
 
 
     fun updateUserLocation() {
-        viewModelScope.launch {
-            val userPosition = repositoryDataImpl.getUserPosition()
-            repositoryDataImpl.updateUserPosition(userPosition)
+        if (firstUserUpdate) {
+            viewModelScope.launch {
+                val userPosition = repositoryDataImpl.getUserPosition()
+                if (userPosition != null) {
+                    repositoryDataImpl.updateUserPosition(userPosition)
+                    firstUserUpdate = false
+                }
+            }
         }
+    }
+    companion object{
+        const val USER_POSITION = 0
     }
 }

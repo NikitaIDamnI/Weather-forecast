@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
@@ -44,32 +45,32 @@ class ActivityWeather : AppCompatActivity() {
         permission.checkPermissions(PermissionsLauncher.PERMISSION_LOCATION)
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
         weatherReceiver = WeatherReceiver(this)
         weatherReceiver.startReceiver()
-
+        initViewModels()
+        viewModelAllCities.weatherUpdate()
         initReceiver()
-        viewModelAllCities =
-            ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
-        viewModelWeather =
-            ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
-        viewModelNetworkStatus =
-            ViewModelProvider(this, viewModelFactory)[ViewModelNetworkStatus::class.java]
+        checkUpdate()
+    }
 
+    private fun checkUpdate(){
+        viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(this){locationCondition->
+            if (locationCondition == true){
+                viewModelNetworkStatus.networkStatus.internetCondition.observe(this){internet->
+                    Log.d("ActivityWeather_Log", "checkUpdate: $internet")
 
-
-        viewModelNetworkStatus.networkStatus.internetCondition.observe(this) { internet ->
-            if (internet) {
-                viewModelAllCities.sizeCity.observe(this) {
-                    if (it == EMPTY_LIST) {
+                    if (internet == true) {
                         viewModelAllCities.updateUserLocation()
-                    } else {
-                        viewModelAllCities.weatherUpdate()
                     }
                 }
             }
         }
-
+        viewModelNetworkStatus.networkStatus.internetCondition.observe(this){internet->
+            Log.d("ActivityWeather_Log", "checkUpdate: $internet")
+            if (internet == true) {
+                viewModelAllCities.weatherUpdate()
+            }
+        }
 
 
     }
@@ -98,6 +99,15 @@ class ActivityWeather : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         weatherReceiver.stopReceiver()
+    }
+
+    private fun initViewModels(){
+        viewModelAllCities =
+            ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
+        viewModelWeather =
+            ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
+        viewModelNetworkStatus =
+            ViewModelProvider(this, viewModelFactory)[ViewModelNetworkStatus::class.java]
     }
 
     companion object {

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -85,7 +86,7 @@ class FragmentAllCities : Fragment() {
                 binding.cardSearchView.visibility = View.VISIBLE
             } else {
                 viewModel.listLocation.observe(viewLifecycleOwner) {
-                    if(it.isNotEmpty()) {
+                    if (it.isNotEmpty()) {
                         val text =
                             "${resources.getString(R.string.the_latest_update)} ${it[0].localtime}"
                         binding.tvLastUpdate.text = text
@@ -106,7 +107,7 @@ class FragmentAllCities : Fragment() {
                     if (shortNotifications) {
                         val textShort = resources.getString(R.string.not_permission_location_short)
                         val textFull = resources.getString(R.string.not_permission_location_full)
-                        openNotificationNotLocation(textShort,textFull){
+                        openNotificationNotLocation(textShort, textFull) {
                             startActivity(
                                 Intent(
                                     Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -121,6 +122,7 @@ class FragmentAllCities : Fragment() {
 
                 }
             } else {
+                viewModel.closeNotification()
                 checkingEnabledLocation()
             }
         }
@@ -129,14 +131,14 @@ class FragmentAllCities : Fragment() {
 
     private fun checkingEnabledLocation() {
         viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+            Log.d("FragmentAllCities_Log", "locationCondition: $locationCondition")
             if (locationCondition == false) {
                 binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
-
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
                     if (shortNotifications) {
                         val textShort = resources.getString(R.string.not_location_short)
                         val textFull = resources.getString(R.string.not_location_full)
-                        openNotificationNotLocation(textShort,textFull){
+                        openNotificationNotLocation(textShort, textFull) {
                             startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                         }
                     } else {
@@ -164,7 +166,8 @@ class FragmentAllCities : Fragment() {
             viewModel.openNotification()
         }
     }
-    private fun closeNotificationNotLocation(textShort:String) {
+
+    private fun closeNotificationNotLocation(textShort: String) {
         binding.tvNotLocation.setOnClickListener {
             binding.tvNotLocation.text = textShort
             viewModel.closeNotification()
@@ -195,7 +198,10 @@ class FragmentAllCities : Fragment() {
             }
             rvAllCity.adapter = adapterAllCities
         }
-        setupSwipeListener(rvAllCity)
+        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+            setupSwipeListener(rvAllCity, locationCondition)
+        }
+
 
     }
 
@@ -244,7 +250,8 @@ class FragmentAllCities : Fragment() {
             })
     }
 
-    private fun setupSwipeListener(rvShopList: RecyclerView) {
+    private fun setupSwipeListener(rvShopList: RecyclerView, locations: Boolean) {
+        Log.d("FragmentAllCities_Log", "setupSwipeListener (locations): $locations")
         val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -257,12 +264,7 @@ class FragmentAllCities : Fragment() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val item = adapterAllCities.currentList[position]
-
-                if (item.positionId != USER_POSITION) {
-                    viewModel.deleteCity(item)
-                } else {
-                    adapterAllCities.notifyItemChanged(position)
-                }
+                viewModel.deleteCity(item)
             }
 
             override fun getSwipeDirs(
@@ -271,12 +273,11 @@ class FragmentAllCities : Fragment() {
             ): Int {
                 val item = adapterAllCities.currentList[viewHolder.adapterPosition]
 
-                return if (item.positionId == USER_POSITION) {
+                return if (item.positionId == USER_POSITION && locations) {
                     DEFAULT_SWIPE_DIRECTION
                 } else {
                     super.getSwipeDirs(recyclerView, viewHolder)
                 }
-
             }
         }
         val itemTouchHelper = ItemTouchHelper(callback)

@@ -9,37 +9,37 @@ import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 
 class AllCityAdapterViewHolder(private val binding: ViewBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(
-        city: Location,
+        location: Location,
         position: Int,
         onClick: ((id: Int) -> Unit)?,
     ) {
         when (binding) {
             is ItemFragmetCityBinding -> {
                 with(binding) {
-                    if (city.positionId == USER_POSITION) {
+                    if (location.locationId == USER_LOCATION_ID) {
                         tvCity.text = "Текущее положение"
-                        tvTime.text = city.name
+                        tvTime.text = location.name
                     } else {
-                        tvCity.text = city.name
-                        tvTime.text = city.localtime
+                        tvCity.text = location.name
+                        tvTime.text = location.localtime
                     }
-                    tvCondition.text = city.condition_text
-                    tvMaxMin.text = formatTime(city.day_maxtempC.toInt(), city.day_mintempC.toInt())
-                    val temp = "${city.temp_c.toInt()}${WeatherPrecipitation.VALUE_DEGREE}"
+                    tvCondition.text = location.condition_text
+                    tvMaxMin.text = formatTime(location.day_maxtempC.toInt(), location.day_mintempC.toInt())
+                    val temp = "${location.temp_c.toInt()}${WeatherPrecipitation.VALUE_DEGREE}"
                     tvDegree.text = temp
                     root.setOnClickListener { onClick?.invoke(position) }
                 }
             }
             is ItemFragmetCityNotInternetBinding -> {
                 with(binding) {
-                    if (city.positionId == USER_POSITION) {
+                    if (location.positionId == USER_LOCATION_ID) {
                         tvCity.text = "Текущее положение"
-                        tvTime.text = city.name
+                        tvTime.text = location.name
                     } else {
-                        tvCity.text = city.name
+                        tvCity.text = location.name
                     }
-                    tvMaxMin.text = formatTime(city.day_maxtempC.toInt(), city.day_mintempC.toInt())
-                    val temp = "${city.temp_c.toInt()}${WeatherPrecipitation.VALUE_DEGREE}"
+                    tvMaxMin.text = formatTime(location.day_maxtempC.toInt(), location.day_mintempC.toInt())
+                    val temp = "${location.temp_c.toInt()}${WeatherPrecipitation.VALUE_DEGREE}"
                     tvDegree.text = temp
                     root.setOnClickListener { onClick?.invoke(position) }
                 }
@@ -52,7 +52,7 @@ class AllCityAdapterViewHolder(private val binding: ViewBinding) : RecyclerView.
     }
 
     companion object{
-        const val USER_POSITION = 0
+        const val USER_LOCATION_ID = 0
     }
 }
 

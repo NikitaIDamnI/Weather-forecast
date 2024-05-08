@@ -7,17 +7,24 @@ import com.example.weatherforecastapp.presentation.activity.fragments.WeatherFra
 
 class PagerAdapter(
     private val fragmentActivity: FragmentActivity,
-    private val argsList: List<Bundle>
-) : FragmentStateAdapter(fragmentActivity){
+    private val size: Int
+) : FragmentStateAdapter(fragmentActivity) {
 
     override fun getItemCount(): Int {
-        return argsList.size
+        return size
     }
 
     override fun createFragment(position: Int): Fragment {
         return WeatherFragment().apply {
-            arguments = argsList[position]
+            arguments = getArgs(position)
         }
+    }
+
+    private fun getArgs(position: Int): Bundle {
+        return Bundle().apply {
+            putInt("id", position)
+        }
+
     }
 
 
