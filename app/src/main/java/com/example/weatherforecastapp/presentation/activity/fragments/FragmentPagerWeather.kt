@@ -79,11 +79,10 @@ class FragmentPagerWeather : Fragment() {
             findNavController().navigate(action)
         }
 
-        viewModel.listLocation.observe(viewLifecycleOwner) {
+        viewModel.sizeCity.observe(viewLifecycleOwner) {
 
-            val argsList = getListArgs(it)
             Log.d("FragmentPagerWeather_Log", "sizeCity: $it")
-            val pager = PagerAdapter(requireActivity(), argsList)
+            val pager = PagerAdapter(requireActivity(), it)
 
             with(binding) {
 
@@ -106,13 +105,13 @@ class FragmentPagerWeather : Fragment() {
                     .attach()
 
 
-                if (it.size == EMPTY_LIST) {
+                if (it == EMPTY_LIST) {
                     viewPager.visibility = View.GONE
                 } else {
                     viewPager.visibility = View.VISIBLE
                 }
 
-                checkInternet(it.size)
+                checkInternet(it)
             }
         }
 
@@ -133,7 +132,6 @@ class FragmentPagerWeather : Fragment() {
     }
 
     private fun onInternetUnavailable(sizeList: Int) {
-
         if (sizeList == EMPTY_LIST) {
             binding.progressBar2.visibility = View.GONE
             binding.textView3.text = resources.getString(R.string.not_internet)
@@ -145,7 +143,6 @@ class FragmentPagerWeather : Fragment() {
                 binding.tvTheLastUpdate.text = lastUpdate
             })
         }
-
     }
 
     private fun onInternetAvailable() {
@@ -171,23 +168,6 @@ class FragmentPagerWeather : Fragment() {
                     .start()
             }
         })
-    }
-
-
-    private fun getListArgs(locationList: List<Location>): List<Bundle> {
-        val argsList = mutableListOf<Bundle>()
-        return if (locationList.isNotEmpty()) {
-            for (location in  locationList) {
-                val args = Bundle().apply {
-                    putInt("id", location.positionId)
-                }
-                argsList.add(args)
-            }
-            Log.d("FragmentPagerWeather", "argsList.size: ${argsList.size}")
-            argsList
-        } else {
-            argsList
-        }
     }
 
 

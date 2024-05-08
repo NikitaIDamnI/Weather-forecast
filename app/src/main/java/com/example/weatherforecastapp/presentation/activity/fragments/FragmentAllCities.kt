@@ -122,6 +122,7 @@ class FragmentAllCities : Fragment() {
 
                 }
             } else {
+                viewModel.closeNotification()
                 checkingEnabledLocation()
             }
         }
@@ -130,9 +131,9 @@ class FragmentAllCities : Fragment() {
 
     private fun checkingEnabledLocation() {
         viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
+            Log.d("FragmentAllCities_Log", "locationCondition: $locationCondition")
             if (locationCondition == false) {
                 binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
-
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
                     if (shortNotifications) {
                         val textShort = resources.getString(R.string.not_location_short)

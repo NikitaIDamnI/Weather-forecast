@@ -194,31 +194,34 @@ class RepositoryDataImpl @Inject constructor(
         thisPositionDb: PositionDb,
         positionId: Int
     ) {
-        if (checkingForUpdates(datePositionDb, thisPositionDb)) {
-            val city = apiService.getCityDto(city = thisPositionDb.position)
+        try {
+            if (checkingForUpdates(datePositionDb, thisPositionDb)) {
+                val city = apiService.getCityDto(city = thisPositionDb.position)
 
-            locationDao.insert(
-                mapper.mapperCityDtoToLocationDb(
-                    id = thisPositionDb.id,
-                    cityDto = city,
-                    position = "${city.locationDto.lat},${city.locationDto.lon}",
-                    positionId = positionId,
-                    timeUpdate = thisPositionDb.timeFormat
+                locationDao.insert(
+                    mapper.mapperCityDtoToLocationDb(
+                        id = thisPositionDb.id,
+                        cityDto = city,
+                        position = "${city.locationDto.lat},${city.locationDto.lon}",
+                        positionId = positionId,
+                        timeUpdate = thisPositionDb.timeFormat
+                    )
                 )
-            )
-            currentDao.insert(
-                mapper.mapperCityDtoToCurrentDb(
+                currentDao.insert(
+                    mapper.mapperCityDtoToCurrentDb(
+                        positionId = positionId, cityDto = city
+                    )
+                )
+                val forecastItem = mapper.mapperCityDtoToForecastDaysDb(
                     positionId = positionId, cityDto = city
                 )
-            )
-            val forecastItem = mapper.mapperCityDtoToForecastDaysDb(
-                positionId = positionId, cityDto = city
-            )
-            forecastDayDao.insert(forecastItem)
+                forecastDayDao.insert(forecastItem)
 
-            Log.d("Repository_Log", "saveUserLocation = finish")
-        } else {
-            Log.d("Repository_Log", "not_update")
+                Log.d("Repository_Log", "saveUserLocation = finish")
+            } else {
+                Log.d("Repository_Log", "not_update")
+            }
+        }catch (_:Exception){
         }
     }
 

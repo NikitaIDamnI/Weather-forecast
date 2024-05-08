@@ -1,6 +1,7 @@
 package com.example.weatherforecastapp.presentation.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
@@ -56,6 +57,8 @@ class ActivityWeather : AppCompatActivity() {
         viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(this){locationCondition->
             if (locationCondition == true){
                 viewModelNetworkStatus.networkStatus.internetCondition.observe(this){internet->
+                    Log.d("ActivityWeather_Log", "checkUpdate: $internet")
+
                     if (internet == true) {
                         viewModelAllCities.updateUserLocation()
                     }
@@ -63,6 +66,7 @@ class ActivityWeather : AppCompatActivity() {
             }
         }
         viewModelNetworkStatus.networkStatus.internetCondition.observe(this){internet->
+            Log.d("ActivityWeather_Log", "checkUpdate: $internet")
             if (internet == true) {
                 viewModelAllCities.weatherUpdate()
             }
