@@ -86,7 +86,7 @@ class FragmentPagerWeather : Fragment() {
             with(binding) {
 
                 viewPager.adapter = pager
-                viewPager.setCurrentItem(args.id, false)
+                viewPager.setCurrentItem(args.position, false)
 
                 initTabLayoutMediator()
 

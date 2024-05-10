@@ -78,7 +78,7 @@ class WeatherFragment : Fragment() {
                 if (it != emptyList<Current>()) {
                     var current = it[id]
                     if (checkData(it.size)) {
-                        current = it[args.id]
+                        current = it[args.position]
                     }
                     tvCity.text = current.nameCity
                     tvData.text = current.date
@@ -128,7 +128,7 @@ class WeatherFragment : Fragment() {
         viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
             with(binding) {
                 if (checkData(it.size)) {
-                    val forecastDay = it[args.id]
+                    val forecastDay = it[args.position]
                     val listWeatherHour = viewModel.getWeatherHour24(forecastDay)
                     adapterCurrent.submitList(listWeatherHour)
                     rvCurrentDay.adapter = adapterCurrent
@@ -140,7 +140,7 @@ class WeatherFragment : Fragment() {
     }
 
     private fun checkData(sizeList: Int): Boolean {
-        return sizeList > args.id && sizeList != EMPTY_LIST
+        return sizeList > args.position && sizeList != EMPTY_LIST
     }
 
     companion object {

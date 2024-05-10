@@ -9,7 +9,7 @@
         android:name="com.example.weatherforecastapp.presentation.activity.fragments.FragmentPagerWeather"
         android:label="fragment_pager_weather"
         tools:layout="@layout/fragment_pager_weather" >
-        <argument android:name="id"
+        <argument android:name="position"
             app:argType="integer"
             android:defaultValue="0" />
         <action
@@ -43,7 +43,7 @@
         android:label="weather_fragment"
         tools:layout="@layout/weather_fragment" >
         <argument
-            android:name="id"
+            android:name="position"
             app:argType="integer"
             android:defaultValue="0" />
     </fragment>

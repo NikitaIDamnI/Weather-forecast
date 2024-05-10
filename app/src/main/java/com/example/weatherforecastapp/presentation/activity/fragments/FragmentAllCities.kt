@@ -175,7 +175,7 @@ class FragmentAllCities : Fragment() {
         adapterAllCities.onClick = { position ->
             val action =
                 FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                    .setId(position)
+                    .setPosition(position)
             findNavController().navigate(action)
         }
 
@@ -187,7 +187,7 @@ class FragmentAllCities : Fragment() {
             adapterAllCities.onClick = { position ->
                 val action =
                     FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                        .setId(position)
+                        .setPosition(position)
                 findNavController().navigate(action)
             }
             rvAllCity.adapter = adapterAllCities
