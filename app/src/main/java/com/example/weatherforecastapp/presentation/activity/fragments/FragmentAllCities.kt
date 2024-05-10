@@ -18,9 +18,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
+import com.example.weatherforecastapp.presentation.clickableSpan
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
-import com.example.weatherforecastapp.presentation.setSettingsClickableSpan
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
@@ -119,7 +119,6 @@ class FragmentAllCities : Fragment() {
                         val textShort = resources.getString(R.string.not_permission_location_short)
                         closeNotificationNotLocation(textShort)
                     }
-
                 }
             } else {
                 viewModel.closeNotification()
@@ -152,15 +151,11 @@ class FragmentAllCities : Fragment() {
         }
     }
 
-    private fun openNotificationNotLocation(
-        textShort: String,
-        textFull: String,
-        fuz: () -> Unit
-    ) {
+    private fun openNotificationNotLocation(textShort: String, textFull: String, fuz: () -> Unit) {
         binding.cvNotLocation.visibility = View.VISIBLE
         binding.tvNotLocation.text = textShort
         binding.tvNotLocation.setOnClickListener {
-            binding.tvNotLocation.setSettingsClickableSpan(textFull) {
+            binding.tvNotLocation.clickableSpan(textFull, CLICKABLE_SPAN_INDEX) {
                 fuz.invoke()
             }
             viewModel.openNotification()
@@ -172,7 +167,6 @@ class FragmentAllCities : Fragment() {
             binding.tvNotLocation.text = textShort
             viewModel.closeNotification()
         }
-
     }
 
 
@@ -208,24 +202,22 @@ class FragmentAllCities : Fragment() {
     private fun setupSearchAdapter() {
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
-        searchCityAdapter.onClick =
-            { searchCity ->
-                viewModel.previewCity(searchCity)
-                searchCityAdapter.submitList(emptyList())
+        searchCityAdapter.onClick = { searchCity ->
+            viewModel.previewCity(searchCity)
 
-                binding.searchView.setQuery(EMPTY_QUERY, false)
-                binding.searchView.clearFocus()
-                binding.searchView.isIconified = true
+            binding.searchView.setQuery(EMPTY_QUERY, false)
+            binding.searchView.clearFocus()
+            binding.searchView.isIconified = true
 
-                var view = false
-                viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
-                    view = viewModel.checkCity(listLocation, searchCity)
-                }
-                val action =
-                    FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
-                        .setViewAddCity(view)
-                findNavController().navigate(action)
+            var view = false
+            viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
+                view = viewModel.checkCity(listLocation, searchCity)
             }
+            val action =
+                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                    .setViewAddCity(view)
+            findNavController().navigate(action)
+        }
 
         binding.searchView.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
@@ -240,18 +232,17 @@ class FragmentAllCities : Fragment() {
                     }
                     return false
                 }
-
                 override fun onQueryTextChange(newText: String?): Boolean {
                     if (newText.isNullOrEmpty()) {
-                        searchCityAdapter.submitList(emptyList())
+                        viewModel.cleanSearchCity()
                     }
                     return true
                 }
-            })
+            }
+        )
     }
 
     private fun setupSwipeListener(rvShopList: RecyclerView, locations: Boolean) {
-        Log.d("FragmentAllCities_Log", "setupSwipeListener (locations): $locations")
         val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -260,7 +251,6 @@ class FragmentAllCities : Fragment() {
             ): Boolean {
                 return false
             }
-
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val item = adapterAllCities.currentList[position]
@@ -288,6 +278,7 @@ class FragmentAllCities : Fragment() {
         const val USER_POSITION = 0
         const val DEFAULT_SWIPE_DIRECTION = 0
         const val EMPTY_QUERY = ""
+        const val CLICKABLE_SPAN_INDEX = "settings"
     }
 
 }

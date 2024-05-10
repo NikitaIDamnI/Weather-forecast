@@ -58,7 +58,6 @@ class ActivityWeather : AppCompatActivity() {
             if (locationCondition == true){
                 viewModelNetworkStatus.networkStatus.internetCondition.observe(this){internet->
                     Log.d("ActivityWeather_Log", "checkUpdate: $internet")
-
                     if (internet == true) {
                         viewModelAllCities.updateUserLocation()
                     }

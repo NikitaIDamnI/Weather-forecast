@@ -17,30 +17,25 @@ class SettingsClickableSpan(val context: Context, private val fuz:()->Unit) : Cl
 
     override fun updateDrawState(ds: TextPaint) {
         super.updateDrawState(ds)
-        // Настраиваем цвет и подчеркивание текста
         ds.color = Color.BLUE
         ds.isUnderlineText = true
     }
 }
 
-fun TextView.setSettingsClickableSpan(text: String, fuz: () -> Unit) {
+fun TextView.clickableSpan(text: String, index: String, fuz: () -> Unit) {
     val spannableString = SpannableString(text)
 
-    // Ищем индекс слова "settings"
-    val settingsIndex = text.indexOf("settings")
+    val indexText = text.indexOf(index)
 
-    // Создаем clickableSpan для слова "settings"
     val clickableSpan = SettingsClickableSpan(context,fuz)
 
-    // Устанавливаем clickableSpan для слова "settings"
     spannableString.setSpan(
         clickableSpan,
-        settingsIndex,
-        settingsIndex + "settings".length,
+        indexText,
+        indexText + index.length,
         SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
     )
 
-    // Устанавливаем текст в TextView
     setText(spannableString)
     movementMethod = LinkMovementMethod.getInstance()
 }

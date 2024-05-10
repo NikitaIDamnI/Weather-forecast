@@ -164,6 +164,9 @@ class ViewModelAllCities @Inject constructor(
         shortNotifications.value = true
     }
 
+    fun cleanSearchCity(){
+        searchCityList.value = emptyList()
+    }
 
     fun updateUserLocation() {
         if (firstUserUpdate) {

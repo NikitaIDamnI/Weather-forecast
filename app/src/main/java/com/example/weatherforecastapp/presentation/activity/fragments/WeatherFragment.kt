@@ -107,10 +107,8 @@ class WeatherFragment : Fragment() {
                 binding.imNotLocation.visibility = View.GONE
             } else {
                 viewModel.location.observe(viewLifecycleOwner) {listLocation->
-                    if(listLocation.isNotEmpty()) {
-                        if (listLocation[args.id].locationId == USER_LOCATION_ID) {
-                            binding.imNotLocation.visibility = View.VISIBLE
-                        }
+                    if (checkData(listLocation.size)) {
+                        binding.imNotLocation.visibility = View.VISIBLE
                     }
                 }
             }
@@ -142,11 +140,13 @@ class WeatherFragment : Fragment() {
     }
 
     private fun checkData(sizeList: Int): Boolean {
-        return sizeList > args.id && sizeList != 0
+        return sizeList > args.id && sizeList != EMPTY_LIST
     }
 
     companion object {
-        const val USER_LOCATION_ID = 0
+        const val EMPTY_LIST = 0
+
+
     }
 
 }

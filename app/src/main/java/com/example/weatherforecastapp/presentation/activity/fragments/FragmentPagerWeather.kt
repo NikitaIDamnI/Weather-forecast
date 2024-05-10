@@ -15,7 +15,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
-import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
@@ -72,7 +71,7 @@ class FragmentPagerWeather : Fragment() {
     }
 
     private fun initial() {
-        animationToolbar()
+        animationViewElements()
         binding.bMenu.setOnClickListener {
             val action =
                 FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
@@ -89,20 +88,7 @@ class FragmentPagerWeather : Fragment() {
                 viewPager.adapter = pager
                 viewPager.setCurrentItem(args.id, false)
 
-                TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-                    when (position) {
-                        USER_POSITION -> {
-                            tab.setIcon(R.drawable.ic_nav)
-                            tab.view.isClickable = false
-                        }
-
-                        else -> {
-                            tab.setIcon(R.drawable.ic_tochka)
-                            tab.view.isClickable = false
-                        }
-                    }
-                }
-                    .attach()
+                initTabLayoutMediator()
 
 
                 if (it == EMPTY_LIST) {
@@ -115,6 +101,22 @@ class FragmentPagerWeather : Fragment() {
             }
         }
 
+    }
+
+    private fun initTabLayoutMediator() {
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+
+            viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
+                if (listLocation.size > position && listLocation[position].locationId ==  USER_POSITION){
+                    tab.setIcon(R.drawable.ic_nav)
+                    tab.view.isClickable = false
+                } else {
+                    tab.setIcon(R.drawable.ic_tochka)
+                    tab.view.isClickable = false
+                }
+            }
+        }
+            .attach()
     }
 
     private fun checkInternet(size: Int) {
@@ -153,12 +155,17 @@ class FragmentPagerWeather : Fragment() {
         Log.d("FragmentPagerWeather_Log", "internet: true")
     }
 
-    private fun animationToolbar() = with(binding) {
+    private fun animationViewElements() = with(binding) {
+        cvNotInternet.alpha = 0f
         cardToolbar.alpha = 0f
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 cardToolbar.animate()
+                    .alpha(1f)
+                    .setDuration(DURATION)
+                    .start()
+                cvNotInternet.animate()
                     .alpha(1f)
                     .setDuration(DURATION)
                     .start()
@@ -174,13 +181,22 @@ class FragmentPagerWeather : Fragment() {
     private fun migrationIfNotLocation() {
         viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
             if (size == 0) {
-                viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-                    Log.d("FragmentPagerWeather_Log", "migrationIfNotLocation: ")
-                    if (locationCondition == false) {
-                        val action =
-                            FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
-                        findNavController().navigate(action)
+                viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner) { internet ->
+                    if (internet == true) {
+                        viewModelNetworkStatus.networkStatus.locationCondition.observe(
+                            viewLifecycleOwner
+                        ) { locationCondition ->
+                            Log.d(
+                                "FragmentPagerWeather_Log",
+                                "migrationIfNotLocation(locationCondition):$locationCondition "
+                            )
+                            if (locationCondition == false) {
+                                val action =
+                                    FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
+                                findNavController().navigate(action)
 
+                            }
+                        }
                     }
                 }
             }
@@ -191,10 +207,9 @@ class FragmentPagerWeather : Fragment() {
 
 
     companion object {
-        private const val START_CITY_ID = 0
+        private const val START_POSITION = 0
         private const val USER_POSITION = 0
         private const val EMPTY_LIST = 0
         private const val DURATION = 100L
-
     }
 }
