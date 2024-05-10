@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = LocationDb::class,
-            parentColumns = ["position_id"],
+            parentColumns = ["location_id"],
             childColumns = ["id"],
             onDelete = ForeignKey.CASCADE,
             onUpdate = ForeignKey.CASCADE
@@ -18,7 +18,7 @@ import androidx.room.PrimaryKey
 )
 data class CurrentDb(
     @PrimaryKey
-    val id: Int,
+    val id: Int ,
     val nameCity: String,
     val date: String, // Дата прогноза
     val last_updated_epoch: Long, // Время последнего обновления погоды в формате Unix Epoch

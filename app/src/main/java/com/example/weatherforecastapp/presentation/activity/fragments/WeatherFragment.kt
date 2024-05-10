@@ -74,26 +74,27 @@ class WeatherFragment : Fragment() {
     private fun initCurrent() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
-            viewModel.current.observe(viewLifecycleOwner, Observer {
-                if (it != emptyList<Current>()) {
-                    var current = it[id]
-                    if (checkData(it.size)) {
-                        current = it[args.position]
-                    }
-                    tvCity.text = current.nameCity
-                    tvData.text = current.date
-                    val temp =
-                        current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
-                    tvDegree.text = temp
-                    tvCondition.text = current.condition.text
-                    Picasso.get().load(current.condition.icon).into(imWeather)
-                    val listPrecipitation = viewModel.getWeatherPrecipitation(current)
-                    Log.d("WeatherFragment_Log", "initCurrent: ${it.size}")
-                    adapterPrecipitation.submitList(listPrecipitation)
-                    setupPullAdapter(rvPrecipitation)
-                    rvPrecipitation.adapter = adapterPrecipitation
-                    binding.imBackground.transitionName = "${id}"
+            viewModel.current.observe(viewLifecycleOwner, Observer { currentList ->
+
+                if (checkData(currentList.size)) {
+                            val current = currentList[args.position]
+                            tvCity.text = current.nameCity
+                            tvData.text = current.date
+                            val temp =
+                                current.temp_c.toInt()
+                                    .toString() + WeatherPrecipitation.VALUE_DEGREE
+                            tvDegree.text = temp
+                            tvCondition.text = current.condition.text
+                            Picasso.get().load(current.condition.icon).into(imWeather)
+                            val listPrecipitation = viewModel.getWeatherPrecipitation(current)
+                            Log.d("WeatherFragment_Log", "initCurrent: ${currentList.size}")
+                            adapterPrecipitation.submitList(listPrecipitation)
+                            setupPullAdapter(rvPrecipitation)
+                            rvPrecipitation.adapter = adapterPrecipitation
+                            binding.imBackground.transitionName = "${id}"
+
                 }
+
             })
 
 
@@ -106,7 +107,7 @@ class WeatherFragment : Fragment() {
             if (locationCondition == true) {
                 binding.imNotLocation.visibility = View.GONE
             } else {
-                viewModel.location.observe(viewLifecycleOwner) {listLocation->
+                viewModel.location.observe(viewLifecycleOwner) { listLocation ->
                     if (checkData(listLocation.size)) {
                         binding.imNotLocation.visibility = View.VISIBLE
                     }
@@ -140,6 +141,7 @@ class WeatherFragment : Fragment() {
     }
 
     private fun checkData(sizeList: Int): Boolean {
+        Log.d("WeatherFragment_Log", "args.position ${args.position}")
         return sizeList > args.position && sizeList != EMPTY_LIST
     }
 

@@ -263,7 +263,7 @@ class FragmentAllCities : Fragment() {
             ): Int {
                 val item = adapterAllCities.currentList[viewHolder.adapterPosition]
 
-                return if (item.positionId == USER_POSITION && locations) {
+                return if (item.locationId == USER_ID && locations) {
                     DEFAULT_SWIPE_DIRECTION
                 } else {
                     super.getSwipeDirs(recyclerView, viewHolder)
@@ -275,7 +275,7 @@ class FragmentAllCities : Fragment() {
     }
 
     companion object {
-        const val USER_POSITION = 0
+        const val USER_ID = 0
         const val DEFAULT_SWIPE_DIRECTION = 0
         const val EMPTY_QUERY = ""
         const val CLICKABLE_SPAN_INDEX = "settings"

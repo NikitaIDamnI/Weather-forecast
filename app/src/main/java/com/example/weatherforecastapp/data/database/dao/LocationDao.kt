@@ -23,34 +23,32 @@ interface LocationDao {
     @Query("SELECT * FROM location")
     suspend fun getAllLocations(): List<LocationDb>
 
-    @Query("SELECT * FROM location WHERE position_id =:id")
+    @Query("SELECT * FROM location WHERE location_id =:id")
     fun getLocation(id: Int): LiveData<LocationDb>
 
-    @Query("SELECT * FROM location WHERE position_id = 0")
+    @Query("SELECT * FROM location WHERE location_id = 0")
     fun getUserLocation(): LocationDb
 
-    @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE position_id = :id")
+    @Query("SELECT location_id,position,last_updated_epoch,last_updated FROM location WHERE location_id = :id")
     suspend fun checkPosition(id: Int): PositionDb?
 
-    @Query("SELECT position_id,position,last_updated_epoch,last_updated FROM location WHERE  position= :position")
+    @Query("SELECT location_id,position,last_updated_epoch,last_updated FROM location WHERE  position= :position")
     suspend fun checkCity(position: String): PositionDb?
 
-    @Query("DELETE FROM location WHERE position_id =:id")
+    @Query("DELETE FROM location WHERE location_id =:id")
     suspend fun deleteLocation(id: Int)
 
     @Query("SELECT COUNT(*) FROM location")
     suspend fun getSumPosition(): Int
 
 
-    @Query("SELECT position_id FROM location ORDER BY position_id DESC LIMIT 1")
+    @Query("SELECT location_id FROM location ORDER BY location_id DESC LIMIT 1")
     suspend fun getLastPositionId(): Int
 
 
     @Query("SELECT COUNT(*) FROM location")
     fun getSizePager(): LiveData<Int>
 
-    @Query("UPDATE location SET position_id = :newPositionId WHERE position_id =:oldPositionId")
-    suspend fun updatePosition(oldPositionId: Int, newPositionId: Int)
 
     @Query("DELETE FROM location")
     fun deleteAll()

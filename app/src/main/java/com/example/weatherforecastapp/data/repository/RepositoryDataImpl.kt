@@ -37,7 +37,7 @@ class RepositoryDataImpl @Inject constructor(
         try {
             if (datePosition.position != positionDb.position) {
                 positionDao.insert(positionDb)
-                writingAPItoDatabase(datePosition, positionDb, POSITION_ID_START)
+                writingAPItoDatabase(datePosition, positionDb)
             }
         } catch (_: Exception) {
 
@@ -51,7 +51,6 @@ class RepositoryDataImpl @Inject constructor(
         writingAPItoDatabase(
             datePositionDb = NO_POSITION,
             thisPositionDb = position,
-            positionId = CURRENT_LOCATION_ID
         )
     }
 
@@ -75,7 +74,7 @@ class RepositoryDataImpl @Inject constructor(
         val thisPositionDb = PositionDb(city.location.locationId, positionCity, formatTimeFromEpoch(time))
 
         Log.d("Repository_Log", "thisPosition $thisPositionDb , datePosition | $datePosition")
-        writingAPItoDatabase(datePosition, thisPositionDb, positionsId)
+        writingAPItoDatabase(datePosition, thisPositionDb)
     }
 
     suspend fun deletePosition(positionId: Int) {
@@ -83,7 +82,6 @@ class RepositoryDataImpl @Inject constructor(
     }
 
     private suspend fun getPositionId(): Int {
-        //  val positionUser = positionDao.getPosition(CURRENT_LOCATION_ID)
         var sumPositions = locationDao.getSumPosition()
         if (sumPositions == NOT_POSITIONS) {
             return POSITION_ID_NEXT
@@ -112,7 +110,7 @@ class RepositoryDataImpl @Inject constructor(
                         location.position,
                         timeFormat = location.last_updated
                     )
-                    writingAPItoDatabase(datePositionDb, thisPositionDb, location.positionId)
+                    writingAPItoDatabase(datePositionDb, thisPositionDb)
                 }
             }
         } catch (_: Exception) {
@@ -137,7 +135,6 @@ class RepositoryDataImpl @Inject constructor(
 
     override suspend fun deleteCity(positionId: Int) {
         locationDao.deleteLocation(positionId)
-        updatePositionToDb(positionId)
     }
 
     override fun getSizePager(): LiveData<Int> {
@@ -192,7 +189,6 @@ class RepositoryDataImpl @Inject constructor(
     private suspend fun writingAPItoDatabase(
         datePositionDb: PositionDb,
         thisPositionDb: PositionDb,
-        positionId: Int
     ) {
         try {
             if (checkingForUpdates(datePositionDb, thisPositionDb)) {
@@ -203,17 +199,16 @@ class RepositoryDataImpl @Inject constructor(
                         id = thisPositionDb.id,
                         cityDto = city,
                         position = "${city.locationDto.lat},${city.locationDto.lon}",
-                        positionId = positionId,
                         timeUpdate = thisPositionDb.timeFormat
                     )
                 )
                 currentDao.insert(
                     mapper.mapperCityDtoToCurrentDb(
-                        positionId = positionId, cityDto = city
+                       id = thisPositionDb.id, cityDto = city
                     )
                 )
                 val forecastItem = mapper.mapperCityDtoToForecastDaysDb(
-                    positionId = positionId, cityDto = city
+                    id = thisPositionDb.id,cityDto = city
                 )
                 forecastDayDao.insert(forecastItem)
 
@@ -225,13 +220,7 @@ class RepositoryDataImpl @Inject constructor(
         }
     }
 
-    private suspend fun updatePositionToDb(oldPositionId: Int) {
-        val sumPosition = locationDao.getSumPosition()
-        for (position in oldPositionId..sumPosition) {
-            val positionElement = oldPositionId + 1
-            locationDao.updatePosition(positionElement, position)
-        }
-    }
+
 
 
     private fun checkingForUpdates(

@@ -88,8 +88,8 @@ class ViewModelAllCities @Inject constructor(
 
     fun deleteCity(location: Location) {
         viewModelScope.launch {
-            useCasDeleteCity(location.positionId)
-            if (location.positionId == USER_POSITION){
+            useCasDeleteCity(location.locationId)
+            if (location.locationId == USER_POSITION){
                 repositoryDataImpl.deletePosition(USER_POSITION)
             }
         }
