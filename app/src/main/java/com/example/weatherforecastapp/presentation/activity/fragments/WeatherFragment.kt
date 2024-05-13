@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
-import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
@@ -103,8 +102,8 @@ class WeatherFragment : Fragment() {
     }
 
     private fun initLocationCheck() {
-        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            if (locationCondition == true) {
+        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+            if (state.location) {
                 binding.imNotLocation.visibility = View.GONE
             } else {
                 viewModel.location.observe(viewLifecycleOwner) { listLocation ->

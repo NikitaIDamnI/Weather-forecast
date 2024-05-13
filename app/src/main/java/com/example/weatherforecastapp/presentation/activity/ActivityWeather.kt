@@ -20,7 +20,7 @@ class ActivityWeather : AppCompatActivity() {
         ActivityWeatherBinding.inflate(layoutInflater)
     }
 
-    private lateinit var weatherReceiver : WeatherReceiver
+    private lateinit var weatherReceiver: WeatherReceiver
 
     private lateinit var viewModelWeather: ViewModelWeather
     private lateinit var viewModelAllCities: ViewModelAllCities
@@ -51,39 +51,29 @@ class ActivityWeather : AppCompatActivity() {
         viewModelAllCities.weatherUpdate()
         initReceiver()
         checkUpdate()
+        viewModelNetworkStatus.state.observe(this) {
+            Log.d("ActivityWeather_Log", "state: $it")
+
+        }
+
     }
 
-    private fun checkUpdate(){
-        viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(this){locationCondition->
-            if (locationCondition == true){
-                viewModelNetworkStatus.networkStatus.internetCondition.observe(this){internet->
-                    Log.d("ActivityWeather_Log", "checkUpdate: $internet")
-                    if (internet == true) {
-                        viewModelAllCities.updateUserLocation()
-                    }
+    private fun checkUpdate() {
+        viewModelNetworkStatus.state.observe(this) { state ->
+            if (state.internet) {
+                if (state.location) {
+                Log.d("ActivityWeather_Log", "checkUpdate: ${state.internet}")
+                    viewModelAllCities.updateUserLocation()
                 }
-            }
-        }
-        viewModelNetworkStatus.networkStatus.internetCondition.observe(this){internet->
-            Log.d("ActivityWeather_Log", "checkUpdate: $internet")
-            if (internet == true) {
                 viewModelAllCities.weatherUpdate()
             }
         }
-
-
     }
 
 
     private fun initReceiver() {
-        weatherReceiver.checkLocationStatus = {
-            viewModelNetworkStatus.checkLocationCondition(it)
-        }
-        weatherReceiver.checkInternetStatus = {
-            viewModelNetworkStatus.checkInternetCondition(it)
-        }
-        weatherReceiver.checkLocationPermissionStatus = {
-            viewModelNetworkStatus.checkLocationStatusPermission(it)
+        weatherReceiver.getState = {
+            viewModelNetworkStatus.getState(it)
         }
     }
 
@@ -100,7 +90,7 @@ class ActivityWeather : AppCompatActivity() {
         weatherReceiver.stopReceiver()
     }
 
-    private fun initViewModels(){
+    private fun initViewModels() {
         viewModelAllCities =
             ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
         viewModelWeather =

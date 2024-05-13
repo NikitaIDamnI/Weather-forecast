@@ -30,8 +30,8 @@ class PermissionsLauncher(
         ) {
             Toast.makeText(context, "Permission is $it", Toast.LENGTH_LONG).show()
             if (it == false) {
-                Intent(WeatherReceiver.ACTION_LOCATION).apply {
-                    putExtra(WeatherReceiver.CONDITION, it)
+                Intent(WeatherReceiver.ACTION_STATE).apply {
+                    putExtra(WeatherReceiver.LOCATION_PERMISSION, it)
                     context.sendBroadcast(this)
                 }
             }

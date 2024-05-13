@@ -80,8 +80,8 @@ class FragmentAllCities : Fragment() {
 
     private fun checkInternet() {
 
-        viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner) { internet ->
-            if (internet) {
+        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+            if (state.internet) {
                 binding.cvNotInternet.visibility = View.GONE
                 binding.cardSearchView.visibility = View.VISIBLE
             } else {
@@ -99,8 +99,8 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkLocationPermission() {
-        viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(viewLifecycleOwner) { locationPermission ->
-            if (locationPermission == false) {
+        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+            if (!state.locationPermission) {
                 binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
 
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
@@ -129,9 +129,9 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkingEnabledLocation() {
-        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            Log.d("FragmentAllCities_Log", "locationCondition: $locationCondition")
-            if (locationCondition == false) {
+        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+            Log.d("FragmentAllCities_Log", "locationCondition: ${state.location})")
+            if (!state.location) {
                 binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
                     if (shortNotifications) {
@@ -179,8 +179,8 @@ class FragmentAllCities : Fragment() {
             findNavController().navigate(action)
         }
 
-        viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner) { internet ->
-            adapterAllCities = AllCityAdapter(requireActivity().applicationContext, internet)
+        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+            adapterAllCities = AllCityAdapter(requireActivity().applicationContext, state.internet)
             viewModel.listLocation.observe(viewLifecycleOwner) {
                 adapterAllCities.submitList(it)
             }
@@ -191,9 +191,7 @@ class FragmentAllCities : Fragment() {
                 findNavController().navigate(action)
             }
             rvAllCity.adapter = adapterAllCities
-        }
-        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            setupSwipeListener(rvAllCity, locationCondition)
+            setupSwipeListener(rvAllCity, state.location)
         }
 
 
@@ -232,6 +230,7 @@ class FragmentAllCities : Fragment() {
                     }
                     return false
                 }
+
                 override fun onQueryTextChange(newText: String?): Boolean {
                     if (newText.isNullOrEmpty()) {
                         viewModel.cleanSearchCity()
@@ -251,6 +250,7 @@ class FragmentAllCities : Fragment() {
             ): Boolean {
                 return false
             }
+
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val item = adapterAllCities.currentList[position]
