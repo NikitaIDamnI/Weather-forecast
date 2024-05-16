@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -24,8 +25,6 @@ import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.Search
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -220,20 +219,18 @@ class FragmentAllCities : Fragment() {
         binding.searchView.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    CoroutineScope(Dispatchers.Main).launch {
                         if (!query.isNullOrEmpty()) {
-                            viewModel.searchCity(query)
-                            viewModel.searchCityList.observe(viewLifecycleOwner) {
-                                searchCityAdapter.submitList(it)
+                            lifecycleScope.launch {
+                                val searchCities = viewModel.searchCity(query)
+                                searchCityAdapter.submitList(searchCities)
                             }
                         }
-                    }
                     return false
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
                     if (newText.isNullOrEmpty()) {
-                        viewModel.cleanSearchCity()
+                        searchCityAdapter.submitList(emptyList())
                     }
                     return true
                 }

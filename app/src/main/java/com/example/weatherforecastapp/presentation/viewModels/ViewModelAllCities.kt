@@ -42,22 +42,18 @@ class ViewModelAllCities @Inject constructor(
 
     val city = MutableLiveData<City>()
     val listLocation = useCaseGetLocations()
-    val searchCityList = MutableLiveData<List<SearchCity>>()
     var sizeCity = getSizePager()
 
     val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
 
-    fun searchCity(city: String) {
-        viewModelScope.launch {
-            searchCityList.value = useCaseSearchCity(city)
-        }
-
+   suspend fun searchCity(city: String): List<SearchCity>{
+       return useCaseSearchCity(city)
     }
 
     fun checkCity(listLocation: List<Location>, searchCity: SearchCity): Boolean {
         if (listLocation == emptyList<Location>()) {
             return false
-        } else{
+        } else {
             val position = "${searchCity.lat},${searchCity.lon}"
 
             Log.d("ViewModelAllCities_Log", "searchCity: $searchCity ")
@@ -82,21 +78,20 @@ class ViewModelAllCities @Inject constructor(
     fun addCity(city: City) {
         viewModelScope.launch {
             useCaseAddCity(city)
-            searchCityList.value = mutableListOf()
         }
     }
 
     fun deleteCity(location: Location) {
         viewModelScope.launch {
             useCasDeleteCity(location.locationId)
-            if (location.locationId == USER_POSITION){
+            if (location.locationId == USER_POSITION) {
                 repositoryDataImpl.deletePosition(USER_POSITION)
             }
         }
     }
 
     fun weatherUpdate() {
-        if(firstWeatherUpdate) {
+        if (firstWeatherUpdate) {
             viewModelScope.launch {
                 weatherUpdate.invoke()
             }
@@ -157,16 +152,14 @@ class ViewModelAllCities @Inject constructor(
         return weatherHour24
     }
 
-    fun openNotification(){
+    fun openNotification() {
         shortNotifications.value = false
     }
-    fun closeNotification(){
+
+    fun closeNotification() {
         shortNotifications.value = true
     }
 
-    fun cleanSearchCity(){
-        searchCityList.value = emptyList()
-    }
 
     fun updateUserLocation() {
         if (firstUserUpdate) {
@@ -179,7 +172,8 @@ class ViewModelAllCities @Inject constructor(
             }
         }
     }
-    companion object{
+
+    companion object {
         const val USER_POSITION = 0
     }
 }
