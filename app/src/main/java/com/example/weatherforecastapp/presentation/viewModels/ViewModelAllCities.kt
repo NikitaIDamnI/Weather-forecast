@@ -9,6 +9,7 @@ import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Condition
+import com.example.weatherforecastapp.domain.models.ForecastDay
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
@@ -39,15 +40,14 @@ class ViewModelAllCities @Inject constructor(
     private var firstUserUpdate = true
 
 
-    val previewCity = MutableLiveData<City>()
-    val city = repositoryDataImpl.getCityLiveData(viewModelScope)
+    val city = MutableLiveData<City>()
     val listLocation = useCaseGetLocations()
     var sizeCity = getSizePager()
 
     val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
 
-    suspend fun searchCity(city: String): List<SearchCity> {
-        return useCaseSearchCity(city)
+   suspend fun searchCity(city: String): List<SearchCity>{
+       return useCaseSearchCity(city)
     }
 
     fun checkCity(listLocation: List<Location>, searchCity: SearchCity): Boolean {
@@ -71,7 +71,7 @@ class ViewModelAllCities @Inject constructor(
     fun previewCity(searchCity: SearchCity) {
         viewModelScope.launch {
             val citySearch = useCaseGetCityFromSearch(searchCity)
-            previewCity.value = citySearch
+            city.value = citySearch
         }
     }
 
@@ -104,8 +104,8 @@ class ViewModelAllCities @Inject constructor(
         useCaseCheckLocation.invoke(context)
     }
 
-    fun getWeatherHour24(city: City): List<ForecastHour> {
-        val astro = city.forecastDays.forecastDays[0].astro
+    fun getWeatherHour24(forecastDay: List<ForecastDay>, timeLocation: String): List<ForecastHour> {
+        val astro = forecastDay[0].astro
         val sunriseHour = astro.sunrise.split(":")[0].toInt()
         val sunsetHour = astro.sunset.split(":")[0].toInt()
 
@@ -124,9 +124,9 @@ class ViewModelAllCities @Inject constructor(
             )
         )
 
-        val startIndex = city.location.localtime.split(":")[0].toInt()
-        val oldListTo24 = city.forecastDays.forecastDays[0].forecastHour
-        val oldListNextDay =  city.forecastDays.forecastDays[1].forecastHour
+        val startIndex = timeLocation.split(":")[0].toInt()
+        val oldListTo24 = forecastDay[0].forecastHour
+        val oldListNextDay = forecastDay[1].forecastHour
 
         val newListTo24 = oldListTo24.subList(startIndex, oldListTo24.size).toMutableList()
         val newListNextDay = oldListNextDay.subList(0, startIndex + 1).toMutableList()

@@ -20,7 +20,6 @@ import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.google.android.material.tabs.TabLayoutMediator
-import okhttp3.internal.wait
 import javax.inject.Inject
 
 
@@ -69,25 +68,10 @@ class FragmentPagerWeather : Fragment() {
             )[ViewModelNetworkStatus::class.java]
         migrationIfNotLocation()
         initial()
-       // animationViewElements()
     }
 
     private fun initial() {
-        viewModel.city.observe(viewLifecycleOwner) {city->
-            Log.d("FragmentPagerWeather_Log", "initial: ${city}")
-            with(binding) {
-                if (city.isNotEmpty()) {
-                    viewPager.visibility = View.VISIBLE
-                    binding.textView3.visibility = View.GONE
-                    binding.load.visibility = View.GONE
-                    cardToolbar.visibility = View.VISIBLE
-                }else{
-                    viewPager.visibility = View.GONE
-                    binding.textView3.visibility = View.VISIBLE
-                    binding.load.visibility = View.VISIBLE
-                }
-            }
-        }
+        animationViewElements()
         binding.bMenu.setOnClickListener {
             val action =
                 FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
@@ -170,8 +154,8 @@ class FragmentPagerWeather : Fragment() {
     }
 
     private fun animationViewElements() = with(binding) {
-        binding.cvNotInternet.alpha = 0f
-        binding.cardToolbar.alpha = 0f
+        cvNotInternet.alpha = 0f
+        cardToolbar.alpha = 0f
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
@@ -189,7 +173,6 @@ class FragmentPagerWeather : Fragment() {
                     .start()
             }
         })
-
     }
 
 
@@ -206,6 +189,7 @@ class FragmentPagerWeather : Fragment() {
                     }
                 }
             }
+
         }
 
     }

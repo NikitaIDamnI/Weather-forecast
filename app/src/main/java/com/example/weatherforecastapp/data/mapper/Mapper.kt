@@ -18,7 +18,7 @@ import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.Day
 import com.example.weatherforecastapp.domain.models.ForecastDay
-import com.example.weatherforecastapp.domain.models.ForecastDaysCity
+import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.ForecastHour
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
@@ -115,17 +115,10 @@ class Mapper @Inject constructor() {
     }
 
     fun mapperForecastCityDbToEntityForecastCityDays(forecastDaysDb: ForecastDaysDb) =
-        ForecastDaysCity(
+        ForecastDayCity(
             nameCity = forecastDaysDb.nameCity,
             timeLocation = forecastDaysDb.timeLocation,
             forecastDays = mapperForecastDaysDbToEntityForecastDays(forecastDaysDb),
-        )
-
-    fun mapperForecastCityDtoToEntityForecastCityDays(cityDto: CityDto) =
-        ForecastDaysCity(
-            nameCity = cityDto.locationDto.name ,
-            timeLocation =cityDto.locationDto.localtime,
-            forecastDays = cityDto.forecast.days.map { mapperForecastDaysJSONToEntityForecastDays(it) },
         )
 
 
@@ -428,10 +421,8 @@ class Mapper @Inject constructor() {
     fun mapperCityDtoToEntityCity(dto: CityDto, context: Context, locationId: Int) = City(
         location = mapperCityDtoToLocationEntity(dto, locationId),
         current = mapperCurrentDtoToEntityCurrent(dto, context),
-        forecastDays =mapperForecastCityDtoToEntityForecastCityDays(dto)
+        forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it) }
     )
-
-
 
     private fun mapperCityDtoToLocationEntity(cityDto: CityDto, locationId: Int) = Location(
         locationId = locationId,

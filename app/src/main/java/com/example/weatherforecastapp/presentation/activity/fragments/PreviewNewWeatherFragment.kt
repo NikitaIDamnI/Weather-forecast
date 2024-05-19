@@ -88,7 +88,7 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
     private fun initCurrent() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
-            viewModel.previewCity.observe(viewLifecycleOwner, Observer { city ->
+            viewModel.city.observe(viewLifecycleOwner, Observer { city ->
                 tvCity.text = city.location.name
                 tvData.text = city.current.date
                 val temp =
@@ -132,13 +132,13 @@ class PreviewNewWeatherFragment : BottomSheetDialogFragment() {
     private fun initForecast() {
         val adapterCurrent = CurrentAdapter(requireContext())
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
-        viewModel.previewCity.observe(viewLifecycleOwner, Observer {
+        viewModel.city.observe(viewLifecycleOwner, Observer {
             with(binding) {
                 val listWeatherHour =
-                    viewModel.getWeatherHour24(it)
+                    viewModel.getWeatherHour24(it.forecastDays, it.location.localtime)
                 adapterCurrent.submitList(listWeatherHour)
                 rvCurrentDay.adapter = adapterCurrent
-                adapterForecastDays.submitList(it.forecastDays.forecastDays)
+                adapterForecastDays.submitList(it.forecastDays)
                 rvForecastForDays.adapter = adapterForecastDays
             }
         })
