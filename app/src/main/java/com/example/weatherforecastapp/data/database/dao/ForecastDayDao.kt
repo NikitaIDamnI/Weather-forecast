@@ -16,6 +16,6 @@ interface ForecastDayDao {
 
     @Query("SELECT * FROM forecast_day")
     fun getForecastDay(): LiveData<List<ForecastDaysDb>>
-
-
+    @Query("SELECT * FROM forecast_day")
+    suspend fun getForecastDayAll(): List<ForecastDaysDb>
 }

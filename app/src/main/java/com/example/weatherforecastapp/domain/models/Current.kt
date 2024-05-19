@@ -12,7 +12,6 @@ data class Current(
     val weatherPrecipitation : List<WeatherPrecipitation> = emptyList(),
     val astro: Astro = Astro(),
     val condition: Condition = Condition(), // Объект, содержащий текстовое описание погодных условий, иконку и код состояния
-
 )
 
 

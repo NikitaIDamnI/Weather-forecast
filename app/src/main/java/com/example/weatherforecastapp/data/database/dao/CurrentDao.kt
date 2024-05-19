@@ -16,6 +16,8 @@ interface CurrentDao {
 
     @Query("SELECT * FROM current_day ")
      fun getCurrents(): LiveData<List<CurrentDb>>
+    @Query("SELECT * FROM current_day ")
+    suspend fun getCurrentsAll(): List<CurrentDb>
 
 
 }

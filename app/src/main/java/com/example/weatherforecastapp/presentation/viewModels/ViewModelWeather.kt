@@ -1,33 +1,24 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.Condition
-import com.example.weatherforecastapp.domain.models.Current
-import com.example.weatherforecastapp.domain.models.ForecastDayCity
+import com.example.weatherforecastapp.domain.models.ForecastDaysCity
 import com.example.weatherforecastapp.domain.models.ForecastHour
-import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCurrents
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetForecastDaysCity
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
 import javax.inject.Inject
 
 
 class ViewModelWeather @Inject constructor(
-    private val getLocations: UseCaseGetLocations,
-    private val getCurrentDays: UseCaseGetCurrents,
-    private val getForecastDaysCity: UseCaseGetForecastDaysCity,
+    private val repositoryDataImpl: RepositoryDataImpl,
 ) : ViewModel() {
 
-    var location = getLocations()
-    var current = getCurrentDays()
-    var forecastDay = getForecastDaysCity()
+    val city = repositoryDataImpl.getCityLiveData(viewModelScope)
 
-    fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
-        return current.weatherPrecipitation
-    }
-    fun getWeatherHour24(forecastDayCity: ForecastDayCity): List<ForecastHour> {
-        val astro = forecastDayCity.forecastDays[0].astro
+
+    fun getWeatherHour24(forecastDaysCity: ForecastDaysCity): List<ForecastHour> {
+        val astro = forecastDaysCity.forecastDays[0].astro
 
         val sunriseHour = astro.sunrise.split(":")[0].toInt()
         val sunsetHour = astro.sunset.split(":")[0].toInt()
@@ -46,9 +37,9 @@ class ViewModelWeather @Inject constructor(
                 icon = R.drawable.sunset_weather.toString()
             )
         )
-        val startIndex = forecastDayCity.timeLocation.split(":")[0].toInt()
-        val oldListTo24 = forecastDayCity.forecastDays[0].forecastHour
-        val oldListNextDay = forecastDayCity.forecastDays[1].forecastHour
+        val startIndex = forecastDaysCity.timeLocation.split(":")[0].toInt()
+        val oldListTo24 = forecastDaysCity.forecastDays[0].forecastHour
+        val oldListNextDay = forecastDaysCity.forecastDays[1].forecastHour
 
         val newListTo24 = oldListTo24.subList(startIndex, oldListTo24.size).toMutableList()
         val newListNextDay = oldListNextDay.subList(0, startIndex + 1).toMutableList()

@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import com.example.weatherforecastapp.data.database.models.PositionDb
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
-import com.example.weatherforecastapp.domain.models.ForecastDayCity
+import com.example.weatherforecastapp.domain.models.ForecastDaysCity
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 
@@ -20,7 +20,7 @@ interface RepositoryData {
     suspend fun getUserLocation(): Location
     suspend fun weatherUpdate()
     fun getCurrentDays(): LiveData<List<Current>>
-    fun getForecastDaysCity(): LiveData<List<ForecastDayCity>>
+    fun getForecastDaysCity(): LiveData<List<ForecastDaysCity>>
     fun getSizePager(): LiveData<Int>
     suspend fun numberOfCities(): Int
 }
