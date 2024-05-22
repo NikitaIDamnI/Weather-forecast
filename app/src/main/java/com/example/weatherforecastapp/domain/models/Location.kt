@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.domain.models
 
 data class Location(
-    val positionId: Int,
     val locationId: Int,
     val name: String = "",
     val region: String = "",

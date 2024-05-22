@@ -29,8 +29,8 @@ import javax.inject.Inject
 
 
 class Mapper @Inject constructor() {
-    fun mapperCityDtoToCurrentDb(cityDto: CityDto, positionId: Int) = CurrentDb(
-        id = positionId,
+    fun mapperCityDtoToCurrentDb(cityDto: CityDto, id: Int) = CurrentDb(
+        id = id,
         nameCity = cityDto.locationDto.name,
         date = Format.formatDate(cityDto.currentDto.lastUpdatedEpoch),
         last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
@@ -76,11 +76,9 @@ class Mapper @Inject constructor() {
         id: Int,
         cityDto: CityDto,
         position: String? = "",
-        positionId: Int,
         timeUpdate: String
     ) = LocationDb(
         id = id,
-        positionId = positionId,
         name = cityDto.locationDto.name,
         last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
         last_updated = timeUpdate,
@@ -97,11 +95,11 @@ class Mapper @Inject constructor() {
         condition_code = cityDto.currentDto.conditionDto.code,
     )
 
-    fun mapperCityDtoToForecastDaysDb(cityDto: CityDto, positionId: Int): ForecastDaysDb {
+    fun mapperCityDtoToForecastDaysDb(cityDto: CityDto, id: Int): ForecastDaysDb {
         val forecastDays = cityDto.forecast.days
         val json = Gson().toJson(forecastDays)
         return ForecastDaysDb(
-            id = positionId,
+            id = id,
             nameCity = cityDto.locationDto.name,
             timeLocation = cityDto.locationDto.localtime.split(" ")[1],
             json = json
@@ -124,7 +122,7 @@ class Mapper @Inject constructor() {
         )
 
 
-    private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto) =
+    fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto) =
         ForecastDay(
             date = Format.formatDate(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
@@ -173,7 +171,6 @@ class Mapper @Inject constructor() {
     )
 
     fun mapperLocationDbToEntityLocation(locationDb: LocationDb?) = Location(
-        positionId = locationDb?.positionId ?: 0,
         locationId = locationDb?.id ?: 0,
         name = locationDb?.name ?: "",
         region = locationDb?.region ?: "",
@@ -421,14 +418,15 @@ class Mapper @Inject constructor() {
         lon = searchCityDto.lon,
     )
 
-    fun mapperCityDtoToEntityCity(dto: CityDto, context: Context,locationId: Int) = City(
-        location = mapperCityDtoToLocationEntity(dto,locationId),
+    fun mapperCityDtoToEntityCity(dto: CityDto, context: Context, locationId: Int) = City(
+        location = mapperCityDtoToLocationEntity(dto, locationId),
         current = mapperCurrentDtoToEntityCurrent(dto, context),
-        forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it) }
+        forecastDays = ForecastDayCity(nameCity = dto.locationDto.name,
+            timeLocation =Format.formatTimeLocation(dto.locationDto.localtime),
+           forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it) })
     )
 
-    private fun mapperCityDtoToLocationEntity(cityDto: CityDto,locationId : Int) = Location(
-        positionId = EMPTY_ID,
+    private fun mapperCityDtoToLocationEntity(cityDto: CityDto, locationId: Int) = Location(
         locationId = locationId,
         name = cityDto.locationDto.name,
         region = cityDto.locationDto.region,

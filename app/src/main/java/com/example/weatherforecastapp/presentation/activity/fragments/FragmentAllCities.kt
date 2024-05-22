@@ -12,20 +12,18 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
+import com.example.weatherforecastapp.presentation.clickableSpan
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
-import com.example.weatherforecastapp.presentation.setSettingsClickableSpan
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,8 +34,7 @@ class FragmentAllCities : Fragment() {
     private val binding: FragmentAllCitiesBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
-    private lateinit var viewModel: ViewModelAllCities
-    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
+    private lateinit var viewModel: ViewModelWeather
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -66,12 +63,7 @@ class FragmentAllCities : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
-            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
-        viewModelNetworkStatus =
-            ViewModelProvider(
-                requireActivity(),
-                viewModelFactory
-            )[ViewModelNetworkStatus::class.java]
+            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         checkInternet()
         checkLocationPermission()
         setupAllCitiesAdapter()
@@ -80,8 +72,8 @@ class FragmentAllCities : Fragment() {
 
     private fun checkInternet() {
 
-        viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner) { internet ->
-            if (internet) {
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            if (state.internet) {
                 binding.cvNotInternet.visibility = View.GONE
                 binding.cardSearchView.visibility = View.VISIBLE
             } else {
@@ -99,8 +91,8 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkLocationPermission() {
-        viewModelNetworkStatus.networkStatus.locationConditionPermission.observe(viewLifecycleOwner) { locationPermission ->
-            if (locationPermission == false) {
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            if (!state.locationPermission) {
                 binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
 
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
@@ -119,7 +111,6 @@ class FragmentAllCities : Fragment() {
                         val textShort = resources.getString(R.string.not_permission_location_short)
                         closeNotificationNotLocation(textShort)
                     }
-
                 }
             } else {
                 viewModel.closeNotification()
@@ -130,9 +121,9 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkingEnabledLocation() {
-        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            Log.d("FragmentAllCities_Log", "locationCondition: $locationCondition")
-            if (locationCondition == false) {
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            Log.d("FragmentAllCities_Log", "locationCondition: ${state.location})")
+            if (!state.location) {
                 binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
                     if (shortNotifications) {
@@ -152,15 +143,11 @@ class FragmentAllCities : Fragment() {
         }
     }
 
-    private fun openNotificationNotLocation(
-        textShort: String,
-        textFull: String,
-        fuz: () -> Unit
-    ) {
+    private fun openNotificationNotLocation(textShort: String, textFull: String, fuz: () -> Unit) {
         binding.cvNotLocation.visibility = View.VISIBLE
         binding.tvNotLocation.text = textShort
         binding.tvNotLocation.setOnClickListener {
-            binding.tvNotLocation.setSettingsClickableSpan(textFull) {
+            binding.tvNotLocation.clickableSpan(textFull, CLICKABLE_SPAN_INDEX) {
                 fuz.invoke()
             }
             viewModel.openNotification()
@@ -172,7 +159,6 @@ class FragmentAllCities : Fragment() {
             binding.tvNotLocation.text = textShort
             viewModel.closeNotification()
         }
-
     }
 
 
@@ -181,25 +167,23 @@ class FragmentAllCities : Fragment() {
         adapterAllCities.onClick = { position ->
             val action =
                 FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                    .setId(position)
+                    .setPosition(position)
             findNavController().navigate(action)
         }
 
-        viewModelNetworkStatus.networkStatus.internetCondition.observe(viewLifecycleOwner) { internet ->
-            adapterAllCities = AllCityAdapter(requireActivity().applicationContext, internet)
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            adapterAllCities = AllCityAdapter(requireActivity().applicationContext, state.internet)
             viewModel.listLocation.observe(viewLifecycleOwner) {
                 adapterAllCities.submitList(it)
             }
             adapterAllCities.onClick = { position ->
                 val action =
                     FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                        .setId(position)
+                        .setPosition(position)
                 findNavController().navigate(action)
             }
             rvAllCity.adapter = adapterAllCities
-        }
-        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            setupSwipeListener(rvAllCity, locationCondition)
+            setupSwipeListener(rvAllCity, state.location)
         }
 
 
@@ -208,36 +192,32 @@ class FragmentAllCities : Fragment() {
     private fun setupSearchAdapter() {
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
-        searchCityAdapter.onClick =
-            { searchCity ->
-                viewModel.previewCity(searchCity)
-                searchCityAdapter.submitList(emptyList())
+        searchCityAdapter.onClick = { searchCity ->
+            viewModel.previewCity(searchCity)
 
-                binding.searchView.setQuery(EMPTY_QUERY, false)
-                binding.searchView.clearFocus()
-                binding.searchView.isIconified = true
+            binding.searchView.setQuery(EMPTY_QUERY, false)
+            binding.searchView.clearFocus()
+            binding.searchView.isIconified = true
 
-                var view = false
-                viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
-                    view = viewModel.checkCity(listLocation, searchCity)
-                }
-                val action =
-                    FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
-                        .setViewAddCity(view)
-                findNavController().navigate(action)
+            var view = false
+            viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
+                view = viewModel.checkCity(listLocation, searchCity)
             }
+            val action =
+                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                    .setViewAddCity(view)
+            findNavController().navigate(action)
+        }
 
         binding.searchView.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    CoroutineScope(Dispatchers.Main).launch {
                         if (!query.isNullOrEmpty()) {
-                            viewModel.searchCity(query)
-                            viewModel.searchCityList.observe(viewLifecycleOwner) {
-                                searchCityAdapter.submitList(it)
+                            lifecycleScope.launch {
+                                val searchCities = viewModel.searchCity(query)
+                                searchCityAdapter.submitList(searchCities)
                             }
                         }
-                    }
                     return false
                 }
 
@@ -247,11 +227,11 @@ class FragmentAllCities : Fragment() {
                     }
                     return true
                 }
-            })
+            }
+        )
     }
 
     private fun setupSwipeListener(rvShopList: RecyclerView, locations: Boolean) {
-        Log.d("FragmentAllCities_Log", "setupSwipeListener (locations): $locations")
         val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -273,7 +253,7 @@ class FragmentAllCities : Fragment() {
             ): Int {
                 val item = adapterAllCities.currentList[viewHolder.adapterPosition]
 
-                return if (item.positionId == USER_POSITION && locations) {
+                return if (item.locationId == USER_ID && locations) {
                     DEFAULT_SWIPE_DIRECTION
                 } else {
                     super.getSwipeDirs(recyclerView, viewHolder)
@@ -285,9 +265,10 @@ class FragmentAllCities : Fragment() {
     }
 
     companion object {
-        const val USER_POSITION = 0
+        const val USER_ID = 0
         const val DEFAULT_SWIPE_DIRECTION = 0
         const val EMPTY_QUERY = ""
+        const val CLICKABLE_SPAN_INDEX = "settings"
     }
 
 }

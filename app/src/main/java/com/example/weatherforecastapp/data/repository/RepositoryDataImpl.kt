@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.example.testapi.network.ApiService
+import com.example.weatherforecastapp.data.Format
 import com.example.weatherforecastapp.data.database.dao.CurrentDao
 import com.example.weatherforecastapp.data.database.dao.ForecastDayDao
 import com.example.weatherforecastapp.data.database.dao.LocationDao
@@ -33,11 +34,13 @@ class RepositoryDataImpl @Inject constructor(
 ) : RepositoryData {
 
     override suspend fun saveUserPosition(positionDb: PositionDb): Boolean {
-        val datePosition = positionDao.getPosition(CURRENT_LOCATION_ID) ?: NO_POSITION
+        val datePosition = positionDao.getPosition(USER_ID) ?: NO_POSITION
         try {
             if (datePosition.position != positionDb.position) {
+                Log.d("Repository_Log", "saveUserLocation ")
+
                 positionDao.insert(positionDb)
-                writingAPItoDatabase(datePosition, positionDb, POSITION_ID_START)
+                writingAPItoDatabase(datePosition, positionDb)
             }
         } catch (_: Exception) {
 
@@ -46,17 +49,26 @@ class RepositoryDataImpl @Inject constructor(
         return true
     }
 
-    suspend fun updateUserPosition(position: PositionDb) {
-        Log.d("RepositoryDataImpl_Log", "updateUserPosition: $position ")
-        writingAPItoDatabase(
-            datePositionDb = NO_POSITION,
-            thisPositionDb = position,
-            positionId = CURRENT_LOCATION_ID
-        )
+    suspend fun updateUserPosition() {
+        val dataPosition = getUserPosition()
+        Log.d("RepositoryDataImpl_Log", "updateUserPosition: $dataPosition")
+        if (dataPosition != null) {
+            val time = System.currentTimeMillis()
+            writingAPItoDatabase(
+                datePositionDb = dataPosition,
+                thisPositionDb = NO_POSITION,
+            )
+            val updatePositionDb = PositionDb(
+                id = USER_ID,
+                position = dataPosition.position,
+                timeFormat = Format.formatTimeFromEpoch(time)
+            )
+            positionDao.insert(updatePositionDb)
+        }
     }
 
     suspend fun getUserPosition(): PositionDb? {
-        return positionDao.getPosition(CURRENT_LOCATION_ID)
+        return positionDao.getPosition(USER_ID)
     }
 
 
@@ -66,32 +78,18 @@ class RepositoryDataImpl @Inject constructor(
     }
 
     override suspend fun addNewCity(city: City) {
-        val positionsId = getPositionId()
 
         val positionCity = city.location.position
         val datePosition = locationDao.checkCity(positionCity) ?: NO_POSITION
         val time = System.currentTimeMillis()
 
-        val thisPositionDb = PositionDb(city.location.locationId, positionCity, formatTimeFromEpoch(time))
-
-        Log.d("Repository_Log", "thisPosition $thisPositionDb , datePosition | $datePosition")
-        writingAPItoDatabase(datePosition, thisPositionDb, positionsId)
+        val thisPositionDb =
+            PositionDb(city.location.locationId, positionCity, formatTimeFromEpoch(time))
+        writingAPItoDatabase(datePosition, thisPositionDb)
     }
 
     suspend fun deletePosition(positionId: Int) {
         positionDao.deletePositions(positionId)
-    }
-
-    private suspend fun getPositionId(): Int {
-        //  val positionUser = positionDao.getPosition(CURRENT_LOCATION_ID)
-        var sumPositions = locationDao.getSumPosition()
-        if (sumPositions == NOT_POSITIONS) {
-            return POSITION_ID_NEXT
-        } else {
-            val lastPositionId = locationDao.getLastPositionId()
-            sumPositions = lastPositionId + POSITION_ID_NEXT
-        }
-        return sumPositions
     }
 
     override suspend fun weatherUpdate() {
@@ -112,7 +110,7 @@ class RepositoryDataImpl @Inject constructor(
                         location.position,
                         timeFormat = location.last_updated
                     )
-                    writingAPItoDatabase(datePositionDb, thisPositionDb, location.positionId)
+                    writingAPItoDatabase(datePositionDb, thisPositionDb)
                 }
             }
         } catch (_: Exception) {
@@ -137,7 +135,6 @@ class RepositoryDataImpl @Inject constructor(
 
     override suspend fun deleteCity(positionId: Int) {
         locationDao.deleteLocation(positionId)
-        updatePositionToDb(positionId)
     }
 
     override fun getSizePager(): LiveData<Int> {
@@ -188,14 +185,59 @@ class RepositoryDataImpl @Inject constructor(
         }
     }
 
+    fun getCity(): LiveData<List<City>> {
+        val cityLiveData = MediatorLiveData<List<City>>()
+
+        val locationSource = locationDao.getAllLocationsLiveData()
+        val currentSource = currentDao.getCurrents()
+        val forecastDaySource = forecastDayDao.getForecastDay()
+
+        fun updateCityList() {
+            val locationList = locationSource.value
+            val currenList = currentSource.value
+            val forecastDayList = forecastDaySource.value
+
+            if (locationList != null && currenList != null && forecastDayList != null &&
+                locationList.size == currenList.size && locationList.size == forecastDayList.size
+            ) {
+
+                val cityList = mutableListOf<City>()
+                for (i in locationList.indices) {
+                    val location = mapper.mapperLocationDbToEntityLocation(locationList[i])
+                    val current = mapper.mapperCurrentDbToEntityCurrent(currenList[i], context)
+                    val forecastDays =
+                        mapper.mapperForecastCityDbToEntityForecastCityDays(forecastDayList[i])
+                    cityList.add(City(location, current, forecastDays))
+                }
+                cityLiveData.value = cityList
+            } else {
+                cityLiveData.value = emptyList()
+            }
+        }
+
+        cityLiveData.addSource(locationSource) { updateCityList() }
+        cityLiveData.addSource(currentSource) { updateCityList() }
+        cityLiveData.addSource(forecastDaySource) { updateCityList() }
+
+        return cityLiveData
+    }
 
     private suspend fun writingAPItoDatabase(
-        datePositionDb: PositionDb,
+        datePositionDb: PositionDb?,
         thisPositionDb: PositionDb,
-        positionId: Int
     ) {
+        Log.d(
+            "RepositoryDataImpl_Log",
+            "writingAPItoDatabase: datePositionDb: $datePositionDb | thisPositionDb: $thisPositionDb"
+        )
+
         try {
             if (checkingForUpdates(datePositionDb, thisPositionDb)) {
+                Log.d(
+                    "RepositoryDataImpl_Log",
+                    "writingAPItoDatabase: datePositionDb: $datePositionDb | thisPositionDb: $thisPositionDb"
+                )
+
                 val city = apiService.getCityDto(city = thisPositionDb.position)
 
                 locationDao.insert(
@@ -203,55 +245,57 @@ class RepositoryDataImpl @Inject constructor(
                         id = thisPositionDb.id,
                         cityDto = city,
                         position = "${city.locationDto.lat},${city.locationDto.lon}",
-                        positionId = positionId,
                         timeUpdate = thisPositionDb.timeFormat
                     )
                 )
                 currentDao.insert(
                     mapper.mapperCityDtoToCurrentDb(
-                        positionId = positionId, cityDto = city
+                        id = thisPositionDb.id, cityDto = city
                     )
                 )
                 val forecastItem = mapper.mapperCityDtoToForecastDaysDb(
-                    positionId = positionId, cityDto = city
+                    id = thisPositionDb.id, cityDto = city
                 )
                 forecastDayDao.insert(forecastItem)
+
+
 
                 Log.d("Repository_Log", "saveUserLocation = finish")
             } else {
                 Log.d("Repository_Log", "not_update")
             }
-        }catch (_:Exception){
-        }
-    }
-
-    private suspend fun updatePositionToDb(oldPositionId: Int) {
-        val sumPosition = locationDao.getSumPosition()
-        for (position in oldPositionId..sumPosition) {
-            val positionElement = oldPositionId + 1
-            locationDao.updatePosition(positionElement, position)
+        } catch (_: Exception) {
         }
     }
 
 
     private fun checkingForUpdates(
-        datePositionDb: PositionDb,
+        datePositionDb: PositionDb?,
         thisPositionDb: PositionDb
     ): Boolean {
-        val thisHour = formatTimeByHour(thisPositionDb.timeFormat)
-        val dataHour = formatTimeByHour(datePositionDb.timeFormat)
-        Log.d(
-            "RepositoryDataImpl",
-            "checkingForUpdates: datePosition -  ${datePositionDb.position}," +
-                    " thisPosition ${thisPositionDb.position} , ${datePositionDb.position != thisPositionDb.position} "
-        )
-        Log.d(
-            "RepositoryDataImpl",
-            "checkingForUpdates: thisHour -  $thisHour," +
-                    " dataHour $dataHour , ${thisHour != dataHour}"
-        )
+        if (datePositionDb != null) {
+            val thisHour = formatTimeByHour(thisPositionDb.timeFormat)
+            val dataHour = formatTimeByHour(datePositionDb.timeFormat)
+            val update = datePositionDb.position != thisPositionDb.position || thisHour != dataHour
 
-        return (datePositionDb.position != thisPositionDb.position || thisHour != dataHour)
+            Log.d(
+                "RepositoryDataImpl",
+                "checkingForUpdates: datePosition: ${datePositionDb.position}," +
+                        " thisPosition ${thisPositionDb.position} , ${datePositionDb.position != thisPositionDb.position} "
+            )
+            Log.d(
+                "RepositoryDataImpl",
+                "checkingForUpdates: thisHour:  $thisHour," +
+                        " dataHour $dataHour , ${thisHour == dataHour}"
+            )
+            Log.d(
+                "RepositoryDataImpl",
+                "update: $update"
+            )
+            return (update)
+        } else {
+            return true
+        }
     }
 
 
@@ -269,10 +313,7 @@ class RepositoryDataImpl @Inject constructor(
 
 
     companion object {
-        const val NOT_POSITIONS = 0
-        const val CURRENT_LOCATION_ID = 0
-        const val POSITION_ID_START = 0
-        const val POSITION_ID_NEXT = 1
+        const val USER_ID = 0
         private val NO_POSITION = PositionDb(-1, "", "")
     }
 

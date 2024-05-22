@@ -11,10 +11,10 @@ interface PositionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(position: PositionDb)
 
-    @Query("SELECT * FROM position WHERE position_id = :positionId")
+    @Query("SELECT * FROM position WHERE location_id = :positionId")
     suspend fun getPosition(positionId: Int): PositionDb?
 
-    @Query("DELETE FROM position WHERE position_id =:id")
+    @Query("DELETE FROM position WHERE location_id =:id")
     suspend fun deletePositions(id:Int)
 
 

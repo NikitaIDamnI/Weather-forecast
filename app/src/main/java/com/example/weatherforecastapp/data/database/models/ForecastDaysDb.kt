@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = LocationDb::class,
-            parentColumns = ["position_id"],
+            parentColumns = ["location_id"],
             childColumns = ["id"],
             onDelete = ForeignKey.CASCADE,
             onUpdate = ForeignKey.CASCADE
@@ -16,7 +16,7 @@ import androidx.room.PrimaryKey
     ])
 data class ForecastDaysDb(
     @PrimaryKey
-    val id: Int ,
+    val id: Int,
     val nameCity: String,
     val timeLocation: String,
     val json: String,

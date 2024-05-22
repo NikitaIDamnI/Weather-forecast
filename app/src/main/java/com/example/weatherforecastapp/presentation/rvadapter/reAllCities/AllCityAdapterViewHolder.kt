@@ -32,7 +32,7 @@ class AllCityAdapterViewHolder(private val binding: ViewBinding) : RecyclerView.
             }
             is ItemFragmetCityNotInternetBinding -> {
                 with(binding) {
-                    if (location.positionId == USER_LOCATION_ID) {
+                    if (location.locationId == USER_LOCATION_ID) {
                         tvCity.text = "Текущее положение"
                         tvTime.text = location.name
                     } else {

@@ -22,7 +22,7 @@ class PagerAdapter(
 
     private fun getArgs(position: Int): Bundle {
         return Bundle().apply {
-            putInt("id", position)
+            putInt("position", position)
         }
 
     }

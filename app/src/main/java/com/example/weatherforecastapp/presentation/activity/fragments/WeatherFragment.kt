@@ -12,15 +12,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.databinding.WeatherFragmentBinding
-import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.rvadapter.rvCurrentDay.CurrentAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvForecastDays.ForecastDaysAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvPrecipitation.PrecipitationAdapter
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.squareup.picasso.Picasso
 import javax.inject.Inject
 
@@ -32,7 +30,6 @@ class WeatherFragment : Fragment() {
 
     private val args by navArgs<WeatherFragmentArgs>()
 
-    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
     private lateinit var viewModel: ViewModelWeather
 
     @Inject
@@ -59,11 +56,6 @@ class WeatherFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
-        viewModelNetworkStatus =
-            ViewModelProvider(
-                requireActivity(),
-                viewModelFactory
-            )[ViewModelNetworkStatus::class.java]
         initCurrent()
         initForecast()
         initLocationCheck()
@@ -74,26 +66,27 @@ class WeatherFragment : Fragment() {
     private fun initCurrent() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
-            viewModel.current.observe(viewLifecycleOwner, Observer {
-                if (it != emptyList<Current>()) {
-                    var current = it[id]
-                    if (checkData(it.size)) {
-                        current = it[args.id]
-                    }
-                    tvCity.text = current.nameCity
-                    tvData.text = current.date
-                    val temp =
-                        current.temp_c.toInt().toString() + WeatherPrecipitation.VALUE_DEGREE
-                    tvDegree.text = temp
-                    tvCondition.text = current.condition.text
-                    Picasso.get().load(current.condition.icon).into(imWeather)
-                    val listPrecipitation = viewModel.getWeatherPrecipitation(current)
-                    Log.d("WeatherFragment_Log", "initCurrent: ${it.size}")
-                    adapterPrecipitation.submitList(listPrecipitation)
-                    setupPullAdapter(rvPrecipitation)
-                    rvPrecipitation.adapter = adapterPrecipitation
-                    binding.imBackground.transitionName = "${id}"
+            viewModel.city.observe(viewLifecycleOwner, Observer { currentList ->
+
+                if (checkData(currentList.size)) {
+                            val current = currentList[args.position].current
+                            tvCity.text = current.nameCity
+                            tvData.text = current.date
+                            val temp =
+                                current.temp_c.toInt()
+                                    .toString() + WeatherPrecipitation.VALUE_DEGREE
+                            tvDegree.text = temp
+                            tvCondition.text = current.condition.text
+                            Picasso.get().load(current.condition.icon).into(imWeather)
+                            val listPrecipitation = current.weatherPrecipitation
+                            Log.d("WeatherFragment_Log", "initCurrent: ${currentList.size}")
+                            adapterPrecipitation.submitList(listPrecipitation)
+                            setupPullAdapter(rvPrecipitation)
+                            rvPrecipitation.adapter = adapterPrecipitation
+                            binding.imBackground.transitionName = "${id}"
+
                 }
+
             })
 
 
@@ -102,15 +95,13 @@ class WeatherFragment : Fragment() {
     }
 
     private fun initLocationCheck() {
-        viewModelNetworkStatus.networkStatus.locationCondition.observe(viewLifecycleOwner) { locationCondition ->
-            if (locationCondition == true) {
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            if (state.location) {
                 binding.imNotLocation.visibility = View.GONE
             } else {
-                viewModel.location.observe(viewLifecycleOwner) {listLocation->
-                    if(listLocation.isNotEmpty()) {
-                        if (listLocation[args.id].locationId == USER_LOCATION_ID) {
-                            binding.imNotLocation.visibility = View.VISIBLE
-                        }
+                viewModel.city.observe(viewLifecycleOwner) { listLocation ->
+                    if (checkData(listLocation.size)) {
+                        binding.imNotLocation.visibility = View.VISIBLE
                     }
                 }
             }
@@ -127,10 +118,11 @@ class WeatherFragment : Fragment() {
     private fun initForecast() {
         val adapterCurrent = CurrentAdapter(requireContext())
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
-        viewModel.forecastDay.observe(viewLifecycleOwner, Observer {
+        viewModel.city.observe(viewLifecycleOwner, Observer {
             with(binding) {
                 if (checkData(it.size)) {
-                    val forecastDay = it[args.id]
+                    val city = it[args.position]
+                    val forecastDay = city.forecastDays
                     val listWeatherHour = viewModel.getWeatherHour24(forecastDay)
                     adapterCurrent.submitList(listWeatherHour)
                     rvCurrentDay.adapter = adapterCurrent
@@ -142,11 +134,14 @@ class WeatherFragment : Fragment() {
     }
 
     private fun checkData(sizeList: Int): Boolean {
-        return sizeList > args.id && sizeList != 0
+        Log.d("WeatherFragment_Log", "args.position ${args.position}")
+        return sizeList > args.position && sizeList != EMPTY_LIST
     }
 
     companion object {
-        const val USER_LOCATION_ID = 0
+        const val EMPTY_LIST = 0
+
+
     }
 
 }
