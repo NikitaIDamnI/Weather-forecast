@@ -8,9 +8,7 @@ import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.checkingСonnections.PermissionsLauncher
 import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import javax.inject.Inject
 
@@ -23,8 +21,6 @@ class ActivityWeather : AppCompatActivity() {
     private lateinit var weatherReceiver: WeatherReceiver
 
     private lateinit var viewModelWeather: ViewModelWeather
-    private lateinit var viewModelAllCities: ViewModelAllCities
-    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
 
 
     @Inject
@@ -45,43 +41,42 @@ class ActivityWeather : AppCompatActivity() {
         permission.checkPermissions(PermissionsLauncher.PERMISSION_LOCATION)
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        viewModelWeather =
+            ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
         weatherReceiver = WeatherReceiver(this)
         weatherReceiver.startReceiver()
-        initViewModels()
-        viewModelAllCities.weatherUpdate()
         initReceiver()
-        checkUpdate()
-        viewModelNetworkStatus.state.observe(this) {
-            Log.d("ActivityWeather_Log", "state: $it")
 
+        checkUpdate()
+    }
+
+    private fun initReceiver() {
+        weatherReceiver.getState = { stateReceiver ->
+            viewModelWeather.getState(stateReceiver)
+            Log.d("ActivityWeather_Log", "stateReceiver: $stateReceiver")
         }
 
     }
 
     private fun checkUpdate() {
-        viewModelNetworkStatus.state.observe(this) { state ->
+        viewModelWeather.state.observe(this) { state ->
             if (state.internet) {
                 if (state.location) {
-                Log.d("ActivityWeather_Log", "checkUpdate: ${state.internet}")
-                    viewModelAllCities.updateUserLocation()
+                    Log.d("ActivityWeather_Log", "checkUpdate: ${state.internet}")
+                    viewModelWeather.updateUserLocation()
                 }
-                viewModelAllCities.weatherUpdate()
+                viewModelWeather.weatherUpdate()
             }
+
         }
     }
 
-
-    private fun initReceiver() {
-        weatherReceiver.getState = {
-            viewModelNetworkStatus.getState(it)
-        }
-    }
 
     override fun onResume() {
         super.onResume()
         permission.isPermissionGranted(PermissionsLauncher.PERMISSION_LOCATION)
-
-        viewModelAllCities.checkLocation(this)
+        viewModelWeather.checkLocation(this)
+        checkUpdate()
     }
 
 
@@ -90,14 +85,6 @@ class ActivityWeather : AppCompatActivity() {
         weatherReceiver.stopReceiver()
     }
 
-    private fun initViewModels() {
-        viewModelAllCities =
-            ViewModelProvider(this, viewModelFactory)[ViewModelAllCities::class.java]
-        viewModelWeather =
-            ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
-        viewModelNetworkStatus =
-            ViewModelProvider(this, viewModelFactory)[ViewModelNetworkStatus::class.java]
-    }
 
     companion object {
         const val EMPTY_LIST = 0

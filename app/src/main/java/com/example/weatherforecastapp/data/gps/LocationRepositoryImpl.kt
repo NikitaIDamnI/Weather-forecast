@@ -89,7 +89,7 @@ class LocationRepositoryImpl @Inject constructor(
         Log.d("My_Log", "$latitude,$longitude")
 
         return PositionDb(
-            RepositoryDataImpl.CURRENT_LOCATION_ID,
+            RepositoryDataImpl.USER_ID,
             "$latitude,$longitude",
             Format.formatTimeFromEpoch(time)
         )

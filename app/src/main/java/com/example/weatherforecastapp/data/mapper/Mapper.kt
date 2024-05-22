@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 class Mapper @Inject constructor() {
     fun mapperCityDtoToCurrentDb(cityDto: CityDto, id: Int) = CurrentDb(
-        id =id,
+        id = id,
         nameCity = cityDto.locationDto.name,
         date = Format.formatDate(cityDto.currentDto.lastUpdatedEpoch),
         last_updated_epoch = cityDto.currentDto.lastUpdatedEpoch,
@@ -122,7 +122,7 @@ class Mapper @Inject constructor() {
         )
 
 
-    private fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto) =
+    fun mapperForecastDaysJSONToEntityForecastDays(dto: ForecastDayDto) =
         ForecastDay(
             date = Format.formatDate(dto.dateEpoch),
             dateEpoch = dto.dateEpoch,
@@ -421,7 +421,9 @@ class Mapper @Inject constructor() {
     fun mapperCityDtoToEntityCity(dto: CityDto, context: Context, locationId: Int) = City(
         location = mapperCityDtoToLocationEntity(dto, locationId),
         current = mapperCurrentDtoToEntityCurrent(dto, context),
-        forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it) }
+        forecastDays = ForecastDayCity(nameCity = dto.locationDto.name,
+            timeLocation =Format.formatTimeLocation(dto.locationDto.localtime),
+           forecastDays = dto.forecast.days.map { mapperForecastDaysDtoToEntityForecastDays(it) })
     )
 
     private fun mapperCityDtoToLocationEntity(cityDto: CityDto, locationId: Int) = Location(

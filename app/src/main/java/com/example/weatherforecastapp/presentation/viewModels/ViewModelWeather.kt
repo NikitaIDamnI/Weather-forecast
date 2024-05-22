@@ -1,32 +1,116 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
+import android.content.Context
+import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
+import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Condition
-import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.ForecastHour
-import com.example.weatherforecastapp.domain.models.WeatherPrecipitation
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCurrents
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetForecastDaysCity
+import com.example.weatherforecastapp.domain.models.Location
+import com.example.weatherforecastapp.domain.models.SearchCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasDeleteCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseAddNewCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCityFromSearch
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSizePager
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
+import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
+import com.example.weatherforecastapp.presentation.checkingСonnections.State
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 class ViewModelWeather @Inject constructor(
-    private val getLocations: UseCaseGetLocations,
-    private val getCurrentDays: UseCaseGetCurrents,
-    private val getForecastDaysCity: UseCaseGetForecastDaysCity,
+    private val repositoryDataImpl: RepositoryDataImpl,
+    private val useCaseGetLocations: UseCaseGetLocations,
+    private val useCaseSearchCity: UseCaseSearchCity,
+    private val useCaseAddCity: UseCaseAddNewCity,
+    private val useCasDeleteCity: UseCasDeleteCity,
+    private val useCaseGetCityFromSearch: UseCaseGetCityFromSearch,
+    private val getSizePager: UseCaseGetSizePager,
+    private val useCaseCheckLocation: UseCaseCheckLocation,
+    private val weatherUpdate: UseCaseWeatherUpdate,
 ) : ViewModel() {
 
-    var location = getLocations()
-    var current = getCurrentDays()
-    var forecastDay = getForecastDaysCity()
+    val state = MutableLiveData<State>()
 
-    fun getWeatherPrecipitation(current: Current): List<WeatherPrecipitation> {
-        return current.weatherPrecipitation
+    private var firstWeatherUpdate = true
+    private var firstUserUpdate = true
+
+
+    val previewCity = MutableLiveData<City>()
+    val city = repositoryDataImpl.getCity()
+
+    val listLocation = useCaseGetLocations()
+    var sizeCity = getSizePager()
+
+    val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
+
+    suspend fun searchCity(city: String): List<SearchCity> {
+        return useCaseSearchCity(city)
     }
+
+    fun checkCity(listLocation: List<Location>, searchCity: SearchCity): Boolean {
+        if (listLocation == emptyList<Location>()) {
+            return false
+        } else {
+            val position = "${searchCity.lat},${searchCity.lon}"
+
+            Log.d("ViewModelAllCities_Log", "searchCity: $searchCity ")
+            Log.d("ViewModelAllCities_Log", "listLocation: ${listLocation[0]} ")
+            val checkCity =
+                listLocation[0].name == searchCity.name && listLocation[0].country == searchCity.country && listLocation[0].region == searchCity.region
+            Log.d("ViewModelAllCities_Log", "checkCity: $checkCity ")
+
+            return listLocation.any {
+                it.position == position
+            }
+        }
+    }
+
+    fun previewCity(searchCity: SearchCity) {
+        viewModelScope.launch {
+            val citySearch = useCaseGetCityFromSearch(searchCity)
+            previewCity.value = citySearch
+        }
+    }
+
+    fun addCity(city: City) {
+        viewModelScope.launch {
+            useCaseAddCity(city)
+        }
+    }
+
+    fun deleteCity(location: Location) {
+        viewModelScope.launch {
+            useCasDeleteCity(location.locationId)
+            if (location.locationId == USER_POSITION) {
+                repositoryDataImpl.deletePosition(USER_POSITION)
+            }
+        }
+    }
+
+    fun weatherUpdate() {
+        if (firstWeatherUpdate) {
+            viewModelScope.launch {
+                weatherUpdate.invoke()
+            }
+            firstWeatherUpdate = false
+        }
+    }
+
+
+    fun checkLocation(context: Context) {
+        useCaseCheckLocation.invoke(context)
+    }
+
     fun getWeatherHour24(forecastDayCity: ForecastDayCity): List<ForecastHour> {
+        Log.d("ViewModelAllCities_Log", "forecastDayCity: $forecastDayCity ")
         val astro = forecastDayCity.forecastDays[0].astro
 
         val sunriseHour = astro.sunrise.split(":")[0].toInt()
@@ -65,6 +149,7 @@ class ViewModelWeather @Inject constructor(
             val index = sunsetHour - newListNextDay.size
             newListNextDay.add(sunriseHour + 1, sunrise)
         }
+
         val weatherHour24 = mutableListOf<ForecastHour>().apply {
             addAll(newListTo24)
             addAll(newListNextDay)
@@ -73,9 +158,31 @@ class ViewModelWeather @Inject constructor(
         return weatherHour24
     }
 
+    fun getState(newState: State){
+        state.value = newState
+        Log.d("ViewModelNetworkStatus", "state: $newState")
+    }
+
+    fun openNotification() {
+        shortNotifications.value = false
+    }
+
+    fun closeNotification() {
+        shortNotifications.value = true
+    }
 
 
+    fun updateUserLocation() {
+        if (firstUserUpdate) {
+            viewModelScope.launch {
+                repositoryDataImpl.updateUserPosition()
+                firstUserUpdate = false
+            }
+        }
+    }
 
 
-
+companion object {
+    const val USER_POSITION = 0
+}
 }

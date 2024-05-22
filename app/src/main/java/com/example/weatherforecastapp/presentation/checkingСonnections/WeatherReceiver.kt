@@ -56,7 +56,8 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
                  state = State(
                     location = isGpsEnabled,
                     locationPermission = isLocationPermission,
-                    internet = isInternetAvailable
+                    internet = isInternetAvailable,
+
                 )
                 getState?.invoke(state)
             }

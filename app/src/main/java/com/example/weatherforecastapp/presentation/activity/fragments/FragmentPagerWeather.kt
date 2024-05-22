@@ -16,9 +16,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
 import com.google.android.material.tabs.TabLayoutMediator
 import javax.inject.Inject
 
@@ -32,9 +31,7 @@ class FragmentPagerWeather : Fragment() {
     private val args by navArgs<FragmentPagerWeatherArgs>()
 
 
-    private lateinit var viewModel: ViewModelAllCities
-    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
-
+    private lateinit var viewModel: ViewModelWeather
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -60,12 +57,7 @@ class FragmentPagerWeather : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
-            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
-        viewModelNetworkStatus =
-            ViewModelProvider(
-                requireActivity(),
-                viewModelFactory
-            )[ViewModelNetworkStatus::class.java]
+            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         migrationIfNotLocation()
         initial()
     }
@@ -120,7 +112,7 @@ class FragmentPagerWeather : Fragment() {
     }
 
     private fun checkInternet(size: Int) {
-        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
             Log.d("FragmentPagerWeather_Log", "internetCondition: ${state.internet}")
             if (state.internet) {
                 onInternetAvailable()
@@ -179,7 +171,7 @@ class FragmentPagerWeather : Fragment() {
     private fun migrationIfNotLocation() {
         viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
             if (size == 0) {
-                viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+                viewModel.state.observe(viewLifecycleOwner) { state ->
                     if (state.internet) {
                         if (!state.location) {
                             val action =

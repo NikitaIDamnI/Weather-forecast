@@ -22,9 +22,8 @@ import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.clickableSpan
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelAllCities
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelNetworkStatus
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,8 +34,7 @@ class FragmentAllCities : Fragment() {
     private val binding: FragmentAllCitiesBinding
         get() = _binding ?: throw RuntimeException("WeatherFragmentBinding = null")
 
-    private lateinit var viewModel: ViewModelAllCities
-    private lateinit var viewModelNetworkStatus: ViewModelNetworkStatus
+    private lateinit var viewModel: ViewModelWeather
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -65,12 +63,7 @@ class FragmentAllCities : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
-            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelAllCities::class.java]
-        viewModelNetworkStatus =
-            ViewModelProvider(
-                requireActivity(),
-                viewModelFactory
-            )[ViewModelNetworkStatus::class.java]
+            ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         checkInternet()
         checkLocationPermission()
         setupAllCitiesAdapter()
@@ -79,7 +72,7 @@ class FragmentAllCities : Fragment() {
 
     private fun checkInternet() {
 
-        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
             if (state.internet) {
                 binding.cvNotInternet.visibility = View.GONE
                 binding.cardSearchView.visibility = View.VISIBLE
@@ -98,7 +91,7 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkLocationPermission() {
-        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
             if (!state.locationPermission) {
                 binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
 
@@ -128,7 +121,7 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkingEnabledLocation() {
-        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
             Log.d("FragmentAllCities_Log", "locationCondition: ${state.location})")
             if (!state.location) {
                 binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
@@ -178,7 +171,7 @@ class FragmentAllCities : Fragment() {
             findNavController().navigate(action)
         }
 
-        viewModelNetworkStatus.state.observe(viewLifecycleOwner) { state ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
             adapterAllCities = AllCityAdapter(requireActivity().applicationContext, state.internet)
             viewModel.listLocation.observe(viewLifecycleOwner) {
                 adapterAllCities.submitList(it)
