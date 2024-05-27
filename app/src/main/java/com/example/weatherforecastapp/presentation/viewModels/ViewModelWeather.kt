@@ -173,11 +173,12 @@ class ViewModelWeather @Inject constructor(
 
 
     fun updateUserLocation() {
+        Log.d("RepositoryDataImpl_Log", "firstUserUpdate: $firstUserUpdate ")
         if (firstUserUpdate) {
             viewModelScope.launch {
                 repositoryDataImpl.updateUserPosition()
-                firstUserUpdate = false
             }
+            firstUserUpdate = false
         }
     }
 

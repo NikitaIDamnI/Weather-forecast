@@ -46,7 +46,6 @@ class ActivityWeather : AppCompatActivity() {
         weatherReceiver = WeatherReceiver(this)
         weatherReceiver.startReceiver()
         initReceiver()
-
         checkUpdate()
     }
 

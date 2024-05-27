@@ -27,7 +27,7 @@ interface LocationDao {
     fun getLocation(id: Int): LiveData<LocationDb>
 
     @Query("SELECT * FROM location WHERE location_id = 0")
-    fun getUserLocation(): LocationDb
+    suspend fun getUserLocation(): LocationDb
 
     @Query("SELECT location_id,position,last_updated_epoch,last_updated FROM location WHERE location_id = :id")
     suspend fun checkPosition(id: Int): PositionDb?
