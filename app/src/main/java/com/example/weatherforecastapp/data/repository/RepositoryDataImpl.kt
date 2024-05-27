@@ -280,7 +280,7 @@ class RepositoryDataImpl @Inject constructor(
                 "RepositoryDataImpl",
                 "update: $update"
             )
-            return (true)
+            return (update)
         } else {
             return true
         }

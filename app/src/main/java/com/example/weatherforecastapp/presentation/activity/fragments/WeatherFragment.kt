@@ -59,7 +59,6 @@ class WeatherFragment : Fragment() {
         initCurrent()
         initForecast()
         initLocationCheck()
-
     }
 
 
@@ -67,31 +66,25 @@ class WeatherFragment : Fragment() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
             viewModel.city.observe(viewLifecycleOwner, Observer { currentList ->
-
                 if (checkData(currentList.size)) {
-                            val current = currentList[args.position].current
-                            tvCity.text = current.nameCity
-                            tvData.text = current.date
-                            val temp =
-                                current.temp_c.toInt()
-                                    .toString() + WeatherPrecipitation.VALUE_DEGREE
-                            tvDegree.text = temp
-                            tvCondition.text = current.condition.text
-                            Picasso.get().load(current.condition.icon).into(imWeather)
-                            val listPrecipitation = current.weatherPrecipitation
-                            Log.d("WeatherFragment_Log", "initCurrent: ${currentList.size}")
-                            adapterPrecipitation.submitList(listPrecipitation)
-                            setupPullAdapter(rvPrecipitation)
-                            rvPrecipitation.adapter = adapterPrecipitation
-                            binding.imBackground.transitionName = "${id}"
-
+                    val current = currentList[args.position].current
+                    tvCity.text = current.nameCity
+                    tvData.text = current.date
+                    val temp =
+                        current.temp_c.toInt()
+                            .toString() + WeatherPrecipitation.VALUE_DEGREE
+                    tvDegree.text = temp
+                    tvCondition.text = current.condition.text
+                    Picasso.get().load(current.condition.icon).into(imWeather)
+                    val listPrecipitation = current.weatherPrecipitation
+                    Log.d("WeatherFragment_Log", "initCurrent: ${currentList.size}")
+                    adapterPrecipitation.submitList(listPrecipitation)
+                    setupPullAdapter(rvPrecipitation)
+                    rvPrecipitation.adapter = adapterPrecipitation
+                    binding.imBackground.transitionName = "${id}"
                 }
-
             })
-
-
         }
-
     }
 
     private fun initLocationCheck() {
