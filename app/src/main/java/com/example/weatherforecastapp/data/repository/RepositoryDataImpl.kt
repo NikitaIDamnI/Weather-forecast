@@ -10,14 +10,25 @@ import com.example.weatherforecastapp.data.database.dao.CurrentDao
 import com.example.weatherforecastapp.data.database.dao.ForecastDayDao
 import com.example.weatherforecastapp.data.database.dao.LocationDao
 import com.example.weatherforecastapp.data.database.dao.PositionDao
+import com.example.weatherforecastapp.data.database.models.LocationDb
 import com.example.weatherforecastapp.data.database.models.PositionDb
 import com.example.weatherforecastapp.data.mapper.Mapper
+import com.example.weatherforecastapp.domain.StateCity
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.zip
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -32,6 +43,60 @@ class RepositoryDataImpl @Inject constructor(
     private val locationDao: LocationDao,
     private val positionDao: PositionDao
 ) : RepositoryData {
+
+
+    private val repositoryCoroutineScope = CoroutineScope(Dispatchers.IO)
+    private val refreshCityFlow = MutableSharedFlow<Unit>()
+
+    private val cityFlow: Flow<StateCity> = channelFlow {
+        locationDao.getLocationsFlow()
+            .onStart {
+                // Обновляем пользовательские данные и загружаем погоду
+                val stateLoading = weatherUpdate()
+                send(stateLoading)
+            }
+            .collectLatest { locationFlow ->
+                if (locationFlow.isNotEmpty()) {
+                    buildCity(locationFlow).collect { cityList ->
+                        if (cityList.isNotEmpty()) {
+                            send(StateCity.Cities(cityList))
+                        }
+                    }
+                } else {
+                    send(StateCity.Initial)
+                }
+            }
+    }
+
+    fun getCitiesFlow(): Flow<StateCity> {
+        return cityFlow
+    }
+
+
+    private suspend fun buildCity(locationFlow: List<LocationDb>): Flow<List<City>> = flow {
+        val cityList = mutableListOf<City>()
+
+        val location = locationFlow.map { mapper.mapperLocationDbToEntityLocation(it) }
+
+        // Используем zip для объединения потоков current и forecastDay
+        currentDao.getCurrentsFlow()
+            .zip(forecastDayDao.getForecastDayFlow()) { currentList, forecastDayList ->
+                // Проверяем, что все списки имеют одинаковую длину
+                val minSize = minOf(location.size, currentList.size, forecastDayList.size)
+
+                if (minSize > 0) {
+                    for (index in 0 until minSize) {
+                        val current = mapper.mapperCurrentDbToEntityCurrent(currentList[index], context)
+                        val forecastDay = mapper.mapperForecastCityDbToEntityForecastCityDays(forecastDayList[index])
+                        cityList.add(City(location[index], current, forecastDay))
+                    }
+                }
+                cityList
+            }
+            .collect { cityList ->
+                emit(cityList)
+            }
+    }
 
     override suspend fun saveUserPosition(positionDb: PositionDb): Boolean {
         val datePosition = positionDao.getPosition(USER_ID) ?: NO_POSITION
@@ -92,31 +157,34 @@ class RepositoryDataImpl @Inject constructor(
     }
 
 
-    override suspend fun weatherUpdate() {
+    override suspend fun weatherUpdate(): StateCity.Loading {
         val dataListLocation = locationDao.getAllLocations()
         val time = System.currentTimeMillis()
-        val datePositionDb = PositionDb(
-            dataListLocation[0].id,
-            dataListLocation[0].position,
-            timeFormat = dataListLocation[0].last_updated
-        )
         if (dataListLocation.isNotEmpty()) {
-            if (checkingForUpdates(datePositionDb)) {
-                Log.d("RepositoryDataImpl_Log", "weatherUpdate: UPDATE")
-                for (location in dataListLocation) {
-                    val thisPositionDb =
-                        PositionDb(
-                            location.id,
-                            location.position,
-                            formatTimeFromEpoch(time)
-                        )
+            for (location in dataListLocation) {
+                val thisPositionDb =
+                    PositionDb(
+                        location.id,
+                        location.position,
+                        formatTimeFromEpoch(time)
+                    )
+                val datePositionDb = PositionDb(
+                    location.id,
+                    location.position,
+                    timeFormat = location.last_updated
+                )
+                if (checkingForUpdates(datePositionDb)) {
+                    Log.d("RepositoryDataImpl_Log", "weatherUpdate: UPDATE Location : $location")
                     writingAPItoDatabase(datePositionDb, thisPositionDb)
                 }
+                return StateCity.Loading(true)
             }
-        }else{
+        } else {
+            return StateCity.Loading(false)
             Log.d("RepositoryDataImpl_Log", "weatherUpdate: NO_UPDATE")
 
         }
+        return StateCity.Loading(null)
     }
 
     override suspend fun getUserLocation(): Location {
@@ -150,7 +218,7 @@ class RepositoryDataImpl @Inject constructor(
 
     override fun getForecastDaysCity(): LiveData<List<ForecastDayCity>> {
         return MediatorLiveData<List<ForecastDayCity>>().apply {
-            addSource(forecastDayDao.getForecastDay()) { forecastDaysList ->
+            addSource(forecastDayDao.getForecastDayLiveData()) { forecastDaysList ->
                 if (forecastDaysList != null) {
                     value = forecastDaysList.map {
                         mapper.mapperForecastCityDbToEntityForecastCityDays(it)
@@ -176,7 +244,7 @@ class RepositoryDataImpl @Inject constructor(
 
     override fun getCurrentDays(): LiveData<List<Current>> {
         return MediatorLiveData<List<Current>>().apply {
-            addSource(currentDao.getCurrents()) { currentList ->
+            addSource(currentDao.getCurrentsLiveData()) { currentList ->
                 if (currentList != null) {
                     value = currentList.map { mapper.mapperCurrentDbToEntityCurrent(it, context) }
                 } else {
@@ -190,8 +258,8 @@ class RepositoryDataImpl @Inject constructor(
         val cityLiveData = MediatorLiveData<List<City>>()
 
         val locationSource = locationDao.getAllLocationsLiveData()
-        val currentSource = currentDao.getCurrents()
-        val forecastDaySource = forecastDayDao.getForecastDay()
+        val currentSource = currentDao.getCurrentsLiveData()
+        val forecastDaySource = forecastDayDao.getForecastDayLiveData()
 
         fun updateCityList() {
             val locationList = locationSource.value

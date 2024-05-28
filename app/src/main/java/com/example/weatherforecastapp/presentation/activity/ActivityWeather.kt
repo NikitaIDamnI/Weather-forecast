@@ -3,13 +3,17 @@ package com.example.weatherforecastapp.presentation.activity
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.weatherforecastapp.databinding.ActivityWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.checkingСonnections.PermissionsLauncher
 import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ActivityWeather : AppCompatActivity() {
@@ -46,7 +50,15 @@ class ActivityWeather : AppCompatActivity() {
         weatherReceiver = WeatherReceiver(this)
         weatherReceiver.startReceiver()
         initReceiver()
-        checkUpdate()
+       // checkUpdate()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED){
+                viewModelWeather.flowCity.collect{
+                    Log.d("Activity_Log", "flow:${it} ")
+                }
+            }
+        }
+
     }
 
     private fun initReceiver() {
@@ -57,25 +69,26 @@ class ActivityWeather : AppCompatActivity() {
 
     }
 
-    private fun checkUpdate() {
-        viewModelWeather.state.observe(this) { state ->
-            if (state.internet) {
-                if (state.location) {
-                    Log.d("ActivityWeather_Log", "checkUpdate: ${state.internet}")
-                    viewModelWeather.updateUserLocation()
-                }
-                viewModelWeather.weatherUpdate()
-            }
 
-        }
-    }
+//    private fun checkUpdate() {
+//        viewModelWeather.state.observe(this) { state ->
+//            if (state.internet) {
+//                if (state.location) {
+//                    Log.d("ActivityWeather_Log", "checkUpdate: ${state.internet}")
+//                    viewModelWeather.updateUserLocation()
+//                }
+//                viewModelWeather.weatherUpdate()
+//            }
+//
+//        }
+//    }
 
 
     override fun onResume() {
         super.onResume()
         permission.isPermissionGranted(PermissionsLauncher.PERMISSION_LOCATION)
         viewModelWeather.checkLocation(this)
-        checkUpdate()
+        //checkUpdate()
     }
 
 

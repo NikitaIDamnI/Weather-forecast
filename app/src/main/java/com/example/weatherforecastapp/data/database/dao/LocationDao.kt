@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.weatherforecastapp.data.database.models.LocationDb
 import com.example.weatherforecastapp.data.database.models.PositionDb
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocationDao {
@@ -52,6 +53,9 @@ interface LocationDao {
 
     @Query("DELETE FROM location")
     fun deleteAll()
+
+    @Query("SELECT * FROM location")
+    fun getLocationsFlow(): Flow<List<LocationDb>>
 
 
 }

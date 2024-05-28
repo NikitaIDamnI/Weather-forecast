@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
+import com.example.weatherforecastapp.domain.StateCity
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
@@ -43,6 +44,9 @@ class ViewModelWeather @Inject constructor(
     private var firstUserUpdate = true
 
 
+    val flowCity = repositoryDataImpl.getCitiesFlow()
+
+
     val previewCity = MutableLiveData<City>()
     val city = repositoryDataImpl.getCity()
 
@@ -50,6 +54,23 @@ class ViewModelWeather @Inject constructor(
     var sizeCity = getSizePager()
 
     val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
+
+    init {
+        viewModelScope.launch {
+            flowCity.collect {
+                when (it) {
+                    is StateCity.Loading -> {
+                        Log.d("ViewModel_Log", "StateCity.Loading : $it ")
+                        val update = it.stateLoading ?: false
+                        firstWeatherUpdate = !update
+                    }
+                    else -> {
+
+                    }
+                }
+            }
+        }
+    }
 
     suspend fun searchCity(city: String): List<SearchCity> {
         return useCaseSearchCity(city)
@@ -95,14 +116,14 @@ class ViewModelWeather @Inject constructor(
         }
     }
 
-    fun weatherUpdate() {
-        if (firstWeatherUpdate) {
-            viewModelScope.launch {
-                weatherUpdate.invoke()
-            }
-            firstWeatherUpdate = false
-        }
-    }
+//    fun weatherUpdate() {
+//        if (firstWeatherUpdate) {
+//            viewModelScope.launch {
+//                weatherUpdate.invoke()
+//            }
+//            firstWeatherUpdate = false
+//        }
+//    }
 
 
     fun checkLocation(context: Context) {
@@ -158,7 +179,7 @@ class ViewModelWeather @Inject constructor(
         return weatherHour24
     }
 
-    fun getState(newState: State){
+    fun getState(newState: State) {
         state.value = newState
         Log.d("ViewModelNetworkStatus", "state: $newState")
     }
@@ -172,18 +193,18 @@ class ViewModelWeather @Inject constructor(
     }
 
 
-    fun updateUserLocation() {
-        Log.d("RepositoryDataImpl_Log", "firstUserUpdate: $firstUserUpdate ")
-        if (firstUserUpdate) {
-            viewModelScope.launch {
-                repositoryDataImpl.updateUserPosition()
-            }
-            firstUserUpdate = false
-        }
+//    fun updateUserLocation() {
+//        Log.d("RepositoryDataImpl_Log", "firstUserUpdate: $firstUserUpdate ")
+//        if (firstUserUpdate) {
+//            viewModelScope.launch {
+//                repositoryDataImpl.updateUserPosition()
+//            }
+//            firstUserUpdate = false
+//        }
+//    }
+
+
+    companion object {
+        const val USER_POSITION = 0
     }
-
-
-companion object {
-    const val USER_POSITION = 0
-}
 }
