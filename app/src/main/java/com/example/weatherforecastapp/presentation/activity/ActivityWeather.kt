@@ -53,7 +53,7 @@ class ActivityWeather : AppCompatActivity() {
        // checkUpdate()
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED){
-                viewModelWeather.flowCity.collect{
+                viewModelWeather.previewCity.collect{
                     Log.d("Activity_Log", "flow:${it} ")
                 }
             }

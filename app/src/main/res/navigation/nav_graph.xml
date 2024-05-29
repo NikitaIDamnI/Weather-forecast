@@ -51,10 +51,5 @@
         android:id="@+id/previewNewWeatherFragment"
         android:name="com.example.weatherforecastapp.presentation.activity.fragments.PreviewNewWeatherFragment"
         android:label="preview_new_weather_fragment"
-        tools:layout="@layout/preview_new_weather_fragment" >
-        <argument
-            android:name="viewAddCity"
-            app:argType="boolean"
-            android:defaultValue="true" />
-    </dialog>
+        tools:layout="@layout/preview_new_weather_fragment" />
 </navigation>

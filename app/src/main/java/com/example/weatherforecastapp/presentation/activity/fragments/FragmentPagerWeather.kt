@@ -8,8 +8,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.widget.ViewPager2
@@ -19,6 +22,7 @@ import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -98,13 +102,17 @@ class FragmentPagerWeather : Fragment() {
     private fun initTabLayoutMediator() {
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
 
-            viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
-                if (listLocation.size > position && listLocation[position].locationId == USER_POSITION) {
-                    tab.setIcon(R.drawable.ic_nav)
-                    tab.view.isClickable = false
-                } else {
-                    tab.setIcon(R.drawable.ic_tochka)
-                    tab.view.isClickable = false
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    viewModel.listLocation.collect { listLocation ->
+                        if (listLocation.size > position && listLocation[position].locationId == USER_POSITION) {
+                            tab.setIcon(R.drawable.ic_nav)
+                            tab.view.isClickable = false
+                        } else {
+                            tab.setIcon(R.drawable.ic_tochka)
+                            tab.view.isClickable = false
+                        }
+                    }
                 }
             }
         }
@@ -129,11 +137,15 @@ class FragmentPagerWeather : Fragment() {
             binding.textView3.text = resources.getString(R.string.not_internet)
         } else {
             binding.cvNotInternet.visibility = View.VISIBLE
-            viewModel.listLocation.observe(viewLifecycleOwner, Observer {
-                val lastUpdate =
-                    "${resources.getString(R.string.the_latest_update)} ${it[0].localtime}"
-                binding.tvTheLastUpdate.text = lastUpdate
-            })
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    viewModel.listLocation.collect {
+                        val lastUpdate =
+                            "${resources.getString(R.string.the_latest_update)} ${it[0].localtime}"
+                        binding.tvTheLastUpdate.text = lastUpdate
+                    }
+                }
+            }
         }
     }
 

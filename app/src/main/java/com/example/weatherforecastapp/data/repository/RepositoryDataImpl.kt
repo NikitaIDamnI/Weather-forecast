@@ -24,10 +24,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.zip
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -66,7 +69,9 @@ class RepositoryDataImpl @Inject constructor(
                     send(StateCity.Initial)
                 }
             }
-    }
+    }.shareIn(
+        repositoryCoroutineScope, SharingStarted.Lazily, replay = 1
+    )
 
     fun getCitiesFlow(): Flow<StateCity> {
         return cityFlow
@@ -75,9 +80,7 @@ class RepositoryDataImpl @Inject constructor(
 
     private suspend fun buildCity(locationFlow: List<LocationDb>): Flow<List<City>> = flow {
         val cityList = mutableListOf<City>()
-
         val location = locationFlow.map { mapper.mapperLocationDbToEntityLocation(it) }
-
         // Используем zip для объединения потоков current и forecastDay
         currentDao.getCurrentsFlow()
             .zip(forecastDayDao.getForecastDayFlow()) { currentList, forecastDayList ->
@@ -86,8 +89,10 @@ class RepositoryDataImpl @Inject constructor(
 
                 if (minSize > 0) {
                     for (index in 0 until minSize) {
-                        val current = mapper.mapperCurrentDbToEntityCurrent(currentList[index], context)
-                        val forecastDay = mapper.mapperForecastCityDbToEntityForecastCityDays(forecastDayList[index])
+                        val current =
+                            mapper.mapperCurrentDbToEntityCurrent(currentList[index], context)
+                        val forecastDay =
+                            mapper.mapperForecastCityDbToEntityForecastCityDays(forecastDayList[index])
                         cityList.add(City(location[index], current, forecastDay))
                     }
                 }
@@ -98,6 +103,10 @@ class RepositoryDataImpl @Inject constructor(
             }
     }
 
+
+    suspend fun  allLocations(): List<Location>{
+        return locationDao.getAllLocations().map { mapper.mapperLocationDbToEntityLocation(it) }
+    }
     override suspend fun saveUserPosition(positionDb: PositionDb): Boolean {
         val datePosition = positionDao.getPosition(USER_ID) ?: NO_POSITION
         if (datePosition.position != positionDb.position) {
@@ -230,16 +239,8 @@ class RepositoryDataImpl @Inject constructor(
         }
     }
 
-    override fun getLocations(): LiveData<List<Location>> {
-        return MediatorLiveData<List<Location>>().apply {
-            addSource(locationDao.getAllLocationsLiveData()) { locationList ->
-                if (locationList != null) {
-                    value = locationList.map { mapper.mapperLocationDbToEntityLocation(it) }
-                } else {
-                    emptyList<Location>()
-                }
-            }
-        }
+    override fun getLocations(): Flow<List<Location>> {
+        return locationDao.getLocationsFlow().map { it.map { mapper.mapperLocationDbToEntityLocation(it) } }
     }
 
     override fun getCurrentDays(): LiveData<List<Current>> {

@@ -5,19 +5,21 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
+import com.example.weatherforecastapp.domain.StateCity
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.clickableSpan
 import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCityAdapter
@@ -41,7 +43,6 @@ class FragmentAllCities : Fragment() {
 
     lateinit var searchCityAdapter: SearchCityAdapter
     lateinit var adapterAllCities: AllCityAdapter
-
 
     private val component by lazy {
         (requireActivity().application as WeatherApp).component
@@ -68,22 +69,16 @@ class FragmentAllCities : Fragment() {
         checkLocationPermission()
         setupAllCitiesAdapter()
         setupSearchAdapter()
+        observePreviewCityState()
+        observeCityList()
     }
 
     private fun checkInternet() {
-
         viewModel.state.observe(viewLifecycleOwner) { state ->
             if (state.internet) {
                 binding.cvNotInternet.visibility = View.GONE
                 binding.cardSearchView.visibility = View.VISIBLE
             } else {
-                viewModel.listLocation.observe(viewLifecycleOwner) {
-                    if (it.isNotEmpty()) {
-                        val text =
-                            "${resources.getString(R.string.the_latest_update)} ${it[0].localtime}"
-                        binding.tvLastUpdate.text = text
-                    }
-                }
                 binding.cvNotInternet.visibility = View.VISIBLE
                 binding.cardSearchView.visibility = View.GONE
             }
@@ -94,7 +89,6 @@ class FragmentAllCities : Fragment() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
             if (!state.locationPermission) {
                 binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
-
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
                     if (shortNotifications) {
                         val textShort = resources.getString(R.string.not_permission_location_short)
@@ -103,8 +97,8 @@ class FragmentAllCities : Fragment() {
                             startActivity(
                                 Intent(
                                     Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                    Uri.fromParts("package", context?.packageName, null),
-                                ),
+                                    Uri.fromParts("package", context?.packageName, null)
+                                )
                             )
                         }
                     } else {
@@ -117,12 +111,10 @@ class FragmentAllCities : Fragment() {
                 checkingEnabledLocation()
             }
         }
-
     }
 
     private fun checkingEnabledLocation() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
-            Log.d("FragmentAllCities_Log", "locationCondition: ${state.location})")
             if (!state.location) {
                 binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
                 viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
@@ -161,63 +153,49 @@ class FragmentAllCities : Fragment() {
         }
     }
 
-
-    private fun setupAllCitiesAdapter() = with(binding) {
+    private fun setupAllCitiesAdapter() {
         adapterAllCities = AllCityAdapter(requireActivity().applicationContext, true)
+        binding.rvAllCity.adapter = adapterAllCities
         adapterAllCities.onClick = { position ->
-            val action =
-                FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                    .setPosition(position)
+            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
+                .setPosition(position)
             findNavController().navigate(action)
         }
+        setupSwipeListener(binding.rvAllCity, true)
+    }
 
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            adapterAllCities = AllCityAdapter(requireActivity().applicationContext, state.internet)
-            viewModel.listLocation.observe(viewLifecycleOwner) {
-                adapterAllCities.submitList(it)
+    private fun observePreviewCityState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.previewCity.collect { state ->
+                    if (state is StateCity.PreviewCity) {
+                        val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
+                        findNavController().navigate(action)
+                    }
+                }
             }
-            adapterAllCities.onClick = { position ->
-                val action =
-                    FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                        .setPosition(position)
-                findNavController().navigate(action)
-            }
-            rvAllCity.adapter = adapterAllCities
-            setupSwipeListener(rvAllCity, state.location)
         }
-
-
     }
 
     private fun setupSearchAdapter() {
         searchCityAdapter = SearchCityAdapter(requireActivity().applicationContext)
         binding.rvSearch.adapter = searchCityAdapter
         searchCityAdapter.onClick = { searchCity ->
-            viewModel.previewCity(searchCity)
-
+            viewModel.addPreviewCity(searchCity)
             binding.searchView.setQuery(EMPTY_QUERY, false)
             binding.searchView.clearFocus()
             binding.searchView.isIconified = true
-
-            var view = false
-            viewModel.listLocation.observe(viewLifecycleOwner) { listLocation ->
-                view = viewModel.checkCity(listLocation, searchCity)
-            }
-            val action =
-                FragmentAllCitiesDirections.actionFragmentAllCitiesToPreviewNewWeatherFragment()
-                    .setViewAddCity(view)
-            findNavController().navigate(action)
         }
 
         binding.searchView.setOnQueryTextListener(
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                        if (!query.isNullOrEmpty()) {
-                            lifecycleScope.launch {
-                                val searchCities = viewModel.searchCity(query)
-                                searchCityAdapter.submitList(searchCities)
-                            }
+                    if (!query.isNullOrEmpty()) {
+                        lifecycleScope.launch {
+                            val searchCities = viewModel.searchCity(query)
+                            searchCityAdapter.submitList(searchCities)
                         }
+                    }
                     return false
                 }
 
@@ -252,7 +230,6 @@ class FragmentAllCities : Fragment() {
                 viewHolder: RecyclerView.ViewHolder
             ): Int {
                 val item = adapterAllCities.currentList[viewHolder.adapterPosition]
-
                 return if (item.locationId == USER_ID && locations) {
                     DEFAULT_SWIPE_DIRECTION
                 } else {
@@ -264,11 +241,20 @@ class FragmentAllCities : Fragment() {
         itemTouchHelper.attachToRecyclerView(rvShopList)
     }
 
+    private fun observeCityList() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.listLocation.collect { cityList ->
+                    adapterAllCities.submitList(cityList)
+                }
+            }
+        }
+    }
+
     companion object {
         const val USER_ID = 0
         const val DEFAULT_SWIPE_DIRECTION = 0
         const val EMPTY_QUERY = ""
         const val CLICKABLE_SPAN_INDEX = "settings"
     }
-
 }

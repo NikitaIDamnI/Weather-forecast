@@ -8,6 +8,7 @@ import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
+import kotlinx.coroutines.flow.Flow
 
 interface RepositoryData {
 
@@ -16,7 +17,7 @@ interface RepositoryData {
     suspend fun getCityFromSearch(searchCity: SearchCity): City
     suspend fun searchCity(city: String): List<SearchCity>
     suspend fun deleteCity(positionId: Int)
-    fun getLocations(): LiveData<List<Location>>
+    fun getLocations(): Flow<List<Location>>
     suspend fun getUserLocation(): Location
     suspend fun weatherUpdate() : StateCity.Loading
     fun getCurrentDays(): LiveData<List<Current>>

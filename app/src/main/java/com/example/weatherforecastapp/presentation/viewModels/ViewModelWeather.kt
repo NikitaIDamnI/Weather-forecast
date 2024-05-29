@@ -23,6 +23,8 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearc
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import com.example.weatherforecastapp.presentation.checkingСonnections.State
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -44,26 +46,30 @@ class ViewModelWeather @Inject constructor(
     private var firstUserUpdate = true
 
 
-    val flowCity = repositoryDataImpl.getCitiesFlow()
+    val cities = repositoryDataImpl.getCitiesFlow()
 
 
-    val previewCity = MutableLiveData<City>()
-    val city = repositoryDataImpl.getCity()
+    private var _previewCity = MutableStateFlow<StateCity>(StateCity.Empty)
+    val previewCity: StateFlow<StateCity>
+        get() = _previewCity
 
-    val listLocation = useCaseGetLocations()
+
+    val listLocation = repositoryDataImpl.getLocations()
+
     var sizeCity = getSizePager()
 
     val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
 
     init {
         viewModelScope.launch {
-            flowCity.collect {
+            cities.collect {
                 when (it) {
                     is StateCity.Loading -> {
                         Log.d("ViewModel_Log", "StateCity.Loading : $it ")
                         val update = it.stateLoading ?: false
                         firstWeatherUpdate = !update
                     }
+
                     else -> {
 
                     }
@@ -94,11 +100,18 @@ class ViewModelWeather @Inject constructor(
         }
     }
 
-    fun previewCity(searchCity: SearchCity) {
+    fun addPreviewCity(searchCity: SearchCity) {
         viewModelScope.launch {
-            val citySearch = useCaseGetCityFromSearch(searchCity)
-            previewCity.value = citySearch
+            val city = repositoryDataImpl.getCityFromSearch(searchCity)
+            val listLocation = repositoryDataImpl.allLocations()
+            val addedStatus = checkCity(listLocation,searchCity)
+
+            _previewCity.emit(StateCity.PreviewCity(city, addedStatus))
         }
+    }
+
+    fun resetPreviewCity() {
+        _previewCity.value = StateCity.Empty
     }
 
     fun addCity(city: City) {
@@ -115,15 +128,6 @@ class ViewModelWeather @Inject constructor(
             }
         }
     }
-
-//    fun weatherUpdate() {
-//        if (firstWeatherUpdate) {
-//            viewModelScope.launch {
-//                weatherUpdate.invoke()
-//            }
-//            firstWeatherUpdate = false
-//        }
-//    }
 
 
     fun checkLocation(context: Context) {

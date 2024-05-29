@@ -8,5 +8,8 @@ sealed class StateCity {
     class Loading(val stateLoading: Boolean?) : StateCity()
     data class Cities(val cities: List<City>) : StateCity()
 
+    data class PreviewCity(val city: City,val cityAddedStatus: Boolean ) : StateCity()
+
+
 
 }
