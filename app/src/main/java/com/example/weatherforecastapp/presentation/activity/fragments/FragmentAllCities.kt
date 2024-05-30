@@ -28,6 +28,7 @@ import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCity
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -67,11 +68,11 @@ class FragmentAllCities : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
-        setupAllCitiesAdapter()
+        setupAllCitiesAdapter(intent = true)
         setupSearchAdapter()
         observePreviewCityState()
-        observeCityList()
         observeStatNetwork()
+        observeCityList()
     }
 
     private fun observeStatNetwork() {
@@ -81,6 +82,7 @@ class FragmentAllCities : Fragment() {
                     Log.d(TAG, "stateNetwork:  $it")
                     checkLocationPermission(it)
                     checkInternet(it)
+                    setupAllCitiesAdapter(it.internet)
                 }
             }
         }
@@ -162,8 +164,8 @@ class FragmentAllCities : Fragment() {
         }
     }
 
-    private fun setupAllCitiesAdapter() {
-        adapterAllCities = AllCityAdapter(requireActivity().applicationContext, true)
+    private fun setupAllCitiesAdapter(intent: Boolean) {
+        adapterAllCities = AllCityAdapter(requireActivity().applicationContext, intent)
         binding.rvAllCity.adapter = adapterAllCities
         adapterAllCities.onClick = { position ->
             val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
@@ -201,7 +203,7 @@ class FragmentAllCities : Fragment() {
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     if (!query.isNullOrEmpty()) {
-                        lifecycleScope.launch(viewModel.exceptionHandler) {
+                        lifecycleScope.launch {
                             val searchCities = viewModel.searchCity(query)
                             searchCityAdapter.submitList(searchCities)
                         }
