@@ -61,7 +61,6 @@ class WeatherFragment : Fragment() {
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         initCurrent()
         initForecast()
-        //initLocationCheck()
     }
 
 
@@ -69,7 +68,7 @@ class WeatherFragment : Fragment() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
             lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.CREATED) {
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
                     viewModel.cities.collect { city ->
                         if (city is StateCity.Cities) {
                             val current = city.cities[args.position].current
@@ -93,17 +92,6 @@ class WeatherFragment : Fragment() {
         }
     }
 
-//    private fun initLocationCheck() {
-//        viewModel.state.observe(viewLifecycleOwner) { state ->
-//            if (state.location) {
-//                binding.imNotLocation.visibility = View.GONE
-//            } else {
-//                if (args.position == 0) {
-//                    binding.imNotLocation.visibility = View.VISIBLE
-//                }
-//            }
-//        }
-//    }
 
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
         rvPrecipitation.recycledViewPool.setMaxRecycledViews(
@@ -116,7 +104,7 @@ class WeatherFragment : Fragment() {
         val adapterCurrent = CurrentAdapter(requireContext())
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.cities.collect { city ->
                     with(binding) {
                         if (city is StateCity.Cities) {

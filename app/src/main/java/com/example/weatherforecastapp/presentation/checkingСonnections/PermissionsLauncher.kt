@@ -3,6 +3,7 @@ package com.example.weatherforecastapp.presentation.checkingСonnections
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,12 +30,14 @@ class PermissionsLauncher(
             ActivityResultContracts.RequestPermission()
         ) {
             Toast.makeText(context, "Permission is $it", Toast.LENGTH_LONG).show()
-            if (it == false) {
-                Intent(WeatherReceiver.ACTION_STATE).apply {
-                    putExtra(WeatherReceiver.LOCATION_PERMISSION, it)
-                    context.sendBroadcast(this)
-                }
+            Log.d(TAG, "permissionListener: $it")
+
+            Intent(WeatherReceiver.ACTION_LOCATION_PERMISSION).apply {
+                putExtra(WeatherReceiver.CONDITION, it)
+                context.sendBroadcast(this)
             }
+
+
         }
     }
 
@@ -51,6 +54,7 @@ class PermissionsLauncher(
     }
 
     companion object {
+        const val TAG = "PermissionsLauncher_Log"
         const val PERMISSION_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
     }
 }

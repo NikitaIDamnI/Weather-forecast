@@ -22,11 +22,13 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSi
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
-import com.example.weatherforecastapp.presentation.checkingСonnections.State
-import kotlinx.coroutines.CoroutineExceptionHandler
+import com.example.weatherforecastapp.presentation.checkingСonnections.StateNetwork
+import com.example.weatherforecastapp.presentation.checkingСonnections.StateReceiver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -43,41 +45,40 @@ class ViewModelWeather @Inject constructor(
     private val useCaseCheckLocation: UseCaseCheckLocation,
     private val weatherUpdate: UseCaseWeatherUpdate,
 ) : ViewModel() {
-    val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable -> }
-    private val _state = MutableStateFlow(State())
-    val state: StateFlow<State> get() = _state
+
+    private val _stateNetwork = MutableStateFlow(StateNetwork())
+
+    val stateNetwork: SharedFlow<StateNetwork> get() = _stateNetwork.asStateFlow()
     val cities: Flow<StateCity> = repositoryDataImpl.getCitiesFlow()
-
-
 
     private var _previewCity = MutableStateFlow<StateCity>(StateCity.Empty)
     val previewCity: StateFlow<StateCity>
         get() = _previewCity
 
-
-    val listLocation = repositoryDataImpl.getLocations()
-
-    var sizeCity = getSizePager()
+    val listLocation = useCaseGetLocations()
 
     val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
+    private var firstUpdate = true
+
 
     init {
-        viewModelScope.launch(exceptionHandler) {
-            combine(cities, _state) { cities, state ->
-                if (state.internet && state.firstWeatherUpdate) {
+        viewModelScope.launch {
+            combine(cities, _stateNetwork) { cities, state ->
+                if (state.internet && firstUpdate) {
                     when (cities) {
                         is StateCity.Loading -> {
                             repositoryDataImpl.weatherUpdate()
-                            _state.value = state.copy(firstWeatherUpdate = true)
+                            firstUpdate = true
                         }
-                        is StateCity.Initial -> {
+                        is StateCity.Empty -> {
                             repositoryDataImpl.updateUserPosition()
+                            firstUpdate = true
                         }
-                        is StateCity.Cities ->{
+                        is StateCity.Cities -> {
                             repositoryDataImpl.updateUserPosition()
+                            firstUpdate = true
                         }
-                        else -> {
-                        }
+                        else -> {}
                     }
                 }
             }.collect()
@@ -89,7 +90,7 @@ class ViewModelWeather @Inject constructor(
         return useCaseSearchCity(city)
     }
 
-    fun checkCity(listLocation: List<Location>, searchCity: SearchCity): Boolean {
+    private fun checkCity(listLocation: List<Location>, searchCity: SearchCity): Boolean {
         if (listLocation == emptyList<Location>()) {
             return false
         } else {
@@ -112,7 +113,6 @@ class ViewModelWeather @Inject constructor(
             val city = repositoryDataImpl.getCityFromSearch(searchCity)
             val listLocation = repositoryDataImpl.allLocations()
             val addedStatus = checkCity(listLocation, searchCity)
-
             _previewCity.emit(StateCity.PreviewCity(city, addedStatus))
         }
     }
@@ -190,13 +190,16 @@ class ViewModelWeather @Inject constructor(
         return weatherHour24
     }
 
-    fun getState(newState: State) {
-        val state = _state.value.copy(
-            internet = newState.internet,
-            location = newState.location,
-            locationPermission = newState.locationPermission
-        )
-        _state.value = state
+    fun getState(newState: StateReceiver) {
+        viewModelScope.launch {
+            _stateNetwork.emit(
+                StateNetwork(
+                    internet = newState.internet,
+                    location = newState.location,
+                    locationPermission = newState.locationPermission
+                )
+            )
+        }
         Log.d("ViewModelNetworkStatus", "state: $newState")
     }
 

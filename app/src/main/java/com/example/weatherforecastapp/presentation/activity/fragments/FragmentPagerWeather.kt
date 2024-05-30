@@ -17,7 +17,10 @@ import androidx.navigation.fragment.navArgs
 import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
+import com.example.weatherforecastapp.domain.StateCity
+import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.presentation.WeatherApp
+import com.example.weatherforecastapp.presentation.checkingСonnections.StateNetwork
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.google.android.material.tabs.TabLayoutMediator
@@ -61,99 +64,76 @@ class FragmentPagerWeather : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
-       // migrationIfNotLocation()
-        initial()
+        init()
     }
 
-    private fun initial() {
-        animationViewElements()
+    private fun init() {
         binding.bMenu.setOnClickListener {
             val action =
                 FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
             findNavController().navigate(action)
         }
-
-        viewModel.sizeCity.observe(viewLifecycleOwner) {
-
-            Log.d("FragmentPagerWeather_Log", "sizeCity: $it")
-            val pager = PagerAdapter(requireActivity(), it)
-
-            with(binding) {
-
-                viewPager.adapter = pager
-                viewPager.setCurrentItem(args.position, false)
-
-                initTabLayoutMediator()
-
-
-                if (it == EMPTY_LIST) {
-                    viewPager.visibility = View.GONE
-                } else {
-                    viewPager.visibility = View.VISIBLE
-                }
-
-               // checkInternet(it)
-            }
-        }
-
-    }
-
-    private fun initTabLayoutMediator() {
-        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    viewModel.listLocation.collect { listLocation ->
-                        if (listLocation.size > position && listLocation[position].locationId == USER_POSITION) {
-                            tab.setIcon(R.drawable.ic_nav)
-                            tab.view.isClickable = false
-                        } else {
-                            tab.setIcon(R.drawable.ic_tochka)
-                            tab.view.isClickable = false
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.cities.collect { stateCity ->
+                    when (stateCity) {
+                        is StateCity.Empty -> {
+                            binding.progressBar2.visibility = View.GONE
+                            binding.cardToolbar.visibility = View.GONE
                         }
+
+                        is StateCity.Loading -> {
+                            binding.load.visibility = View.VISIBLE
+                        }
+
+                        is StateCity.Cities -> {
+                            initPager(stateCity)
+                        }
+
+                        else -> {}
                     }
                 }
             }
         }
-            .attach()
-    }
-
-//    private fun checkInternet(size: Int) {
-//        viewModel.state.observe(viewLifecycleOwner) { state ->
-//            Log.d("FragmentPagerWeather_Log", "internetCondition: ${state.internet}")
-//            if (state.internet) {
-//                onInternetAvailable()
-//            } else {
-//                onInternetUnavailable(size)
-//            }
-//        }
-//
-//    }
-
-    private fun onInternetUnavailable(sizeList: Int) {
-        if (sizeList == EMPTY_LIST) {
-            binding.progressBar2.visibility = View.GONE
-            binding.textView3.text = resources.getString(R.string.not_internet)
-        } else {
-            binding.cvNotInternet.visibility = View.VISIBLE
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                    viewModel.listLocation.collect {
-                        val lastUpdate =
-                            "${resources.getString(R.string.the_latest_update)} ${it[0].localtime}"
-                        binding.tvTheLastUpdate.text = lastUpdate
-                    }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                viewModel.stateNetwork.collect {
+                    checkInternet(it)
+                    migrationIfNotLocation(it)
                 }
             }
         }
+
     }
 
-    private fun onInternetAvailable() {
-        binding.cvNotInternet.visibility = View.GONE
-        binding.progressBar2.visibility = View.VISIBLE
-        binding.textView3.text = resources.getString(R.string.load_date)
+    private fun initPager(stateCities: StateCity.Cities) {
+        animationViewElements()
+        val cities = stateCities.cities
+        val lastUpdate =
+            "${resources.getString(R.string.the_latest_update)} ${cities[0].location.localtime}"
+        binding.tvTheLastUpdate.text = lastUpdate
 
-        Log.d("FragmentPagerWeather_Log", "internet: true")
+        Log.d("FragmentPagerWeather_Log", "sizeCity: ${cities.size}")
+        val pager = PagerAdapter(requireActivity(), cities.size)
+        with(binding) {
+            viewPager.adapter = pager
+            viewPager.setCurrentItem(args.position, false)
+            initTabLayoutMediator(cities)
+            viewPager.visibility = View.VISIBLE
+        }
+    }
+
+    private fun initTabLayoutMediator(cities: List<City>) {
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            if (cities.size > position && cities[position].location.locationId == USER_POSITION) {
+                tab.setIcon(R.drawable.ic_nav)
+                tab.view.isClickable = false
+            } else {
+                tab.setIcon(R.drawable.ic_tochka)
+                tab.view.isClickable = false
+            }
+        }.attach()
+        binding.cardToolbar.visibility = View.VISIBLE
     }
 
     private fun animationViewElements() = with(binding) {
@@ -178,30 +158,29 @@ class FragmentPagerWeather : Fragment() {
         })
     }
 
+    private fun checkInternet(stateNetwork: StateNetwork) {
+        if (stateNetwork.internet) {
+            binding.progressBar2.visibility = View.VISIBLE
+            binding.cvNotInternet.visibility = View.GONE
+            binding.textView3.text = resources.getString(R.string.load_date)
+            Log.d("FragmentPagerWeather_Log", "internet: true")
+        } else {
+            binding.textView3.text = resources.getString(R.string.not_internet)
+            binding.cvNotInternet.visibility = View.VISIBLE
+        }
+    }
 
-//    private fun migrationIfNotLocation() {
-//        viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
-//            if (size == 0) {
-//                viewModel.state.observe(viewLifecycleOwner) { state ->
-//                    if (state.internet) {
-//                        if (!state.location) {
-//                            val action =
-//                                FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
-//                            findNavController().navigate(action)
-//                        }
-//                    }
-//                }
-//            }
-//
-//        }
-//
-//    }
+    private fun migrationIfNotLocation(stateNetwork: StateNetwork) {
+        if (stateNetwork.migration) {
+            val action =
+                FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
+            findNavController().navigate(action)
+        }
+    }
 
 
     companion object {
-        private const val START_POSITION = 0
         private const val USER_POSITION = 0
-        private const val EMPTY_LIST = 0
         private const val DURATION = 100L
     }
 }

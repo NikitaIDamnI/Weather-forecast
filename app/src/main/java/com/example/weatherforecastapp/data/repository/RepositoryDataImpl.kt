@@ -60,16 +60,18 @@ class RepositoryDataImpl @Inject constructor(
                         }
                     }
                 } else {
-                    send(StateCity.Initial)
+                    send(StateCity.Empty)
                 }
             }
-    }.shareIn(
-        repositoryCoroutineScope, SharingStarted.Lazily, replay = 1
-    )
+
+    }
 
     fun getCitiesFlow(): Flow<StateCity> {
-        return cityFlow
+        return cityFlow.shareIn(
+            repositoryCoroutineScope, SharingStarted.Lazily, replay = 1
+        )
     }
+
 
 
     private suspend fun buildCity(locationFlow: List<LocationDb>): Flow<List<City>> = flow {

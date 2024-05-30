@@ -59,7 +59,7 @@ class ActivityWeather : AppCompatActivity() {
         }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                viewModelWeather.state.collect {
+                viewModelWeather.stateNetwork.collect {
                     Log.d("Activity_Log", "state:${it} ")
                 }
             }
@@ -75,26 +75,10 @@ class ActivityWeather : AppCompatActivity() {
 
     }
 
-
-//    private fun checkUpdate() {
-//        viewModelWeather.state.observe(this) { state ->
-//            if (state.internet) {
-//                if (state.location) {
-//                    Log.d("ActivityWeather_Log", "checkUpdate: ${state.internet}")
-//                    viewModelWeather.updateUserLocation()
-//                }
-//                viewModelWeather.weatherUpdate()
-//            }
-//
-//        }
-//    }
-
-
     override fun onResume() {
         super.onResume()
         permission.isPermissionGranted(PermissionsLauncher.PERMISSION_LOCATION)
         viewModelWeather.checkLocation(this)
-        //checkUpdate()
     }
 
 
@@ -103,9 +87,5 @@ class ActivityWeather : AppCompatActivity() {
         weatherReceiver.stopReceiver()
     }
 
-
-    companion object {
-        const val EMPTY_LIST = 0
-    }
 
 }
