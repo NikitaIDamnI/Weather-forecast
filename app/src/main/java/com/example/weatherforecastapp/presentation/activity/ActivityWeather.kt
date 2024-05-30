@@ -47,7 +47,7 @@ class ActivityWeather : AppCompatActivity() {
         setContentView(binding.root)
         viewModelWeather =
             ViewModelProvider(this, viewModelFactory)[ViewModelWeather::class.java]
-        weatherReceiver = WeatherReceiver(this)
+        weatherReceiver = WeatherReceiver(this,viewModelWeather)
         weatherReceiver.startReceiver()
         initReceiver()
         lifecycleScope.launch {

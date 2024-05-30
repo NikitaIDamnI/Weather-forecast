@@ -1,5 +1,6 @@
 package com.example.weatherforecastapp.presentation.viewModels
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -24,17 +25,17 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeath
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import com.example.weatherforecastapp.presentation.checkingСonnections.StateNetwork
 import com.example.weatherforecastapp.presentation.checkingСonnections.StateReceiver
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ViewModelWeather @Inject constructor(
+    private val application: Application,
     private val repositoryDataImpl: RepositoryDataImpl,
     private val useCaseGetLocations: UseCaseGetLocations,
     private val useCaseSearchCity: UseCaseSearchCity,
@@ -46,10 +47,15 @@ class ViewModelWeather @Inject constructor(
     private val weatherUpdate: UseCaseWeatherUpdate,
 ) : ViewModel() {
 
-    private val _stateNetwork = MutableStateFlow(StateNetwork())
+     val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
 
-    val stateNetwork: SharedFlow<StateNetwork> get() = _stateNetwork.asStateFlow()
+        Log.d(TAG, "coroutineContext $coroutineContext :exceptionHandler ${throwable.message} ")
+    }
+
+    private val _stateNetwork = MutableStateFlow(StateNetwork())
+    val stateNetwork: StateFlow<StateNetwork> get() = _stateNetwork.asStateFlow()
     val cities: Flow<StateCity> = repositoryDataImpl.getCitiesFlow()
+
 
     private var _previewCity = MutableStateFlow<StateCity>(StateCity.Empty)
     val previewCity: StateFlow<StateCity>
@@ -62,7 +68,7 @@ class ViewModelWeather @Inject constructor(
 
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             combine(cities, _stateNetwork) { cities, state ->
                 if (state.internet && firstUpdate) {
                     when (cities) {
@@ -70,18 +76,22 @@ class ViewModelWeather @Inject constructor(
                             repositoryDataImpl.weatherUpdate()
                             firstUpdate = true
                         }
+
                         is StateCity.Empty -> {
                             repositoryDataImpl.updateUserPosition()
                             firstUpdate = true
                         }
+
                         is StateCity.Cities -> {
                             repositoryDataImpl.updateUserPosition()
                             firstUpdate = true
                         }
+
                         else -> {}
                     }
                 }
-            }.collect()
+            }
+
         }
     }
 
@@ -106,6 +116,14 @@ class ViewModelWeather @Inject constructor(
                 it.position == position
             }
         }
+    }
+
+    fun updateState(stateReceiver: StateReceiver) {
+        val newState = _stateNetwork.value.copy(
+            internet = stateReceiver.internet, location = stateReceiver.location,
+            locationPermission = stateReceiver.locationPermission
+        )
+        _stateNetwork.value = newState
     }
 
     fun addPreviewCity(searchCity: SearchCity) {
@@ -212,6 +230,7 @@ class ViewModelWeather @Inject constructor(
     }
 
     companion object {
+        const val TAG = "ViewModelWeather_Log"
         const val USER_POSITION = 0
     }
 }

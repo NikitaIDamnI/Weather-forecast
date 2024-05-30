@@ -201,7 +201,7 @@ class FragmentAllCities : Fragment() {
             object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     if (!query.isNullOrEmpty()) {
-                        lifecycleScope.launch {
+                        lifecycleScope.launch(viewModel.exceptionHandler) {
                             val searchCities = viewModel.searchCity(query)
                             searchCityAdapter.submitList(searchCities)
                         }

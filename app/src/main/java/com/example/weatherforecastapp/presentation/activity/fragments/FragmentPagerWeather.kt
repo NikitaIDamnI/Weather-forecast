@@ -78,14 +78,12 @@ class FragmentPagerWeather : Fragment() {
                 viewModel.cities.collect { stateCity ->
                     when (stateCity) {
                         is StateCity.Empty -> {
-                            binding.progressBar2.visibility = View.GONE
+                            binding.load.visibility = View.VISIBLE
                             binding.cardToolbar.visibility = View.GONE
                         }
-
                         is StateCity.Loading -> {
                             binding.load.visibility = View.VISIBLE
                         }
-
                         is StateCity.Cities -> {
                             initPager(stateCity)
                         }
@@ -166,7 +164,16 @@ class FragmentPagerWeather : Fragment() {
             Log.d("FragmentPagerWeather_Log", "internet: true")
         } else {
             binding.textView3.text = resources.getString(R.string.not_internet)
-            binding.cvNotInternet.visibility = View.VISIBLE
+            binding.progressBar2.visibility = View.GONE
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    viewModel.cities.collect { stateCities ->
+                        if (stateCities is StateCity.Cities) {
+                            binding.cvNotInternet.visibility = View.VISIBLE
+                        }
+                    }
+                }
+            }
         }
     }
 
