@@ -23,8 +23,12 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearc
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import com.example.weatherforecastapp.presentation.checkingСonnections.State
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,14 +43,11 @@ class ViewModelWeather @Inject constructor(
     private val useCaseCheckLocation: UseCaseCheckLocation,
     private val weatherUpdate: UseCaseWeatherUpdate,
 ) : ViewModel() {
+    val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable -> }
+    private val _state = MutableStateFlow(State())
+    val state: StateFlow<State> get() = _state
+    val cities: Flow<StateCity> = repositoryDataImpl.getCitiesFlow()
 
-    val state = MutableLiveData<State>()
-
-    private var firstWeatherUpdate = true
-    private var firstUserUpdate = true
-
-
-    val cities = repositoryDataImpl.getCitiesFlow()
 
 
     private var _previewCity = MutableStateFlow<StateCity>(StateCity.Empty)
@@ -61,22 +62,28 @@ class ViewModelWeather @Inject constructor(
     val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
 
     init {
-        viewModelScope.launch {
-            cities.collect {
-                when (it) {
-                    is StateCity.Loading -> {
-                        Log.d("ViewModel_Log", "StateCity.Loading : $it ")
-                        val update = it.stateLoading ?: false
-                        firstWeatherUpdate = !update
-                    }
-
-                    else -> {
-
+        viewModelScope.launch(exceptionHandler) {
+            combine(cities, _state) { cities, state ->
+                if (state.internet && state.firstWeatherUpdate) {
+                    when (cities) {
+                        is StateCity.Loading -> {
+                            repositoryDataImpl.weatherUpdate()
+                            _state.value = state.copy(firstWeatherUpdate = true)
+                        }
+                        is StateCity.Initial -> {
+                            repositoryDataImpl.updateUserPosition()
+                        }
+                        is StateCity.Cities ->{
+                            repositoryDataImpl.updateUserPosition()
+                        }
+                        else -> {
+                        }
                     }
                 }
-            }
+            }.collect()
         }
     }
+
 
     suspend fun searchCity(city: String): List<SearchCity> {
         return useCaseSearchCity(city)
@@ -104,7 +111,7 @@ class ViewModelWeather @Inject constructor(
         viewModelScope.launch {
             val city = repositoryDataImpl.getCityFromSearch(searchCity)
             val listLocation = repositoryDataImpl.allLocations()
-            val addedStatus = checkCity(listLocation,searchCity)
+            val addedStatus = checkCity(listLocation, searchCity)
 
             _previewCity.emit(StateCity.PreviewCity(city, addedStatus))
         }
@@ -184,7 +191,12 @@ class ViewModelWeather @Inject constructor(
     }
 
     fun getState(newState: State) {
-        state.value = newState
+        val state = _state.value.copy(
+            internet = newState.internet,
+            location = newState.location,
+            locationPermission = newState.locationPermission
+        )
+        _state.value = state
         Log.d("ViewModelNetworkStatus", "state: $newState")
     }
 
@@ -195,18 +207,6 @@ class ViewModelWeather @Inject constructor(
     fun closeNotification() {
         shortNotifications.value = true
     }
-
-
-//    fun updateUserLocation() {
-//        Log.d("RepositoryDataImpl_Log", "firstUserUpdate: $firstUserUpdate ")
-//        if (firstUserUpdate) {
-//            viewModelScope.launch {
-//                repositoryDataImpl.updateUserPosition()
-//            }
-//            firstUserUpdate = false
-//        }
-//    }
-
 
     companion object {
         const val USER_POSITION = 0

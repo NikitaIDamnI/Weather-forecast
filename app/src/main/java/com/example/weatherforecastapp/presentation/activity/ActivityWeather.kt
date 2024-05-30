@@ -50,11 +50,17 @@ class ActivityWeather : AppCompatActivity() {
         weatherReceiver = WeatherReceiver(this)
         weatherReceiver.startReceiver()
         initReceiver()
-       // checkUpdate()
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED){
-                viewModelWeather.previewCity.collect{
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModelWeather.cities.collect {
                     Log.d("Activity_Log", "flow:${it} ")
+                }
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModelWeather.state.collect {
+                    Log.d("Activity_Log", "state:${it} ")
                 }
             }
         }

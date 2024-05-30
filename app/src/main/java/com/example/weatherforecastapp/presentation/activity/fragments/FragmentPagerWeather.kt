@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -19,8 +18,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
 import com.example.weatherforecastapp.presentation.WeatherApp
-import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -62,7 +61,7 @@ class FragmentPagerWeather : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
-        migrationIfNotLocation()
+       // migrationIfNotLocation()
         initial()
     }
 
@@ -93,7 +92,7 @@ class FragmentPagerWeather : Fragment() {
                     viewPager.visibility = View.VISIBLE
                 }
 
-                checkInternet(it)
+               // checkInternet(it)
             }
         }
 
@@ -119,17 +118,17 @@ class FragmentPagerWeather : Fragment() {
             .attach()
     }
 
-    private fun checkInternet(size: Int) {
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            Log.d("FragmentPagerWeather_Log", "internetCondition: ${state.internet}")
-            if (state.internet) {
-                onInternetAvailable()
-            } else {
-                onInternetUnavailable(size)
-            }
-        }
-
-    }
+//    private fun checkInternet(size: Int) {
+//        viewModel.state.observe(viewLifecycleOwner) { state ->
+//            Log.d("FragmentPagerWeather_Log", "internetCondition: ${state.internet}")
+//            if (state.internet) {
+//                onInternetAvailable()
+//            } else {
+//                onInternetUnavailable(size)
+//            }
+//        }
+//
+//    }
 
     private fun onInternetUnavailable(sizeList: Int) {
         if (sizeList == EMPTY_LIST) {
@@ -180,23 +179,23 @@ class FragmentPagerWeather : Fragment() {
     }
 
 
-    private fun migrationIfNotLocation() {
-        viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
-            if (size == 0) {
-                viewModel.state.observe(viewLifecycleOwner) { state ->
-                    if (state.internet) {
-                        if (!state.location) {
-                            val action =
-                                FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
-                            findNavController().navigate(action)
-                        }
-                    }
-                }
-            }
-
-        }
-
-    }
+//    private fun migrationIfNotLocation() {
+//        viewModel.sizeCity.observe(viewLifecycleOwner) { size ->
+//            if (size == 0) {
+//                viewModel.state.observe(viewLifecycleOwner) { state ->
+//                    if (state.internet) {
+//                        if (!state.location) {
+//                            val action =
+//                                FragmentPagerWeatherDirections.actionFragmentPagerWeatherToFragmentAllCities()
+//                            findNavController().navigate(action)
+//                        }
+//                    }
+//                }
+//            }
+//
+//        }
+//
+//    }
 
 
     companion object {

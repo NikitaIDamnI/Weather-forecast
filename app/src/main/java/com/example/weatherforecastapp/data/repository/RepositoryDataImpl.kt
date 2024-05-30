@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.zip
 import java.text.SimpleDateFormat
@@ -53,11 +52,6 @@ class RepositoryDataImpl @Inject constructor(
 
     private val cityFlow: Flow<StateCity> = channelFlow {
         locationDao.getLocationsFlow()
-            .onStart {
-                // Обновляем пользовательские данные и загружаем погоду
-                val stateLoading = weatherUpdate()
-                send(stateLoading)
-            }
             .collectLatest { locationFlow ->
                 if (locationFlow.isNotEmpty()) {
                     buildCity(locationFlow).collect { cityList ->
@@ -104,9 +98,10 @@ class RepositoryDataImpl @Inject constructor(
     }
 
 
-    suspend fun  allLocations(): List<Location>{
+    suspend fun allLocations(): List<Location> {
         return locationDao.getAllLocations().map { mapper.mapperLocationDbToEntityLocation(it) }
     }
+
     override suspend fun saveUserPosition(positionDb: PositionDb): Boolean {
         val datePosition = positionDao.getPosition(USER_ID) ?: NO_POSITION
         if (datePosition.position != positionDb.position) {
@@ -121,11 +116,19 @@ class RepositoryDataImpl @Inject constructor(
         val dataPosition = getUserPosition()
         val userLocation = locationDao.getUserLocation()
         Log.d("RepositoryDataImpl_Log", "updateUserPosition: $dataPosition")
-        if (dataPosition != null && dataPosition.position != userLocation.position) {
+        if (dataPosition != null) {
+            var thisPositionDb = dataPosition
+            if (userLocation != null) {
+                thisPositionDb = PositionDb(
+                    0,
+                    position = userLocation.position,
+                    timeFormat = userLocation.localtime
+                )
+            }
             val time = System.currentTimeMillis()
             writingAPItoDatabase(
                 datePositionDb = dataPosition,
-                thisPositionDb = NO_POSITION,
+                thisPositionDb = thisPositionDb,
             )
             val updatePositionDb = PositionDb(
                 id = USER_ID,
@@ -186,14 +189,14 @@ class RepositoryDataImpl @Inject constructor(
                     Log.d("RepositoryDataImpl_Log", "weatherUpdate: UPDATE Location : $location")
                     writingAPItoDatabase(datePositionDb, thisPositionDb)
                 }
-                return StateCity.Loading(true)
+                return StateCity.Loading
             }
         } else {
-            return StateCity.Loading(false)
+            return StateCity.Loading
             Log.d("RepositoryDataImpl_Log", "weatherUpdate: NO_UPDATE")
 
         }
-        return StateCity.Loading(null)
+        return StateCity.Loading
     }
 
     override suspend fun getUserLocation(): Location {
@@ -240,7 +243,8 @@ class RepositoryDataImpl @Inject constructor(
     }
 
     override fun getLocations(): Flow<List<Location>> {
-        return locationDao.getLocationsFlow().map { it.map { mapper.mapperLocationDbToEntityLocation(it) } }
+        return locationDao.getLocationsFlow()
+            .map { it.map { mapper.mapperLocationDbToEntityLocation(it) } }
     }
 
     override fun getCurrentDays(): LiveData<List<Current>> {
@@ -370,6 +374,7 @@ class RepositoryDataImpl @Inject constructor(
 
 
     companion object {
+        const val TAG = "RepositoryDataImpl_Log"
         const val USER_ID = 0
         private val NO_POSITION = PositionDb(-1, "", "")
     }

@@ -61,7 +61,7 @@ class WeatherFragment : Fragment() {
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
         initCurrent()
         initForecast()
-        initLocationCheck()
+        //initLocationCheck()
     }
 
 
@@ -93,17 +93,17 @@ class WeatherFragment : Fragment() {
         }
     }
 
-    private fun initLocationCheck() {
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            if (state.location) {
-                binding.imNotLocation.visibility = View.GONE
-            } else {
-                if (args.position == 0) {
-                    binding.imNotLocation.visibility = View.VISIBLE
-                }
-            }
-        }
-    }
+//    private fun initLocationCheck() {
+//        viewModel.state.observe(viewLifecycleOwner) { state ->
+//            if (state.location) {
+//                binding.imNotLocation.visibility = View.GONE
+//            } else {
+//                if (args.position == 0) {
+//                    binding.imNotLocation.visibility = View.VISIBLE
+//                }
+//            }
+//        }
+//    }
 
     private fun setupPullAdapter(rvPrecipitation: RecyclerView) {
         rvPrecipitation.recycledViewPool.setMaxRecycledViews(
