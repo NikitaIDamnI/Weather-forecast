@@ -2,7 +2,6 @@ package com.example.weatherforecastapp.domain.repisitoryData
 
 import androidx.lifecycle.LiveData
 import com.example.weatherforecastapp.data.database.models.PositionDb
-import com.example.weatherforecastapp.domain.StateCity
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
@@ -19,7 +18,7 @@ interface RepositoryData {
     suspend fun deleteCity(positionId: Int)
     fun getLocations(): Flow<List<Location>>
     suspend fun getUserLocation(): Location
-    suspend fun weatherUpdate() : StateCity.Loading
+    suspend fun weatherUpdate()
     fun getCurrentDays(): LiveData<List<Current>>
     fun getForecastDaysCity(): LiveData<List<ForecastDayCity>>
     fun getSizePager(): LiveData<Int>

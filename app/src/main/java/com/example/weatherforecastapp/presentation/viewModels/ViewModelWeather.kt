@@ -3,7 +3,6 @@ package com.example.weatherforecastapp.presentation.viewModels
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
@@ -25,7 +24,6 @@ import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeath
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import com.example.weatherforecastapp.presentation.checkingСonnections.StateNetwork
 import com.example.weatherforecastapp.presentation.checkingСonnections.StateReceiver
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,10 +45,9 @@ class ViewModelWeather @Inject constructor(
     private val weatherUpdate: UseCaseWeatherUpdate,
 ) : ViewModel() {
 
-     val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
-
-        Log.d(TAG, "coroutineContext $coroutineContext :exceptionHandler ${throwable.message} ")
-    }
+//    val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+//        Log.d(TAG, "coroutineContext $coroutineContext :exceptionHandler ${throwable.message} ")
+//    }
 
     private val _stateNetwork = MutableStateFlow(StateNetwork())
     val stateNetwork: StateFlow<StateNetwork> get() = _stateNetwork.asStateFlow()
@@ -63,38 +60,56 @@ class ViewModelWeather @Inject constructor(
 
     val listLocation = useCaseGetLocations()
 
-    val shortNotifications: MutableLiveData<Boolean> = MutableLiveData<Boolean>(true)
-    private var firstUpdate = true
-
+    private var update = false
 
     init {
-        viewModelScope.launch(exceptionHandler) {
+        viewModelScope.launch {
             combine(cities, _stateNetwork) { cities, state ->
-                if (state.internet && firstUpdate) {
-                    when (cities) {
-                        is StateCity.Loading -> {
-                            repositoryDataImpl.weatherUpdate()
-                            firstUpdate = true
-                        }
+                Pair(cities, state)
+            }.collect { (stateCity, stateNetwork) ->
 
+                if (stateCity is StateCity.Loading) {
+                    update = stateCity.state
+                }
+                Log.d(TAG, "stateCity: $stateCity")
+                Log.d(TAG, "stateNetwork: $stateNetwork")
+                Log.d(TAG, "update: $update")
+
+
+                if (stateNetwork.internet && !update) {
+                    when (stateCity) {
                         is StateCity.Empty -> {
                             repositoryDataImpl.updateUserPosition()
-                            firstUpdate = true
+                            migration(stateNetwork)
+                            update = true
                         }
 
                         is StateCity.Cities -> {
-                            repositoryDataImpl.updateUserPosition()
-                            firstUpdate = true
+                            Log.d(TAG, "update: $update")
+                            weatherUpdate.invoke()
+                            update = true
                         }
 
                         else -> {}
                     }
                 }
             }
-
         }
     }
 
+
+    private fun migration(stateNetwork: StateNetwork) {
+        Log.d(
+            TAG, "migration: ${
+                stateNetwork.locationPermission
+            }"
+        )
+        if (stateNetwork.locationPermission == false) {
+
+            val newState = _stateNetwork.value.copy(migration = true)
+            _stateNetwork.value = newState
+        }
+    }
 
     suspend fun searchCity(city: String): List<SearchCity> {
         return useCaseSearchCity(city)
@@ -105,13 +120,9 @@ class ViewModelWeather @Inject constructor(
             return false
         } else {
             val position = "${searchCity.lat},${searchCity.lon}"
-
-            Log.d("ViewModelAllCities_Log", "searchCity: $searchCity ")
-            Log.d("ViewModelAllCities_Log", "listLocation: ${listLocation[0]} ")
             val checkCity =
-                listLocation[0].name == searchCity.name && listLocation[0].country == searchCity.country && listLocation[0].region == searchCity.region
-            Log.d("ViewModelAllCities_Log", "checkCity: $checkCity ")
-
+                listLocation[0].name == searchCity.name && listLocation[0].country == searchCity.country
+                        && listLocation[0].region == searchCity.region
             return listLocation.any {
                 it.position == position
             }
@@ -157,6 +168,30 @@ class ViewModelWeather @Inject constructor(
 
     fun checkLocation(context: Context) {
         useCaseCheckLocation.invoke(context)
+    }
+
+
+    fun getState(newState: StateReceiver) {
+        viewModelScope.launch {
+            _stateNetwork.emit(
+                StateNetwork(
+                    internet = newState.internet,
+                    location = newState.location,
+                    locationPermission = newState.locationPermission
+                )
+            )
+        }
+        Log.d("ViewModelNetworkStatus", "state: $newState")
+    }
+
+    fun showNotification(action: Unit) {
+        val stateNotification = _stateNetwork.value.shortNotifications
+        val newState = _stateNetwork.value.copy(shortNotifications = stateNotification)
+        _stateNetwork.value = newState
+    }
+
+    fun getListNotificationLocation() {
+
     }
 
     fun getWeatherHour24(forecastDayCity: ForecastDayCity): List<ForecastHour> {
@@ -206,27 +241,6 @@ class ViewModelWeather @Inject constructor(
         }
 
         return weatherHour24
-    }
-
-    fun getState(newState: StateReceiver) {
-        viewModelScope.launch {
-            _stateNetwork.emit(
-                StateNetwork(
-                    internet = newState.internet,
-                    location = newState.location,
-                    locationPermission = newState.locationPermission
-                )
-            )
-        }
-        Log.d("ViewModelNetworkStatus", "state: $newState")
-    }
-
-    fun openNotification() {
-        shortNotifications.value = false
-    }
-
-    fun closeNotification() {
-        shortNotifications.value = true
     }
 
     companion object {

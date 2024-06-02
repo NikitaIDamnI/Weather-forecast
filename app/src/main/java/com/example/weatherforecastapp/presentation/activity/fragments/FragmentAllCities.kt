@@ -28,7 +28,6 @@ import com.example.weatherforecastapp.presentation.rvadapter.reAllCities.AllCity
 import com.example.weatherforecastapp.presentation.rvadapter.rvSearchCity.SearchCityAdapter
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -90,21 +89,20 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkInternet(stateNetwork: StateNetwork) {
-            if (stateNetwork.internet) {
-                binding.cvNotInternet.visibility = View.GONE
-                binding.cardSearchView.visibility = View.VISIBLE
-            } else {
-                binding.cvNotInternet.visibility = View.VISIBLE
-                binding.cardSearchView.visibility = View.GONE
-            }
+        if (stateNetwork.internet) {
+            binding.cvNotInternet.visibility = View.GONE
+            binding.cardSearchView.visibility = View.VISIBLE
+        } else {
+            binding.cvNotInternet.visibility = View.VISIBLE
+            binding.cardSearchView.visibility = View.GONE
+        }
 
     }
 
     private fun checkLocationPermission(stateNetwork: StateNetwork) {
         if (!stateNetwork.locationPermission) {
             binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
-            viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
-                if (shortNotifications) {
+                if (stateNetwork.shortNotifications) {
                     val textShort = resources.getString(R.string.not_permission_location_short)
                     val textFull = resources.getString(R.string.not_permission_location_full)
                     openNotificationNotLocation(textShort, textFull) {
@@ -119,33 +117,37 @@ class FragmentAllCities : Fragment() {
                     val textShort = resources.getString(R.string.not_permission_location_short)
                     closeNotificationNotLocation(textShort)
                 }
-            }
+
         } else {
-            viewModel.closeNotification()
             checkingEnabledLocation(stateNetwork)
         }
     }
 
     private fun checkingEnabledLocation(stateNetwork: StateNetwork) {
-            if (!stateNetwork.location) {
-                binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
-                viewModel.shortNotifications.observe(viewLifecycleOwner) { shortNotifications ->
-                    if (shortNotifications) {
-                        val textShort = resources.getString(R.string.not_location_short)
-                        val textFull = resources.getString(R.string.not_location_full)
-                        openNotificationNotLocation(textShort, textFull) {
-                            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                        }
-                    } else {
-                        val textShort = resources.getString(R.string.not_location_short)
-                        closeNotificationNotLocation(textShort)
-                    }
+        if (!stateNetwork.location) {
+            binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
+            if (stateNetwork.shortNotifications) {
+                val textShort = resources.getString(R.string.not_location_short)
+                val textFull = resources.getString(R.string.not_location_full)
+                openNotificationNotLocation(textShort, textFull) {
+                    startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 }
             } else {
-                binding.cvNotLocation.visibility = View.GONE
+                val textShort = resources.getString(R.string.not_location_short)
+                closeNotificationNotLocation(textShort)
             }
+        } else {
+            binding.cvNotLocation.visibility = View.GONE
+        }
     }
 
+    private fun initClickableNotification(stateNetwork: StateNetwork,){
+        viewModel.showNotification(Unit)
+       binding.tvNotLocation.setOnClickListener{
+
+       }
+
+    }
     private fun openNotificationNotLocation(textShort: String, textFull: String, fuz: () -> Unit) {
         binding.cvNotLocation.visibility = View.VISIBLE
         binding.tvNotLocation.text = textShort
@@ -153,14 +155,12 @@ class FragmentAllCities : Fragment() {
             binding.tvNotLocation.clickableSpan(textFull, CLICKABLE_SPAN_INDEX) {
                 fuz.invoke()
             }
-            viewModel.openNotification()
         }
     }
 
     private fun closeNotificationNotLocation(textShort: String) {
         binding.tvNotLocation.setOnClickListener {
             binding.tvNotLocation.text = textShort
-            viewModel.closeNotification()
         }
     }
 

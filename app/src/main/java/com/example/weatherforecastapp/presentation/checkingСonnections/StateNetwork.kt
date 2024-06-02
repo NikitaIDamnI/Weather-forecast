@@ -6,4 +6,5 @@ data class StateNetwork(
     val locationPermission: Boolean = false,
     val firstWeatherUpdate: Boolean = true,
     val migration: Boolean = false,
+    val shortNotifications: Boolean = true
 )

@@ -14,7 +14,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 
-class WeatherReceiver(val context: Context, val viewModelWeather: ViewModelWeather) :
+class WeatherReceiver(val context: Context, private val viewModelWeather: ViewModelWeather) :
     BroadcastReceiver() {
     private var stateReceiver = StateReceiver()
 

@@ -2,6 +2,7 @@ package com.example.weatherforecastapp.presentation.activity.fragments
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -68,10 +69,12 @@ class WeatherFragment : Fragment() {
         val adapterPrecipitation = PrecipitationAdapter(requireContext())
         with(binding) {
             lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
                     viewModel.cities.collect { city ->
                         if (city is StateCity.Cities) {
                             val current = city.cities[args.position].current
+                            Log.d(TAG, "initCurrent:$current ")
+
                             tvCity.text = current.nameCity
                             tvData.text = current.date
                             val temp =
@@ -104,11 +107,13 @@ class WeatherFragment : Fragment() {
         val adapterCurrent = CurrentAdapter(requireContext())
         val adapterForecastDays = ForecastDaysAdapter(requireContext())
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.cities.collect { city ->
                     with(binding) {
                         if (city is StateCity.Cities) {
                             val forecastDay = city.cities[args.position].forecastDays
+                            Log.d(TAG, "forecastDay:$forecastDay ")
+
                             val listWeatherHour = viewModel.getWeatherHour24(forecastDay)
                             adapterCurrent.submitList(listWeatherHour)
                             rvCurrentDay.adapter = adapterCurrent
@@ -119,5 +124,9 @@ class WeatherFragment : Fragment() {
                 }
             }
         }
+    }
+
+    companion object{
+        const val TAG = "WeatherFragment_Log"
     }
 }
