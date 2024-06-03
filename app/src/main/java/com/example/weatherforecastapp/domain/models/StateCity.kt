@@ -1,6 +1,4 @@
-package com.example.weatherforecastapp.domain
-
-import com.example.weatherforecastapp.domain.models.City
+package com.example.weatherforecastapp.domain.models
 
 sealed class StateCity {
     data object Empty: StateCity()

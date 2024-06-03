@@ -14,10 +14,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentPagerWeatherBinding
-import com.example.weatherforecastapp.domain.StateCity
+import com.example.weatherforecastapp.domain.models.StateCity
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.checkingСonnections.StateNetwork
@@ -92,19 +91,18 @@ class FragmentPagerWeather : Fragment() {
 
     private fun setupObservers() {
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.cities.collect { stateCity ->
-                    Log.d(TAG, "stateCity: $stateCity")
-                    when (stateCity) {
-                        is StateCity.Empty -> showLoading(true)
-                        is StateCity.Loading -> showLoading(true)
-                        is StateCity.Cities -> {
-                            checkInternet()
-                            showLoading(false)
-                            updatePager(stateCity.cities)
+                        when (stateCity) {
+                            is StateCity.Empty -> showLoading(true)
+                            is StateCity.Loading -> showLoading(true)
+                            is StateCity.Cities -> {
+                                checkInternet()
+                                showLoading(false)
+                                updatePager(stateCity.cities)
+                            }
+                            else -> {}
                         }
-                        else->{}
-                    }
                 }
             }
         }
@@ -164,6 +162,5 @@ class FragmentPagerWeather : Fragment() {
     companion object {
         private const val TAG = "FragmentPagerWeather_Log"
         private const val USER_POSITION = 0
-        private const val DURATION = 100L
     }
 }

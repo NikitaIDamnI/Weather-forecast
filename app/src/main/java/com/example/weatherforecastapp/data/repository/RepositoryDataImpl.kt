@@ -12,7 +12,7 @@ import com.example.weatherforecastapp.data.database.dao.LocationDao
 import com.example.weatherforecastapp.data.database.dao.PositionDao
 import com.example.weatherforecastapp.data.database.models.PositionDb
 import com.example.weatherforecastapp.data.mapper.Mapper
-import com.example.weatherforecastapp.domain.StateCity
+import com.example.weatherforecastapp.domain.models.StateCity
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Current
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
@@ -22,7 +22,6 @@ import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,11 +29,10 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 
 class RepositoryDataImpl @Inject constructor(
@@ -53,13 +51,11 @@ class RepositoryDataImpl @Inject constructor(
     private val repositoryCoroutineScope = CoroutineScope(Dispatchers.IO + exceptionHandler)
 
 
-    @OptIn(FlowPreview::class)
     private val cityFlow: Flow<StateCity> = channelFlow {
         locationDao.getLocationsFlow()
             .onStart {
                 weatherUpdate()
                 send(StateCity.Loading(true))
-
             }
             .catch {
                 send(StateCity.Loading(false))
@@ -71,7 +67,6 @@ class RepositoryDataImpl @Inject constructor(
                     }
                 }
             }
-            .debounce(500)
             .collectLatest { locationFlow ->
                 if (locationFlow.isNotEmpty()) {
                     buildCity().collect { cityList ->
@@ -83,13 +78,12 @@ class RepositoryDataImpl @Inject constructor(
                     send(StateCity.Empty)
                 }
             }
-
     }
 
-     fun getCitiesFlow(): SharedFlow<StateCity> {
-        return cityFlow.stateIn(
-            repositoryCoroutineScope, SharingStarted.Lazily, StateCity.Loading(false)
-        )
+    fun getCitiesFlow(): SharedFlow<StateCity> {
+        return cityFlow.shareIn(
+            repositoryCoroutineScope, SharingStarted.Lazily, 1)
+
     }
 
 
@@ -101,15 +95,14 @@ class RepositoryDataImpl @Inject constructor(
             forecastDayDao.getForecastDayFlow()
         ) { locationList, currentList, forecastDayList ->
             val cityList = mutableListOf<City>()
-
-            // Проверяем, что все списки имеют одинаковую длину
             val minSize = minOf(locationList.size, currentList.size, forecastDayList.size)
 
             if (minSize > 0 && locationList.isNotEmpty()) {
                 for (index in 0 until minSize) {
                     val location = mapper.mapperLocationDbToEntityLocation(locationList[index])
                     val current = mapper.mapperCurrentDbToEntityCurrent(currentList[index], context)
-                    val forecastDay = mapper.mapperForecastCityDbToEntityForecastCityDays(forecastDayList[index])
+                    val forecastDay =
+                        mapper.mapperForecastCityDbToEntityForecastCityDays(forecastDayList[index])
                     cityList.add(City(location, current, forecastDay))
                 }
             }
@@ -125,7 +118,7 @@ class RepositoryDataImpl @Inject constructor(
     }
 
     override suspend fun saveUserPosition(positionDb: PositionDb): Boolean {
-        val datePosition = positionDao.getPosition(USER_ID) ?: NO_POSITION
+        val datePosition = positionDao.getPosition() ?: NO_POSITION
         if (datePosition.position != positionDb.position) {
             positionDao.insert(positionDb)
             writingAPItoDatabase(datePosition, positionDb)
@@ -134,7 +127,7 @@ class RepositoryDataImpl @Inject constructor(
     }
 
     suspend fun updateUserPosition() {
-        val dataPosition = getUserPosition()
+        val dataPosition = positionDao.getPosition()
         val userLocation = locationDao.getUserLocation()
         if (dataPosition != null) {
             var thisPositionDb = dataPosition
@@ -162,8 +155,14 @@ class RepositoryDataImpl @Inject constructor(
 
     }
 
-    suspend fun getUserPosition(): PositionDb? {
-        return positionDao.getPosition(USER_ID)
+    suspend fun getPreviewCity(searchCity: SearchCity): StateCity.PreviewCity {
+        val cityFromSearch = getCityFromSearch(searchCity)
+        val allLocations = allLocations()
+        val position = "${searchCity.lat},${searchCity.lon}"
+        val cityAddedState = allLocations.any {
+            it.position == position
+        }
+        return StateCity.PreviewCity(cityFromSearch, cityAddedState)
     }
 
 
@@ -188,7 +187,7 @@ class RepositoryDataImpl @Inject constructor(
     }
 
 
-    override suspend fun weatherUpdate(){
+    override suspend fun weatherUpdate() {
 
         Log.d("RepositoryDataImpl_Log", "weatherUpdate: START")
 
@@ -281,7 +280,6 @@ class RepositoryDataImpl @Inject constructor(
             }
         }
     }
-
 
 
     private suspend fun writingAPItoDatabase(

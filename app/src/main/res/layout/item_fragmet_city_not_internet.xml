@@ -106,7 +106,7 @@
             android:importantForAccessibility="no"
             android:src="@drawable/ic_wi_fi_item"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:layout_editor_absoluteX="8dp" />
+            app:layout_constraintStart_toStartOf="@+id/vert_end_guideline" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

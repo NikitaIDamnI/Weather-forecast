@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,9 +17,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.example.weatherforecastapp.R
 import com.example.weatherforecastapp.databinding.FragmentAllCitiesBinding
-import com.example.weatherforecastapp.domain.StateCity
+import com.example.weatherforecastapp.domain.models.Notification
+import com.example.weatherforecastapp.domain.models.StateCity
 import com.example.weatherforecastapp.presentation.WeatherApp
 import com.example.weatherforecastapp.presentation.checkingСonnections.StateNetwork
 import com.example.weatherforecastapp.presentation.clickableSpan
@@ -30,7 +29,6 @@ import com.example.weatherforecastapp.presentation.viewModels.ViewModelFactory
 import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 class FragmentAllCities : Fragment() {
 
@@ -67,7 +65,7 @@ class FragmentAllCities : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel =
             ViewModelProvider(requireActivity(), viewModelFactory)[ViewModelWeather::class.java]
-        setupAllCitiesAdapter(intent = true)
+        setupAllCitiesAdapter(internet = true)
         setupSearchAdapter()
         observePreviewCityState()
         observeStatNetwork()
@@ -78,7 +76,6 @@ class FragmentAllCities : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.stateNetwork.collect {
-                    Log.d(TAG, "stateNetwork:  $it")
                     checkLocationPermission(it)
                     checkInternet(it)
                     setupAllCitiesAdapter(it.internet)
@@ -100,84 +97,84 @@ class FragmentAllCities : Fragment() {
     }
 
     private fun checkLocationPermission(stateNetwork: StateNetwork) {
+        val notification =
+            stateNetwork.listLNotifications[StateNetwork.NOTIFICATION_NOT_LOCATION_PERMISSION]
         if (!stateNetwork.locationPermission) {
-            binding.imNotLocation.setImageResource(R.drawable.not_location_permission)
-                if (stateNetwork.shortNotifications) {
-                    val textShort = resources.getString(R.string.not_permission_location_short)
-                    val textFull = resources.getString(R.string.not_permission_location_full)
-                    openNotificationNotLocation(textShort, textFull) {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                Uri.fromParts("package", context?.packageName, null)
-                            )
+            binding.imNotLocation.setImageResource(notification.imageFromRes)
+            if (stateNetwork.fullNotification) {
+                binding.tvNotLocation.text = notification.shortText
+                openNotificationNotLocation(notification) {
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", context?.packageName, null)
                         )
-                    }
-                } else {
-                    val textShort = resources.getString(R.string.not_permission_location_short)
-                    closeNotificationNotLocation(textShort)
+                    )
                 }
-
+            } else {
+                binding.tvNotLocation.text = notification.shortText
+                closeNotificationNotLocation(notification.shortText)
+            }
         } else {
             checkingEnabledLocation(stateNetwork)
         }
     }
 
     private fun checkingEnabledLocation(stateNetwork: StateNetwork) {
+        val notification = stateNetwork.listLNotifications[StateNetwork.NOTIFICATION_NOT_LOCATION]
         if (!stateNetwork.location) {
-            binding.imNotLocation.setImageResource(R.drawable.ic_not_location_2)
-            if (stateNetwork.shortNotifications) {
-                val textShort = resources.getString(R.string.not_location_short)
-                val textFull = resources.getString(R.string.not_location_full)
-                openNotificationNotLocation(textShort, textFull) {
+            binding.imNotLocation.setImageResource(notification.imageFromRes)
+            if (stateNetwork.fullNotification) {
+                binding.tvNotLocation.text = notification.shortText
+                openNotificationNotLocation(notification) {
                     startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 }
             } else {
-                val textShort = resources.getString(R.string.not_location_short)
-                closeNotificationNotLocation(textShort)
+                binding.tvNotLocation.text = notification.shortText
+                closeNotificationNotLocation(notification.shortText)
             }
         } else {
             binding.cvNotLocation.visibility = View.GONE
         }
     }
 
-    private fun initClickableNotification(stateNetwork: StateNetwork,){
-        viewModel.showNotification(Unit)
-       binding.tvNotLocation.setOnClickListener{
-
-       }
-
-    }
-    private fun openNotificationNotLocation(textShort: String, textFull: String, fuz: () -> Unit) {
-        binding.cvNotLocation.visibility = View.VISIBLE
-        binding.tvNotLocation.text = textShort
+    private fun openNotificationNotLocation(notification: Notification, function: () -> Unit) {
         binding.tvNotLocation.setOnClickListener {
-            binding.tvNotLocation.clickableSpan(textFull, CLICKABLE_SPAN_INDEX) {
-                fuz.invoke()
-            }
+            binding.cvNotLocation.visibility = View.VISIBLE
+            binding.tvNotLocation.text = notification.shortText
+            viewModel.showNotification(false)
+        }
+        binding.tvNotLocation.clickableSpan(notification.longText, CLICKABLE_SPAN_INDEX) {
+            function.invoke()
         }
     }
 
     private fun closeNotificationNotLocation(textShort: String) {
         binding.tvNotLocation.setOnClickListener {
             binding.tvNotLocation.text = textShort
+            viewModel.showNotification(true)
         }
     }
 
-    private fun setupAllCitiesAdapter(intent: Boolean) {
-        adapterAllCities = AllCityAdapter(requireActivity().applicationContext, intent)
-        binding.rvAllCity.adapter = adapterAllCities
-        adapterAllCities.onClick = { position ->
-            val action = FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
-                .setPosition(position)
-            findNavController().navigate(action)
+    private fun setupAllCitiesAdapter(internet: Boolean) {
+        if (!::adapterAllCities.isInitialized) {
+            adapterAllCities = AllCityAdapter()
+            binding.rvAllCity.adapter = adapterAllCities
+            adapterAllCities.onClick = { position ->
+                val action =
+                    FragmentAllCitiesDirections.actionFragmentAllCitiesToFragmentPagerWeather()
+                        .setPosition(position)
+                findNavController().navigate(action)
+            }
+            setupSwipeListener(binding.rvAllCity, true)
+        } else {
+            adapterAllCities.updateInternetState(internet) // обновляем состояние, если необходимо
         }
-        setupSwipeListener(binding.rvAllCity, true)
     }
 
     private fun observePreviewCityState() {
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.previewCity.collect { state ->
                     if (state is StateCity.PreviewCity) {
                         val action =
