@@ -93,7 +93,6 @@ class FragmentAllCities : Fragment() {
             binding.cvNotInternet.visibility = View.VISIBLE
             binding.cardSearchView.visibility = View.GONE
         }
-
     }
 
     private fun checkLocationPermission(stateNetwork: StateNetwork) {

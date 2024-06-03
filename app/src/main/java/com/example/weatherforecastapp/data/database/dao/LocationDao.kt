@@ -30,10 +30,10 @@ interface LocationDao {
     @Query("SELECT * FROM location WHERE location_id = 0")
     suspend fun getUserLocation(): LocationDb?
 
-    @Query("SELECT location_id,position,last_updated_epoch,last_updated FROM location WHERE location_id = :id")
+    @Query("SELECT location_id,position,last_updated FROM location WHERE location_id = :id")
     suspend fun checkPosition(id: Int): PositionDb?
 
-    @Query("SELECT location_id,position,last_updated_epoch,last_updated FROM location WHERE  position= :position")
+    @Query("SELECT location_id,position,last_updated FROM location WHERE  position= :position")
     suspend fun checkCity(position: String): PositionDb?
 
     @Query("DELETE FROM location WHERE location_id =:id")

@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforecastapp.R
-import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
 import com.example.weatherforecastapp.domain.models.City
 import com.example.weatherforecastapp.domain.models.Condition
 import com.example.weatherforecastapp.domain.models.ForecastDayCity
@@ -15,12 +14,13 @@ import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.Notification
 import com.example.weatherforecastapp.domain.models.SearchCity
 import com.example.weatherforecastapp.domain.models.StateCity
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCasDeleteCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseAddNewCity
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCityFromSearch
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseDeleteCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetCities
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetLocations
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetSizePager
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetPreviewCity
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSearchCity
+import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseUpdateUserPosition
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseWeatherUpdate
 import com.example.weatherforecastapp.domain.repositoryLocation.UseCase.UseCaseCheckLocation
 import com.example.weatherforecastapp.presentation.checkingСonnections.StateNetwork
@@ -35,21 +35,21 @@ import javax.inject.Inject
 
 class ViewModelWeather @Inject constructor(
     private val application: Application,
-    private val repositoryDataImpl: RepositoryDataImpl,
+    private val useCaseGetCities: UseCaseGetCities,
     private val useCaseGetLocations: UseCaseGetLocations,
     private val useCaseSearchCity: UseCaseSearchCity,
     private val useCaseAddCity: UseCaseAddNewCity,
-    private val useCasDeleteCity: UseCasDeleteCity,
-    private val useCaseGetCityFromSearch: UseCaseGetCityFromSearch,
-    private val getSizePager: UseCaseGetSizePager,
+    private val useCaseDeleteCity: UseCaseDeleteCity,
     private val useCaseCheckLocation: UseCaseCheckLocation,
-    private val weatherUpdate: UseCaseWeatherUpdate,
+    private val useCaseWeatherUpdate: UseCaseWeatherUpdate,
+    private val useCaseUpdateUserPosition: UseCaseUpdateUserPosition,
+    private val useCaseGetPreviewCity: UseCaseGetPreviewCity
 ) : ViewModel() {
 
     private val _stateNetwork = MutableStateFlow(StateNetwork())
     val stateNetwork: StateFlow<StateNetwork> get() = _stateNetwork.asStateFlow()
 
-    val cities: Flow<StateCity> = repositoryDataImpl.getCitiesFlow()
+    val cities: Flow<StateCity> = useCaseGetCities()
     private var _previewCity = MutableStateFlow<StateCity>(StateCity.Empty)
 
     val previewCity: StateFlow<StateCity>
@@ -73,7 +73,7 @@ class ViewModelWeather @Inject constructor(
                         is StateCity.Empty -> {
                             Log.d(TAG, "locationPermission: ${stateNetwork.locationPermission}")
                             if (stateNetwork.locationPermission) {
-                                repositoryDataImpl.updateUserPosition()
+                                useCaseUpdateUserPosition()
                                 update = true
                             } else {
                                 val newState = _stateNetwork.value.copy(migration = true)
@@ -85,7 +85,7 @@ class ViewModelWeather @Inject constructor(
 
                         is StateCity.Cities -> {
                             if (!update) {
-                                weatherUpdate.invoke()
+                                useCaseWeatherUpdate()
                                 update = true
                             }
                         }
@@ -133,7 +133,7 @@ class ViewModelWeather @Inject constructor(
 
     fun addPreviewCity(searchCity: SearchCity) {
         viewModelScope.launch {
-            val previewCity = repositoryDataImpl.getPreviewCity(searchCity)
+            val previewCity = useCaseGetPreviewCity(searchCity)
             _previewCity.emit(previewCity)
         }
     }
@@ -150,10 +150,7 @@ class ViewModelWeather @Inject constructor(
 
     fun deleteCity(location: Location) {
         viewModelScope.launch {
-            useCasDeleteCity(location.locationId)
-            if (location.locationId == USER_POSITION) {
-                repositoryDataImpl.deletePosition(USER_POSITION)
-            }
+            useCaseDeleteCity(location.locationId)
         }
     }
 

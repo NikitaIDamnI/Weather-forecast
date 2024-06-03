@@ -2,8 +2,6 @@ package com.example.weatherforecastapp.data.repository
 
 import android.app.Application
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import com.example.testapi.network.ApiService
 import com.example.weatherforecastapp.data.Format
 import com.example.weatherforecastapp.data.database.dao.CurrentDao
@@ -12,12 +10,10 @@ import com.example.weatherforecastapp.data.database.dao.LocationDao
 import com.example.weatherforecastapp.data.database.dao.PositionDao
 import com.example.weatherforecastapp.data.database.models.PositionDb
 import com.example.weatherforecastapp.data.mapper.Mapper
-import com.example.weatherforecastapp.domain.models.StateCity
 import com.example.weatherforecastapp.domain.models.City
-import com.example.weatherforecastapp.domain.models.Current
-import com.example.weatherforecastapp.domain.models.ForecastDayCity
 import com.example.weatherforecastapp.domain.models.Location
 import com.example.weatherforecastapp.domain.models.SearchCity
+import com.example.weatherforecastapp.domain.models.StateCity
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -80,10 +76,10 @@ class RepositoryDataImpl @Inject constructor(
             }
     }
 
-    fun getCitiesFlow(): SharedFlow<StateCity> {
+    override fun getCities(): SharedFlow<StateCity> {
         return cityFlow.shareIn(
-            repositoryCoroutineScope, SharingStarted.Lazily, 1)
-
+            repositoryCoroutineScope, SharingStarted.Lazily, 1
+        )
     }
 
 
@@ -113,12 +109,12 @@ class RepositoryDataImpl @Inject constructor(
     }
 
 
-    suspend fun allLocations(): List<Location> {
+    private suspend fun allLocations(): List<Location> {
         return locationDao.getAllLocations().map { mapper.mapperLocationDbToEntityLocation(it) }
     }
 
     override suspend fun saveUserPosition(positionDb: PositionDb): Boolean {
-        val datePosition = positionDao.getPosition() ?: NO_POSITION
+        val datePosition = positionDao.getUserPosition() ?: NO_POSITION
         if (datePosition.position != positionDb.position) {
             positionDao.insert(positionDb)
             writingAPItoDatabase(datePosition, positionDb)
@@ -126,8 +122,8 @@ class RepositoryDataImpl @Inject constructor(
         return true
     }
 
-    suspend fun updateUserPosition() {
-        val dataPosition = positionDao.getPosition()
+    override suspend fun updateUserPosition() {
+        val dataPosition = positionDao.getUserPosition()
         val userLocation = locationDao.getUserLocation()
         if (dataPosition != null) {
             var thisPositionDb = dataPosition
@@ -152,10 +148,10 @@ class RepositoryDataImpl @Inject constructor(
                 positionDao.insert(updatePositionDb)
             }
         }
-
     }
 
-    suspend fun getPreviewCity(searchCity: SearchCity): StateCity.PreviewCity {
+    override suspend fun getPreviewCity(searchCity: SearchCity): StateCity.PreviewCity {
+
         val cityFromSearch = getCityFromSearch(searchCity)
         val allLocations = allLocations()
         val position = "${searchCity.lat},${searchCity.lon}"
@@ -181,11 +177,6 @@ class RepositoryDataImpl @Inject constructor(
             PositionDb(city.location.locationId, positionCity, Format.formatTimeFromEpoch(time))
         writingAPItoDatabase(datePosition, thisPositionDb)
     }
-
-    suspend fun deletePosition(positionId: Int) {
-        positionDao.deletePositions(positionId)
-    }
-
 
     override suspend fun weatherUpdate() {
 
@@ -221,64 +212,22 @@ class RepositoryDataImpl @Inject constructor(
         }
     }
 
-    override suspend fun getUserLocation(): Location {
-        return mapper.mapperLocationDbToEntityLocation(locationDao.getUserLocation())
-    }
-
-
-    override suspend fun numberOfCities(): Int {
-        return locationDao.getSumPosition()
-    }
-
-
     override suspend fun searchCity(city: String): List<SearchCity> {
         val searchCity = apiService.searchCity(city = city)
         return searchCity.map { mapper.mapperSearchCityDtoToEntitySearchCity(it) }
     }
 
-    override suspend fun deleteCity(positionId: Int) {
-        locationDao.deleteLocation(positionId)
-    }
-
-    override fun getSizePager(): LiveData<Int> {
-        return MediatorLiveData<Int>().apply {
-            addSource(locationDao.getSizePager()) {
-                if (value != it) {
-                    value = it
-                }
-            }
+    override suspend fun deleteCity(locationId: Int) {
+        locationDao.deleteLocation(locationId)
+        if (locationId == USER_ID) {
+            positionDao.deleteUserPositions()
         }
     }
 
-    override fun getForecastDaysCity(): LiveData<List<ForecastDayCity>> {
-        return MediatorLiveData<List<ForecastDayCity>>().apply {
-            addSource(forecastDayDao.getForecastDayLiveData()) { forecastDaysList ->
-                if (forecastDaysList != null) {
-                    value = forecastDaysList.map {
-                        mapper.mapperForecastCityDbToEntityForecastCityDays(it)
-                    }
-                } else {
-                    emptyList<ForecastDayCity>()
-                }
-            }
-        }
-    }
 
     override fun getLocations(): Flow<List<Location>> {
         return locationDao.getLocationsFlow()
             .map { it.map { mapper.mapperLocationDbToEntityLocation(it) } }
-    }
-
-    override fun getCurrentDays(): LiveData<List<Current>> {
-        return MediatorLiveData<List<Current>>().apply {
-            addSource(currentDao.getCurrentsLiveData()) { currentList ->
-                if (currentList != null) {
-                    value = currentList.map { mapper.mapperCurrentDbToEntityCurrent(it, context) }
-                } else {
-                    emptyList<Current>()
-                }
-            }
-        }
     }
 
 

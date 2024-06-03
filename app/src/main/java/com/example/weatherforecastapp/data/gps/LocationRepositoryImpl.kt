@@ -12,7 +12,6 @@ import androidx.core.app.ActivityCompat
 import com.example.weatherforecastapp.data.Format
 import com.example.weatherforecastapp.data.database.models.PositionDb
 import com.example.weatherforecastapp.data.repository.RepositoryDataImpl
-import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseGetUserLocation
 import com.example.weatherforecastapp.domain.repisitoryData.UseCase.UseCaseSaveUserLocation
 import com.example.weatherforecastapp.domain.repositoryLocation.LocationRepository
 import com.example.weatherforecastapp.presentation.checkingСonnections.WeatherReceiver
@@ -30,8 +29,8 @@ class LocationRepositoryImpl @Inject constructor(
     private val context: Application,
     private val saveUserLocation: UseCaseSaveUserLocation,
     private val fLocationClient: FusedLocationProviderClient,
-    private val getUserLocation: UseCaseGetUserLocation,
 ) : LocationRepository {
+    val coroutineScopeGPS = CoroutineScope(Dispatchers.IO)
     private fun getLocation() {
         val ct = CancellationTokenSource()
         if (ActivityCompat.checkSelfPermission(
@@ -48,17 +47,8 @@ class LocationRepositoryImpl @Inject constructor(
         fLocationClient
             .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, ct.token)
             .addOnCompleteListener {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val locationDb = getUserLocation.invoke()
-                    Log.d("LocationRepositoryImpl", "locationDb: $locationDb ")
-                    val positionGPS = dataRounding(it)
-                    if (locationDb.position != positionGPS.position) {
-                        Log.d("LocationRepositoryImpl", "Update: true ")
-                        saveUserLocation(dataRounding(it))
-
-                    } else {
-                        Log.d("LocationRepositoryImpl", "locationDb: false ")
-                    }
+                coroutineScopeGPS.launch {
+                    saveUserLocation(dataRounding(it))
                 }
             }
     }
