@@ -1,14 +1,13 @@
 package com.example.weatherforecastapp.domain.repisitoryData.UseCase
 
-import androidx.lifecycle.LiveData
 import com.example.weatherforecastapp.domain.repisitoryData.RepositoryData
 import javax.inject.Inject
 
-class UseCaseGetSizePager @Inject constructor(
+class UseCaseDeleteCity @Inject constructor(
     private val repositoryData: RepositoryData
-) {
-    operator fun invoke(): LiveData<Int> {
-        return repositoryData.getSizePager()
+){
+    suspend operator fun invoke(positionId: Int){
+        repositoryData.deleteCity(positionId)
     }
 }
 

@@ -12,10 +12,11 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.example.weatherforecastapp.presentation.viewModels.ViewModelWeather
 
-
-class WeatherReceiver(val context: Context) : BroadcastReceiver() {
-    private var state = State()
+class WeatherReceiver(val context: Context, private val viewModelWeather: ViewModelWeather) :
+    BroadcastReceiver() {
+    private var stateReceiver = StateReceiver()
 
     private var isFirstCheck = true
     private var isInternetAvailable = false
@@ -25,69 +26,18 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    var getState: ((State) -> Unit)? = null
-
-    var checkLocationStatus: ((Boolean) -> Unit)? = null
-    var checkInternetStatus: ((Boolean) -> Unit)? = null
-    var checkLocationPermissionStatus: ((Boolean) -> Unit)? = null
-
-
-    fun startReceiver() {
-        val intentFilter = IntentFilter().apply {
-            addAction(ACTION_LOCATION)
-            addAction(ACTION_LOCATION_PERMISSION)
-            addAction(ACTION_STATE)
-
-        }
-        val networkRequest = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
-        context.registerReceiver(this, intentFilter, AppCompatActivity.RECEIVER_EXPORTED)
-    }
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-        val action = intent?.action
-
-        when (action) {
-            ACTION_STATE -> {
-                val isGpsEnabled = intent.getBooleanExtra(LOCATION, true)
-                val isLocationPermission = intent.getBooleanExtra(LOCATION_PERMISSION, true)
-                 state = State(
-                    location = isGpsEnabled,
-                    locationPermission = isLocationPermission,
-                    internet = isInternetAvailable,
-
-                )
-                getState?.invoke(state)
-            }
-
-            ACTION_LOCATION -> {
-                val isGpsEnabled = intent.getBooleanExtra(CONDITION, true)
-                checkLocationStatus?.invoke(isGpsEnabled)
-            }
-
-            ACTION_LOCATION_PERMISSION -> {
-                val isLocationPermission = intent.getBooleanExtra(CONDITION, true)
-                checkLocationPermissionStatus?.invoke(isLocationPermission)
-            }
-
-
-            else -> {
-
-            }
-        }
-    }
-
+    var getState: ((StateReceiver) -> Unit)? = null
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
+
             checkInternet(true)
         }
 
         override fun onLost(network: Network) {
             super.onLost(network)
+
             checkInternet(false)
         }
 
@@ -95,21 +45,66 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
             network: Network,
             networkCapabilities: NetworkCapabilities
         ) {
+
             super.onCapabilitiesChanged(network, networkCapabilities)
             checkInternet(networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
         }
     }
 
 
+    fun startReceiver() {
+        Log.d("InternetConnectionChecker", "checkInternet: $isInternetAvailable")
+
+        val networkRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
+
+        val intentFilter = IntentFilter().apply {
+            addAction(ACTION_LOCATION)
+            addAction(ACTION_LOCATION_PERMISSION)
+            addAction(ACTION_STATE)
+        }
+        val newState = stateReceiver.copy(internet = isInternetAvailable)
+        stateReceiver = newState
+        viewModelWeather.updateState(stateReceiver)
+
+        context.registerReceiver(this, intentFilter, AppCompatActivity.RECEIVER_EXPORTED)
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+
+        val action = intent?.action
+        when (action) {
+            ACTION_LOCATION_PERMISSION -> {
+                val isLocationPermission = intent.getBooleanExtra(CONDITION, false)
+                val newState = stateReceiver.copy(locationPermission = isLocationPermission)
+                stateReceiver = newState
+                viewModelWeather.updateState(stateReceiver)
+            }
+
+            ACTION_LOCATION -> {
+                val isLocation = intent.getBooleanExtra(CONDITION, stateReceiver.location)
+                val newState = stateReceiver.copy(location = isLocation)
+                stateReceiver = newState
+                viewModelWeather.updateState(stateReceiver)
+            }
+
+            else -> {}
+        }
+    }
+
+
+
     private fun checkInternet(isConnected: Boolean) {
         if (isConnected != isInternetAvailable || isFirstCheck) {
             isFirstCheck = false
             isInternetAvailable = isConnected
-            Log.d("InternetConnectionChecker", "checkInternet: $isInternetAvailable")
             handler.post {
-                checkInternetStatus?.invoke(isInternetAvailable)
-                val newState = state.copy(internet = isConnected)
-                getState?.invoke(newState)
+                val newState = stateReceiver.copy(internet = isInternetAvailable)
+                stateReceiver = newState
+                viewModelWeather.updateState(stateReceiver)
+                Log.d("InternetConnectionChecker", "checkInternet: $isInternetAvailable")
 
             }
         }
@@ -130,7 +125,7 @@ class WeatherReceiver(val context: Context) : BroadcastReceiver() {
         const val LOCATION = "location_value"
         const val LOCATION_PERMISSION = "location_permission_value"
 
-
+        const val TAG = "WeatherReceiver_Log"
     }
 
 }

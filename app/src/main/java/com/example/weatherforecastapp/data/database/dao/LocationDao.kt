@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.weatherforecastapp.data.database.models.LocationDb
 import com.example.weatherforecastapp.data.database.models.PositionDb
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocationDao {
@@ -27,12 +28,12 @@ interface LocationDao {
     fun getLocation(id: Int): LiveData<LocationDb>
 
     @Query("SELECT * FROM location WHERE location_id = 0")
-    fun getUserLocation(): LocationDb
+    suspend fun getUserLocation(): LocationDb?
 
-    @Query("SELECT location_id,position,last_updated_epoch,last_updated FROM location WHERE location_id = :id")
+    @Query("SELECT location_id,position,last_updated FROM location WHERE location_id = :id")
     suspend fun checkPosition(id: Int): PositionDb?
 
-    @Query("SELECT location_id,position,last_updated_epoch,last_updated FROM location WHERE  position= :position")
+    @Query("SELECT location_id,position,last_updated FROM location WHERE  position= :position")
     suspend fun checkCity(position: String): PositionDb?
 
     @Query("DELETE FROM location WHERE location_id =:id")
@@ -52,6 +53,9 @@ interface LocationDao {
 
     @Query("DELETE FROM location")
     fun deleteAll()
+
+    @Query("SELECT * FROM location")
+    fun getLocationsFlow(): Flow<List<LocationDb>>
 
 
 }

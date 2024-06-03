@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.weatherforecastapp.data.database.models.ForecastDaysDb
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ForecastDayDao {
@@ -15,7 +16,12 @@ interface ForecastDayDao {
     suspend fun insert(forecastDaysDb: ForecastDaysDb)
 
     @Query("SELECT * FROM forecast_day")
-    fun getForecastDay(): LiveData<List<ForecastDaysDb>>
+    fun getForecastDayLiveData(): LiveData<List<ForecastDaysDb>>
+
+    @Query("SELECT * FROM forecast_day")
+    suspend fun getForecastDay(): List<ForecastDaysDb>
+    @Query("SELECT * FROM forecast_day")
+    fun getForecastDayFlow(): Flow<List<ForecastDaysDb>>
 
 
 }

@@ -9,7 +9,6 @@ class UseCaseWeatherUpdate @Inject constructor(
 
      suspend operator fun invoke() {
         return repositoryData.weatherUpdate()
-
     }
 
 }
